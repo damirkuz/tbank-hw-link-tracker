@@ -10,10 +10,9 @@ public class TelegramConfiguration {
 
     @Bean
     public TelegramBot telegramBot(TelegramProperties properties) {
-        var builder = new TelegramBot.Builder(properties.getToken())
+        var builder = new TelegramBot.Builder(System.getenv("APP_TELEGRAM_TOKEN"))
                 .apiUrl(properties.getUrl())
                 .updateListenerSleep(properties.getUpdateListenerSleep().toMillis());
-
         if (properties.isDebug()) {
             builder.debug();
         }
