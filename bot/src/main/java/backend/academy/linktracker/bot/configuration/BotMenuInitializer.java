@@ -3,6 +3,7 @@ package backend.academy.linktracker.bot.configuration;
 import backend.academy.linktracker.bot.context.BotContext;
 import backend.academy.linktracker.bot.handler.command.CommandHandler;
 import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
+import com.pengrad.telegrambot.Callback;
 import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.request.SetMyCommands;
 import com.pengrad.telegrambot.response.BaseResponse;
@@ -25,14 +26,28 @@ public class BotMenuInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         List<BotCommand> commands = new ArrayList<>();
-
         for (CommandHandler handler : commandHandlerRegistry.getAllHandlers()) {
             commands.add(new BotCommand(handler.getCommand(), handler.getDescription()));
         }
 
-        BaseResponse response = botContext.bot().execute(new SetMyCommands(commands.toArray(new BotCommand[0])));
-        if (!response.isOk()) {
-            log.atDebug().log("Не удалось установить команды");
-        }
+        botContext
+                .bot()
+                .execute(
+                        new SetMyCommands(commands.toArray(new BotCommand[0])),
+                        new Callback<SetMyCommands, BaseResponse>() {
+                            @Override
+                            public void onResponse(SetMyCommands request, BaseResponse response) {
+                                if (!response.isOk()) {
+                                    log.warn("Не удалось установить команды: {}", response.description());
+                                } else {
+                                    log.info("Команды успешно установлены.");
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(SetMyCommands request, java.io.IOException e) {
+                                log.error("Ошибка при установке команд", e);
+                            }
+                        });
     }
 }

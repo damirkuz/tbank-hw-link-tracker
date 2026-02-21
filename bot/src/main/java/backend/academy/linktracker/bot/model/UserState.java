@@ -1,5 +1,6 @@
 package backend.academy.linktracker.bot.model;
 
 public enum UserState {
-    IDLE
+    IDLE,
+    AUTH_WAIT_LINK
 }
