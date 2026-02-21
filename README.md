@@ -6,4 +6,4 @@ LinkTracker – Telegram-бот, который отслеживает изме�
 
 1) положить в переменные среды Idea:
    APP_TELEGRAM_TOKEN=токен
-2) Запустить класс backend.academy.linktracker.bot.BotApplication
+2) Запустить класс bot.src.main.java.backend.academy.linktracker.bot.BotApplication

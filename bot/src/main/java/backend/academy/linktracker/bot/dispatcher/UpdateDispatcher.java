@@ -33,11 +33,28 @@ public class UpdateDispatcher {
     private final StringParser parser;
 
     private void goToRouters(Update update) {
+        if (update.message() == null || update.message().chat() == null) {
+            log.atDebug().log("Получен Update без message или chat. Пропускаем.");
+            return;
+        }
+
         long chatId = update.message().chat().id();
         String text = update.message().text() != null ? update.message().text() : "";
         String command = text.startsWith("/") ? parser.parseCommand(text) : null;
         UserState currentState = stateRepository.getUserState(chatId);
         CommandHandler handler = command != null ? commandHandlers.getHandler(command) : null;
+
+        log.atInfo()
+                .addKeyValue("chat_id", chatId)
+                .addKeyValue(
+                        "username",
+                        update.message().from() != null
+                                ? update.message().from().username()
+                                : "unknown")
+                .addKeyValue("text", text)
+                .addKeyValue("current_state", currentState)
+                .addKeyValue("is_command", command != null)
+                .log("Обработка входящего обновления");
 
         if (handler != null && handler.isCancelStateCommand()) {
             commandRouter.route(update);
@@ -55,7 +72,13 @@ public class UpdateDispatcher {
     public void init() {
         bot.setUpdatesListener(updates -> {
             for (Update update : updates) {
-                goToRouters(update);
+                try {
+                    goToRouters(update);
+                } catch (Exception e) {
+                    log.atError()
+                            .addKeyValue("update_id", update.updateId())
+                            .log("Ошибка во время обработки обновления", e);
+                }
             }
 
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
