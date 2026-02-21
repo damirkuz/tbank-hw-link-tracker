@@ -1,29 +1,36 @@
 package backend.academy.linktracker.bot.configuration;
 
-import com.pengrad.telegrambot.TelegramBot;
+import backend.academy.linktracker.bot.context.BotContext;
+import backend.academy.linktracker.bot.handler.command.CommandHandler;
+import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
 import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.request.SetMyCommands;
 import com.pengrad.telegrambot.response.BaseResponse;
-import lombok.AllArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
 
+@Component
 @Slf4j
 @RequiredArgsConstructor
 public class BotMenuInitializer implements ApplicationRunner {
 
-    private final TelegramBot bot;
+    private final BotContext botContext;
+    private final CommandHandlerRegistry commandHandlerRegistry;
 
     @Override
     public void run(ApplicationArguments args) {
-        BotCommand[] commands = new BotCommand[] {
-            new BotCommand("start", "Запустить бота"),
-            new BotCommand("help", "Показать помощь")
-        };
+        List<BotCommand> commands = new ArrayList<>();
 
-        BaseResponse response = bot.execute(new SetMyCommands(commands));
+        for (CommandHandler handler : commandHandlerRegistry.getAllHandlers()) {
+            commands.add(new BotCommand(handler.getCommand(), handler.getDescription()));
+        }
+
+        BaseResponse response = botContext.bot().execute(new SetMyCommands(commands.toArray(new BotCommand[0])));
         if (!response.isOk()) {
             log.atDebug().log("Не удалось установить команды");
         }

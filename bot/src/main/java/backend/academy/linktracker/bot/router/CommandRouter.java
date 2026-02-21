@@ -10,13 +10,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CommandRouter implements Router {
 
-    private final CommandHandlerRegistry commandHandlers;
+    private final CommandHandlerRegistry handlerRegistry;
     private final StringParser parser;
-
 
     @Override
     public void route(Update update) {
         String commandParsed = parser.parseCommand(update.message().text());
-        commandHandlers.getHandler(commandParsed).handle(update);
+        handlerRegistry.getHandler(commandParsed).handle(update);
     }
 }

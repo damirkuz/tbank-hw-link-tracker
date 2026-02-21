@@ -8,6 +8,4 @@ public class StringParser {
     public String parseCommand(String command) {
         return command.trim().split("\\s+", 2)[0];
     }
-
-
 }

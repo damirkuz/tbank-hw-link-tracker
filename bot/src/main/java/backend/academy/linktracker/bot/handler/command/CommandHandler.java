@@ -4,5 +4,8 @@ import backend.academy.linktracker.bot.handler.Handler;
 
 public interface CommandHandler extends Handler {
     String getCommand();
+
+    String getDescription();
+
     boolean isCancelStateCommand();
 }

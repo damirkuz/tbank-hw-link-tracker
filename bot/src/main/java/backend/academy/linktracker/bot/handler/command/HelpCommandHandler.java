@@ -14,12 +14,6 @@ public class HelpCommandHandler implements CommandHandler {
     private final BotOperations botOperations;
 
     @Override
-    public boolean canHandle(Update update) {
-        return update.message().text() != null &&
-            update.message().text().startsWith("/help");
-    }
-
-    @Override
     public void handle(Update update) {
         long chatId = update.message().chat().id();
         botOperations.sendMessage(chatId, botContext.messageProperties().helpCommand());
@@ -28,6 +22,11 @@ public class HelpCommandHandler implements CommandHandler {
     @Override
     public String getCommand() {
         return "/help";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Показать помощь";
     }
 
     @Override

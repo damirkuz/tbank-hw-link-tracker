@@ -6,9 +6,4 @@ import com.pengrad.telegrambot.TelegramBot;
 import org.springframework.stereotype.Component;
 
 @Component
-public record BotContext(
-    TelegramBot bot,
-    StateRepository stateRepository,
-    MessageProperties messageProperties
-) {
-}
+public record BotContext(TelegramBot bot, StateRepository stateRepository, MessageProperties messageProperties) {}

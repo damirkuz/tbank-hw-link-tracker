@@ -14,5 +14,4 @@ public class BotOperations {
     public void sendMessage(long chatId, String message) {
         botContext.bot().execute(new SendMessage(chatId, message));
     }
-
 }
