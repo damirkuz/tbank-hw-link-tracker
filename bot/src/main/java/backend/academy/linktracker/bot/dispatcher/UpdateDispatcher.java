@@ -32,7 +32,7 @@ public class UpdateDispatcher {
 
     private final StringParser parser;
 
-    private void goToRouters(Update update) {
+    public void dispatch(Update update) {
         if (update.message() == null || update.message().chat() == null) {
             log.atDebug().log("Получен Update без message или chat. Пропускаем.");
             return;
@@ -73,7 +73,7 @@ public class UpdateDispatcher {
         bot.setUpdatesListener(updates -> {
             for (Update update : updates) {
                 try {
-                    goToRouters(update);
+                    dispatch(update);
                 } catch (Exception e) {
                     log.atError()
                             .addKeyValue("update_id", update.updateId())

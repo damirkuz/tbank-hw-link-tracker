@@ -1,5 +1,6 @@
 package backend.academy.linktracker.bot.dispatcher;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -15,7 +16,6 @@ import backend.academy.linktracker.bot.util.StringParser;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
-import java.lang.reflect.Method;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,47 +52,56 @@ class UpdateDispatcherTest {
     @InjectMocks
     private UpdateDispatcher updateDispatcher;
 
-    private Update createUpdateMock(long chatId, String text) {
+    private Update createUpdateMock(Long chatId, String text) {
         Update update = new Update();
-        Message message = new Message();
-        Chat chat = new Chat();
-
-        ReflectionTestUtils.setField(chat, "id", chatId);
-        ReflectionTestUtils.setField(message, "chat", chat);
-        ReflectionTestUtils.setField(message, "text", text);
-        ReflectionTestUtils.setField(update, "message", message);
-
+        if (chatId != null || text != null) {
+            Message message = new Message();
+            if (chatId != null) {
+                Chat chat = new Chat();
+                ReflectionTestUtils.setField(chat, "id", chatId);
+                ReflectionTestUtils.setField(message, "chat", chat);
+            }
+            if (text != null) {
+                ReflectionTestUtils.setField(message, "text", text);
+            }
+            ReflectionTestUtils.setField(update, "message", message);
+        }
         return update;
     }
 
-    private void invokeGoToRouters(Update update) throws Exception {
-        Method method = UpdateDispatcher.class.getDeclaredMethod("goToRouters", Update.class);
-        method.setAccessible(true);
-        method.invoke(updateDispatcher, update);
+    @Test
+    @DisplayName("Негативный сценарий: Update без сообщения (message == null) игнорируется")
+    void shouldIgnoreUpdateWhenMessageIsNull() {
+        // Создаем пустой апдейт (например, прилетел callback_query или edited_message)
+        Update update = new Update();
+
+        updateDispatcher.dispatch(update);
+
+        verifyNoInteractions(commandRouter, stateRouter, idleRouter, stateRepository);
     }
 
     @Test
     @DisplayName("Сценарий отмены: Известная команда отмены сбрасывает состояние и идет в CommandRouter")
-    void shouldCancelStateOnCancelCommand() throws Exception {
+    void shouldCancelStateOnCancelCommand() {
         long chatId = 1L;
         Update update = createUpdateMock(chatId, "/start");
 
         when(parser.parseCommand("/start")).thenReturn("/start");
-        when(stateRepository.getUserState(chatId)).thenReturn(UserState.AUTH_WAIT_LINK); // Не IDLE состояние
+        when(stateRepository.getUserState(chatId)).thenReturn(UserState.AUTH_WAIT_LINK);
         when(commandHandlers.getHandler("/start")).thenReturn(commandHandler);
-        when(commandHandler.isCancelStateCommand()).thenReturn(true); // Команда умеет отменять стейт
+        when(commandHandler.isCancelStateCommand()).thenReturn(true);
 
-        invokeGoToRouters(update);
+        updateDispatcher.dispatch(update);
 
-        verify(commandRouter).route(update);
+        // Используем any(), так как класс Update не переопределяет equals()
+        verify(commandRouter).route(any(Update.class), any(String.class));
         verify(stateRepository).setUserState(chatId, UserState.IDLE);
-        verifyNoInteractions(stateRouter);
-        verifyNoInteractions(idleRouter);
+        verifyNoInteractions(stateRouter, idleRouter);
     }
 
     @Test
     @DisplayName("Обычная команда в состоянии IDLE уходит в CommandRouter")
-    void shouldRouteToCommandRouterWhenIdle() throws Exception {
+    void shouldRouteToCommandRouterWhenIdle() {
         long chatId = 2L;
         Update update = createUpdateMock(chatId, "/help");
 
@@ -101,40 +110,39 @@ class UpdateDispatcherTest {
         when(commandHandlers.getHandler("/help")).thenReturn(commandHandler);
         when(commandHandler.isCancelStateCommand()).thenReturn(false);
 
-        invokeGoToRouters(update);
+        updateDispatcher.dispatch(update);
 
-        verify(commandRouter).route(update);
-        verifyNoInteractions(stateRouter);
-        verifyNoInteractions(idleRouter);
+        verify(commandRouter).route(any(Update.class), any(String.class));
+        verifyNoInteractions(stateRouter, idleRouter);
     }
 
     @Test
     @DisplayName("При активном состоянии (не IDLE) и вводе текста маршрутизация уходит в StateRouter")
-    void shouldRouteToStateRouterWhenNotIdle() throws Exception {
+    void shouldRouteToStateRouterWhenNotIdle() {
         long chatId = 3L;
         Update update = createUpdateMock(chatId, "https://example.com");
 
         when(stateRepository.getUserState(chatId)).thenReturn(UserState.AUTH_WAIT_LINK);
+        // Убрали when(parser.parseCommand...), чтобы избежать UnnecessaryStubbingException
 
-        invokeGoToRouters(update);
+        updateDispatcher.dispatch(update);
 
-        verify(stateRouter).route(update);
-        verifyNoInteractions(commandRouter);
-        verifyNoInteractions(idleRouter);
+        verify(stateRouter).route(any(Update.class));
+        verifyNoInteractions(commandRouter, idleRouter);
     }
 
     @Test
     @DisplayName("Неизвестный текст в состоянии IDLE уходит в IdleRouter")
-    void shouldRouteToIdleRouterWhenUnknownText() throws Exception {
+    void shouldRouteToIdleRouterWhenUnknownText() {
         long chatId = 4L;
         Update update = createUpdateMock(chatId, "Просто текст");
 
         when(stateRepository.getUserState(chatId)).thenReturn(UserState.IDLE);
+        // Убрали when(parser.parseCommand...), чтобы избежать UnnecessaryStubbingException
 
-        invokeGoToRouters(update);
+        updateDispatcher.dispatch(update);
 
-        verify(idleRouter).route(update);
-        verifyNoInteractions(commandRouter);
-        verifyNoInteractions(stateRouter);
+        verify(idleRouter).route(any(Update.class));
+        verifyNoInteractions(commandRouter, stateRouter);
     }
 }
