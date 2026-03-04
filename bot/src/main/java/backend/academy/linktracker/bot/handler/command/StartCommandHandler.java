@@ -1,6 +1,6 @@
 package backend.academy.linktracker.bot.handler.command;
 
-import backend.academy.linktracker.bot.context.BotContext;
+import backend.academy.linktracker.bot.properties.message.MessageProperties;
 import backend.academy.linktracker.bot.service.BotOperations;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
@@ -10,23 +10,23 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class StartCommandHandler implements CommandHandler {
 
-    private final BotContext botContext;
+    private final MessageProperties messageProperties;
     private final BotOperations botOperations;
 
     @Override
     public void handle(Update update) {
         long chatId = update.message().chat().id();
-        botOperations.sendMessage(chatId, botContext.messageProperties().startCommand());
+        botOperations.sendMessage(chatId, messageProperties.startCommand().answer());
     }
 
     @Override
     public String getCommand() {
-        return "/start";
+        return messageProperties.startCommand().command();
     }
 
     @Override
     public String getDescription() {
-        return "Запустить бота";
+        return messageProperties.startCommand().description();
     }
 
     @Override

@@ -18,4 +18,8 @@ public class CommandRouter implements Router {
         String commandParsed = parser.parseCommand(update.message().text());
         handlerRegistry.getHandler(commandParsed).handle(update);
     }
+
+    public void route(Update update, String command) {
+        handlerRegistry.getHandler(command).handle(update);
+    }
 }

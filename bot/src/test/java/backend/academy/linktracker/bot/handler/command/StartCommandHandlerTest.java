@@ -5,8 +5,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import backend.academy.linktracker.bot.context.BotContext;
-import backend.academy.linktracker.bot.properties.MessageProperties;
+import backend.academy.linktracker.bot.properties.message.CommandMessage;
+import backend.academy.linktracker.bot.properties.message.MessageProperties;
 import backend.academy.linktracker.bot.service.BotOperations;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
@@ -24,13 +24,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 class StartCommandHandlerTest {
 
     @Mock
-    private BotContext botContext;
+    private MessageProperties messageProperties;
 
     @Mock
     private BotOperations botOperations;
-
-    @Mock
-    private MessageProperties messageProperties;
 
     @InjectMocks
     private StartCommandHandler handler;
@@ -50,11 +47,11 @@ class StartCommandHandlerTest {
     @Test
     @DisplayName("При /start бот отправляет приветственное сообщение из properties")
     void shouldReturnWelcomeMessageOnStart() {
-        when(botContext.messageProperties()).thenReturn(messageProperties);
-
         long chatId = 123L;
-        String welcomeText = "Добро пожаловать! Используйте /help.";
-        when(messageProperties.startCommand()).thenReturn(welcomeText);
+        String welcomeText = "Привет, напиши /help, чтобы посмотреть доступные команды";
+        CommandMessage startMsg = new CommandMessage("/start", "Запустить бота", welcomeText);
+
+        when(messageProperties.startCommand()).thenReturn(startMsg);
 
         Update update = createUpdateMock(chatId);
 
@@ -66,8 +63,11 @@ class StartCommandHandlerTest {
     @Test
     @DisplayName("Хендлер возвращает правильную команду и описание")
     void shouldReturnCorrectCommandDetails() {
+        CommandMessage startMsg = new CommandMessage("/start", "Запустить бота", "Любой текст");
+        when(messageProperties.startCommand()).thenReturn(startMsg);
+
         assertThat(handler.getCommand()).isEqualTo("/start");
-        assertThat(handler.getDescription()).isNotBlank();
+        assertThat(handler.getDescription()).isEqualTo("Запустить бота");
         assertThat(handler.isCancelStateCommand()).isTrue();
     }
 }

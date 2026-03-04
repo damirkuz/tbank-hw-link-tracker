@@ -1,6 +1,6 @@
 package backend.academy.linktracker.bot.service;
 
-import backend.academy.linktracker.bot.context.BotContext;
+import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.SendResponse;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class BotOperations {
 
-    private final BotContext botContext;
+    private final TelegramBot bot;
 
     public void sendMessage(long chatId, String message) {
         log.atInfo()
@@ -20,7 +20,7 @@ public class BotOperations {
                 .addKeyValue("message_length", message.length())
                 .log("Отправка ответного сообщения");
 
-        SendResponse response = botContext.bot().execute(new SendMessage(chatId, message));
+        SendResponse response = bot.execute(new SendMessage(chatId, message));
 
         if (!response.isOk()) {
             log.atError()

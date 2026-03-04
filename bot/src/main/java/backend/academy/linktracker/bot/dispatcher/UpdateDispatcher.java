@@ -57,12 +57,12 @@ public class UpdateDispatcher {
                 .log("Обработка входящего обновления");
 
         if (handler != null && handler.isCancelStateCommand()) {
-            commandRouter.route(update);
+            commandRouter.route(update, command);
             stateRepository.setUserState(chatId, UserState.IDLE);
         } else if (currentState != UserState.IDLE) {
             stateRouter.route(update);
         } else if (handler != null) {
-            commandRouter.route(update);
+            commandRouter.route(update, command);
         } else {
             idleRouter.route(update);
         }

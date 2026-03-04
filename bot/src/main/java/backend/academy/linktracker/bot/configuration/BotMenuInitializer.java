@@ -1,8 +1,8 @@
 package backend.academy.linktracker.bot.configuration;
 
-import backend.academy.linktracker.bot.context.BotContext;
 import backend.academy.linktracker.bot.handler.command.CommandHandler;
 import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
+import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.request.SetMyCommands;
 import com.pengrad.telegrambot.response.BaseResponse;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class BotMenuInitializer implements ApplicationRunner {
 
-    private final BotContext botContext;
+    private final TelegramBot bot;
     private final CommandHandlerRegistry commandHandlerRegistry;
 
     @Override
@@ -31,7 +31,7 @@ public class BotMenuInitializer implements ApplicationRunner {
         }
 
         try {
-            BaseResponse response = botContext.bot().execute(new SetMyCommands(commands.toArray(new BotCommand[0])));
+            BaseResponse response = bot.execute(new SetMyCommands(commands.toArray(new BotCommand[0])));
             if (!response.isOk()) {
                 log.atError()
                         .addKeyValue("error_code", response.errorCode())

@@ -5,8 +5,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import backend.academy.linktracker.bot.context.BotContext;
-import backend.academy.linktracker.bot.properties.MessageProperties;
+import backend.academy.linktracker.bot.properties.message.CommandMessage;
+import backend.academy.linktracker.bot.properties.message.MessageProperties;
 import backend.academy.linktracker.bot.service.BotOperations;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
@@ -22,9 +22,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("HelpCommandHandler: проверка команды /help")
 class HelpCommandHandlerTest {
-
-    @Mock
-    private BotContext botContext;
 
     @Mock
     private BotOperations botOperations;
@@ -50,11 +47,11 @@ class HelpCommandHandlerTest {
     @Test
     @DisplayName("При /help бот отвечает списком команд из properties")
     void shouldReturnHelpMessageOnHelp() {
-        when(botContext.messageProperties()).thenReturn(messageProperties);
-
         long chatId = 456L;
-        String helpText = "Список доступных команд: /start, /help";
-        when(messageProperties.helpCommand()).thenReturn(helpText);
+        String helpText = "Доступные команды:\n/start\n/help";
+        CommandMessage helpMsg = new CommandMessage("/help", "Показать помощь", helpText);
+
+        when(messageProperties.helpCommand()).thenReturn(helpMsg);
 
         Update update = createUpdateMock(chatId);
 
@@ -66,8 +63,11 @@ class HelpCommandHandlerTest {
     @Test
     @DisplayName("Хендлер возвращает правильную команду и описание")
     void shouldReturnCorrectCommandDetails() {
+        CommandMessage helpMsg = new CommandMessage("/help", "Показать помощь", "Любой текст");
+        when(messageProperties.helpCommand()).thenReturn(helpMsg);
+
         assertThat(handler.getCommand()).isEqualTo("/help");
-        assertThat(handler.getDescription()).isNotBlank();
+        assertThat(handler.getDescription()).isEqualTo("Показать помощь");
         assertThat(handler.isCancelStateCommand()).isFalse();
     }
 }

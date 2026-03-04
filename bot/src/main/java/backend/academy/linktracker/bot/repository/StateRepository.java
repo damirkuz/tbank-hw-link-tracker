@@ -13,9 +13,7 @@ public class StateRepository {
     private final Map<Long, UserSession> sessionStore;
 
     private void addUserSessionIfAbsent(long userId) {
-        if (!sessionStore.containsKey(userId)) {
-            sessionStore.put(userId, new UserSession(UserState.IDLE));
-        }
+        sessionStore.computeIfAbsent(userId, id -> new UserSession(UserState.IDLE));
     }
 
     public void setUserState(long userId, UserState state) {

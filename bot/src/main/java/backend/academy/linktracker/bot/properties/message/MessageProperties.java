@@ -1,14 +1,14 @@
-package backend.academy.linktracker.bot.properties;
+package backend.academy.linktracker.bot.properties.message;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.Valid;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
 @ConfigurationProperties(prefix = "bot.messages")
 public record MessageProperties(
-        @NotEmpty String startCommand,
+        @Valid CommandMessage startCommand,
 
-        @NotEmpty String helpCommand,
+        @Valid CommandMessage helpCommand,
 
-        @NotEmpty String unknownUpdate) {}
+        @Valid OtherMessage unknownUpdate) {}
