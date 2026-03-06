@@ -14,6 +14,10 @@ app:
     update-listener-sleep: 1s
     debug: false
 
+scrapper:
+  base-url: http://localhost:8081
+
+
 
 bot:
   messages:

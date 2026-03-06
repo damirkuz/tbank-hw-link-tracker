@@ -24,9 +24,8 @@ public class TrackCommandHandler implements CommandHandler {
     @Override
     public void handle(Update update) {
         long userId = update.message().from().id();
-        long chatId = update.message().chat().id();
 
-        stateRepository.setUserState(userId, UserState.TRACK_WAIT_LINK);
+        stateRepository.getUserSession(userId).setState(UserState.TRACK_WAIT_LINK);
 
         String answer = botTextService.get("bot.track.ask-link");
 

@@ -18,7 +18,7 @@ public class StateRouter implements Router {
     @Override
     public void route(Update update) {
         UserState userState =
-                stateRepository.getUserState(update.message().from().id());
+                stateRepository.getUserSession(update.message().from().id()).getState();
 
         handlerRegistry.getHandler(userState).handle(update);
     }

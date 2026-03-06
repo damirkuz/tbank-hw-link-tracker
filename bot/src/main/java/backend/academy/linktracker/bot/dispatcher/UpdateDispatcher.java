@@ -43,7 +43,7 @@ public class UpdateDispatcher {
         long userId = update.message().from().id();
         String text = update.message().text() != null ? update.message().text() : "";
         String command = text.startsWith("/") ? parser.parseCommand(text) : null;
-        UserState currentState = stateRepository.getUserState(chatId);
+        UserState currentState = stateRepository.getUserSession(userId).getState();
 
         Optional<CommandHandler> handler = commandHandlerRegistry.findByCommandText(command);
 
@@ -60,7 +60,7 @@ public class UpdateDispatcher {
                 .log("Обработка входящего обновления");
 
         if (handler.isPresent() && handler.get().isCancelStateCommand()) {
-            stateRepository.setUserState(userId, UserState.IDLE);
+            stateRepository.getUserSession(userId).setState(UserState.IDLE);
             commandRouter.route(update, handler.get());
         } else if (currentState != UserState.IDLE) {
             stateRouter.route(update);

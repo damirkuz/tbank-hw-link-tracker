@@ -16,15 +16,9 @@ public class StateRepository {
         sessionStore.computeIfAbsent(userId, id -> new UserSession(UserState.IDLE));
     }
 
-    public void setUserState(long userId, UserState state) {
+    public UserSession getUserSession(long userId) {
         addUserSessionIfAbsent(userId);
 
-        sessionStore.get(userId).setState(state);
-    }
-
-    public UserState getUserState(long userId) {
-        addUserSessionIfAbsent(userId);
-
-        return sessionStore.get(userId).getState();
+        return sessionStore.get(userId);
     }
 }
