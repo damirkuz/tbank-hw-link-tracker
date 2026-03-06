@@ -1,12 +1,11 @@
 package backend.academy.linktracker.bot.configuration;
 
-import backend.academy.linktracker.bot.handler.command.CommandHandler;
-import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
+
+import backend.academy.linktracker.bot.handler.command.registry.CommandHandlerRegistry;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.BotCommand;
 import com.pengrad.telegrambot.request.SetMyCommands;
 import com.pengrad.telegrambot.response.BaseResponse;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +23,9 @@ public class BotMenuInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        List<BotCommand> commands = new ArrayList<>();
-
-        for (CommandHandler handler : commandHandlerRegistry.getAllHandlers()) {
-            commands.add(new BotCommand(handler.getCommand(), handler.getDescription()));
-        }
+        List<BotCommand> commands = commandHandlerRegistry.getCommands().stream()
+            .map(c -> new BotCommand(c.command(), c.description()))
+            .toList();
 
         try {
             BaseResponse response = bot.execute(new SetMyCommands(commands.toArray(new BotCommand[0])));

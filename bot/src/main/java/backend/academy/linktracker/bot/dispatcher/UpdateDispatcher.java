@@ -1,7 +1,7 @@
 package backend.academy.linktracker.bot.dispatcher;
 
 import backend.academy.linktracker.bot.handler.command.CommandHandler;
-import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
+import backend.academy.linktracker.bot.handler.command.registry.CommandHandlerRegistry;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.repository.StateRepository;
 import backend.academy.linktracker.bot.router.CommandRouter;
@@ -12,6 +12,7 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import jakarta.annotation.PostConstruct;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class UpdateDispatcher {
 
     private final StateRepository stateRepository;
 
-    private final CommandHandlerRegistry commandHandlers;
+    private final CommandHandlerRegistry commandHandlerRegistry;
 
     private final StringParser parser;
 
@@ -42,7 +43,8 @@ public class UpdateDispatcher {
         String text = update.message().text() != null ? update.message().text() : "";
         String command = text.startsWith("/") ? parser.parseCommand(text) : null;
         UserState currentState = stateRepository.getUserState(chatId);
-        CommandHandler handler = command != null ? commandHandlers.getHandler(command) : null;
+
+        Optional<CommandHandler> handler = commandHandlerRegistry.findByCommandText(command);
 
         log.atInfo()
                 .addKeyValue("chat_id", chatId)
@@ -56,13 +58,13 @@ public class UpdateDispatcher {
                 .addKeyValue("is_command", command != null)
                 .log("Обработка входящего обновления");
 
-        if (handler != null && handler.isCancelStateCommand()) {
-            commandRouter.route(update, command);
+        if (handler.isPresent() && handler.get().isCancelStateCommand()) {
+            commandRouter.route(update, handler.get());
             stateRepository.setUserState(chatId, UserState.IDLE);
         } else if (currentState != UserState.IDLE) {
             stateRouter.route(update);
-        } else if (handler != null) {
-            commandRouter.route(update, command);
+        } else if (handler.isPresent()) {
+            commandRouter.route(update, handler.get());
         } else {
             idleRouter.route(update);
         }

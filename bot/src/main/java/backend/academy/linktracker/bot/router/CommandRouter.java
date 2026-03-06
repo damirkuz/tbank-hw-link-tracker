@@ -1,6 +1,7 @@
 package backend.academy.linktracker.bot.router;
 
-import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
+import backend.academy.linktracker.bot.handler.command.CommandHandler;
+import backend.academy.linktracker.bot.handler.command.registry.CommandHandlerRegistry;
 import backend.academy.linktracker.bot.util.StringParser;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
@@ -10,16 +11,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CommandRouter implements Router {
 
-    private final CommandHandlerRegistry handlerRegistry;
+    private final CommandHandlerRegistry commandHandlerRegistry;
     private final StringParser parser;
 
     @Override
     public void route(Update update) {
         String commandParsed = parser.parseCommand(update.message().text());
-        handlerRegistry.getHandler(commandParsed).handle(update);
+        commandHandlerRegistry.findByCommandText(commandParsed).ifPresent(handler -> handler.handle(update));
     }
 
-    public void route(Update update, String command) {
-        handlerRegistry.getHandler(command).handle(update);
+    public void route(Update update, CommandHandler handler) {
+        handler.handle(update);
     }
 }

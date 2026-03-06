@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: bot
+  messages:
+    basename: "messages"
 
 app:
   telegram:
@@ -12,16 +14,15 @@ app:
     update-listener-sleep: 1s
     debug: false
 
+
 bot:
   messages:
     start-command:
       command: "/start"
       description: "Запустить бота"
-      answer: "Привет, напиши /help, чтобы посмотреть доступные команды"
     help-command:
       command: "/help"
       description: "Показать помощь"
-      answer: "Доступные команды:\n/start\n/help"
-    unknown-update:
-      answer: "Неизвестная команда. Воспользуйтесь /help, чтобы посмотреть список доступных команд."
-
+    track-command:
+      command: "/track"
+      description: "Начать отслеживать ресурс"
