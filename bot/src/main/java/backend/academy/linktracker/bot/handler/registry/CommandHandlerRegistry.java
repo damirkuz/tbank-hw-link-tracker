@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.handler.command.registry;
+package backend.academy.linktracker.bot.handler.registry;
 
 
 import backend.academy.linktracker.bot.handler.command.CommandHandler;
@@ -20,8 +20,8 @@ public class CommandHandlerRegistry {
 
     public Optional<CommandHandler> findByCommandText(String commandText) {
         return botProperties.messages().values().stream()
-            .filter(commandMessage -> commandMessage.command().equals(commandText))
             .map(CommandMessage::command)
+            .filter(command -> command.equals(commandText))
             .map(handlers::get)
             .findFirst();
     }

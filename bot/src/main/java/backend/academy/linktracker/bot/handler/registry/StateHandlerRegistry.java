@@ -1,5 +1,6 @@
-package backend.academy.linktracker.bot.handler.state;
+package backend.academy.linktracker.bot.handler.registry;
 
+import backend.academy.linktracker.bot.handler.state.StateHandler;
 import backend.academy.linktracker.bot.model.UserState;
 import java.util.Collections;
 import java.util.EnumMap;

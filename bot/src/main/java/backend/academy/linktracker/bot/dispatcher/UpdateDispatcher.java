@@ -1,7 +1,7 @@
 package backend.academy.linktracker.bot.dispatcher;
 
 import backend.academy.linktracker.bot.handler.command.CommandHandler;
-import backend.academy.linktracker.bot.handler.command.registry.CommandHandlerRegistry;
+import backend.academy.linktracker.bot.handler.registry.CommandHandlerRegistry;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.repository.StateRepository;
 import backend.academy.linktracker.bot.router.CommandRouter;
@@ -40,6 +40,7 @@ public class UpdateDispatcher {
         }
 
         long chatId = update.message().chat().id();
+        long userId = update.message().from().id();
         String text = update.message().text() != null ? update.message().text() : "";
         String command = text.startsWith("/") ? parser.parseCommand(text) : null;
         UserState currentState = stateRepository.getUserState(chatId);
@@ -59,8 +60,8 @@ public class UpdateDispatcher {
                 .log("Обработка входящего обновления");
 
         if (handler.isPresent() && handler.get().isCancelStateCommand()) {
+            stateRepository.setUserState(userId, UserState.IDLE);
             commandRouter.route(update, handler.get());
-            stateRepository.setUserState(chatId, UserState.IDLE);
         } else if (currentState != UserState.IDLE) {
             stateRouter.route(update);
         } else if (handler.isPresent()) {

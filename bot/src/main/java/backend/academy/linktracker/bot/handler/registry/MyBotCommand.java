@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.handler.command.registry;
+package backend.academy.linktracker.bot.handler.registry;
 
 import backend.academy.linktracker.bot.handler.command.CommandHandler;
 

@@ -11,4 +11,9 @@ public class StringParser {
         String beforeSpace = command.trim().split("\\s+", 2)[0];
         return beforeSpace.split("@", 2)[0];
     }
+
+
+    public String parseLink(String message) {
+
+    }
 }

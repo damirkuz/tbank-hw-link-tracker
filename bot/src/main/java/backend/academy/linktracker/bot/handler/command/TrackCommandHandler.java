@@ -6,9 +6,9 @@ import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component("/track")
 @RequiredArgsConstructor
 public class TrackCommandHandler implements CommandHandler {
     private final BotTextService botTextService;
@@ -23,7 +23,8 @@ public class TrackCommandHandler implements CommandHandler {
 
     @Override
     public void handle(Update update) {
-        long userId = update.message().chat().id();
+        long userId = update.message().from().id();
+        long chatId = update.message().chat().id();
 
         stateRepository.setUserState(userId, UserState.TRACK_WAIT_LINK);
 

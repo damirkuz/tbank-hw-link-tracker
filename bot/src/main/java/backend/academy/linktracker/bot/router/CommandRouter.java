@@ -1,7 +1,7 @@
 package backend.academy.linktracker.bot.router;
 
 import backend.academy.linktracker.bot.handler.command.CommandHandler;
-import backend.academy.linktracker.bot.handler.command.registry.CommandHandlerRegistry;
+import backend.academy.linktracker.bot.handler.registry.CommandHandlerRegistry;
 import backend.academy.linktracker.bot.util.StringParser;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
