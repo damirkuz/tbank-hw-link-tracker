@@ -1,12 +1,11 @@
 package backend.academy.linktracker.bot.handler.command;
 
 import backend.academy.linktracker.bot.client.ScrapperClient;
-import backend.academy.linktracker.bot.client.response.LinkResponse;
-import backend.academy.linktracker.bot.client.response.ListLinksResponse;
-import backend.academy.linktracker.bot.repository.StateRepository;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.util.StringParser;
+import backend.academy.linktracker.common.response.LinkResponse;
+import backend.academy.linktracker.common.response.ListLinksResponse;
 import com.pengrad.telegrambot.model.Update;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 public class ListCommandHandler implements CommandHandler {
 
     private final ScrapperClient scrapperClient;
-    private final StateRepository stateRepository;
     private final BotTextService botTextService;
     private final BotOperations botOperations;
     private final StringParser stringParser;

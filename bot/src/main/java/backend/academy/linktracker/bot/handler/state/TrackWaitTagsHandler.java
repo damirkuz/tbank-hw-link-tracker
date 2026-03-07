@@ -1,13 +1,13 @@
 package backend.academy.linktracker.bot.handler.state;
 
 import backend.academy.linktracker.bot.client.ScrapperClient;
-import backend.academy.linktracker.bot.client.exception.LinkAlreadyTrackedException;
-import backend.academy.linktracker.bot.client.request.AddLinkRequest;
 import backend.academy.linktracker.bot.model.UserSession;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.repository.StateRepository;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
+import backend.academy.linktracker.common.exception.LinkAlreadyTrackedException;
+import backend.academy.linktracker.common.request.AddLinkRequest;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

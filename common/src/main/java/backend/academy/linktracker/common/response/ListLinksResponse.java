@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.client.response;
+package backend.academy.linktracker.common.response;
 
 public record ListLinksResponse(
     LinkResponse[] links,

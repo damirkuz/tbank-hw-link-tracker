@@ -1,7 +1,11 @@
-package backend.academy.linktracker.bot.client.exception;
+package backend.academy.linktracker.common.exception;
 
 public class ChatAlreadyExistsException extends RuntimeException {
     public ChatAlreadyExistsException(String message) {
         super(message);
+    }
+
+    public ChatAlreadyExistsException() {
+        super();
     }
 }

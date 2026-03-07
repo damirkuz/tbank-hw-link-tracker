@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.client.request;
+package backend.academy.linktracker.common.request;
 
 public record AddLinkRequest(
     String uri,
