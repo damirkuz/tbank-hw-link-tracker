@@ -1,5 +1,7 @@
 package backend.academy.linktracker.bot.handler.command;
 
+import backend.academy.linktracker.bot.client.ScrapperClient;
+import backend.academy.linktracker.bot.client.exception.ChatAlreadyExistsException;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import com.pengrad.telegrambot.model.Update;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Component;
 @Component("/start")
 @RequiredArgsConstructor
 public class StartCommandHandler implements CommandHandler {
+
+    private final ScrapperClient scrapperClient;
 
     private final BotOperations botOperations;
     private final BotTextService botTextService;
@@ -20,6 +24,12 @@ public class StartCommandHandler implements CommandHandler {
         String answer = botTextService.get("bot.common.start");
 
         botOperations.sendMessage(chatId, answer);
+        try {
+            scrapperClient.registerChat(chatId);
+        } catch (ChatAlreadyExistsException _) {
+            // игнорируем
+        }
+
     }
 
     @Override
