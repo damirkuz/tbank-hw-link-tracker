@@ -1,6 +1,5 @@
 package backend.academy.linktracker.bot.util;
 
-import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,6 +14,13 @@ public class StringParser {
 
     // парсит тег из "/list дом"
     public String parseAfterSpace(String command) {
-        return command.trim().split("\\s+", 3)[1].trim().toLowerCase(Locale.ROOT);
+        String[] parts = command.trim().split("\\s+", 2);
+
+        if (parts.length < 2 || parts[1].isBlank()) {
+            return "";
+        }
+
+        return parts[1].trim();
     }
+
 }

@@ -32,7 +32,8 @@ public class ScrapperClient {
                 })
                 .onStatus(status -> status.value() == 409, (request, response) -> {
                     throw new ChatAlreadyExistsException();
-                });
+                })
+                .toBodilessEntity();
     }
 
     public void deleteChat(long chatId) {
@@ -45,7 +46,8 @@ public class ScrapperClient {
                 })
                 .onStatus(status -> status.value() == 404, (request, response) -> {
                     throw new ChatNotFoundException();
-                });
+                })
+                .toBodilessEntity();
     }
 
     public LinkResponse addLink(long chatId, AddLinkRequest addLinkRequest) {

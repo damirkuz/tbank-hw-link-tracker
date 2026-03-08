@@ -44,8 +44,10 @@ public class ListCommandHandler implements CommandHandler {
                             .append(link.id())
                             .append(" ")
                             .append(link.url())
-                            .append(" ")
-                            .append(String.join(", ", link.tags()));
+                            .append(" ");
+                    if (link.tags() != null) {
+                        sb.append(String.join(", ", link.tags()));
+                    }
                 }
             }
             answer = sb.toString();

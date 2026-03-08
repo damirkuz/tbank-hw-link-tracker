@@ -12,7 +12,7 @@ import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("/untrack")
 @RequiredArgsConstructor
 public class UntrackCommandHandler implements CommandHandler {
 
@@ -35,7 +35,7 @@ public class UntrackCommandHandler implements CommandHandler {
         LinkValidationResult linkValidationResult = linkValidationService.validate(link);
 
         if (!linkValidationResult.valid()) {
-            botOperations.sendMessage(chatId, botTextService.get("bot.track.invalid-link"));
+            botOperations.sendMessage(chatId, botTextService.get("bot.track.invalid-link", linkValidationResult.code(), linkValidationResult.message()));
             return;
         }
 

@@ -30,3 +30,9 @@ bot:
     track-command:
       command: "/track"
       description: "Начать отслеживать ресурс"
+    untrack-command:
+      command: "/untrack"
+      description: "Перестать отслеживать ресурс"
+    list-command:
+      command: "/list"
+      description: "Получить отслеживаемые ресурсы"

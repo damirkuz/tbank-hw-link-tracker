@@ -9,6 +9,7 @@ import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.common.exception.LinkAlreadyTrackedException;
 import backend.academy.linktracker.common.request.AddLinkRequest;
 import com.pengrad.telegrambot.model.Update;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +32,11 @@ public class TrackWaitTagsHandler implements StateHandler {
         long userId = update.message().from().id();
         long chatId = update.message().chat().id();
 
-        String[] tags = update.message().text().trim().split(",");
+        String text = update.message().text().trim().toLowerCase(Locale.ROOT);
+        String[] tags = null;
+        if (!text.equals(botTextService.get("bot.reject"))) {
+            tags = text.split(",");
+        }
 
         UserSession userSession = stateRepository.getUserSession(userId);
 

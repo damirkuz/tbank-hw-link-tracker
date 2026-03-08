@@ -21,6 +21,7 @@ public class BotClient {
                 .retrieve()
                 .onStatus(status -> status.value() == 400, (request, response) -> {
                     throw new BadRequestException();
-                });
+                })
+                .toBodilessEntity();
     }
 }
