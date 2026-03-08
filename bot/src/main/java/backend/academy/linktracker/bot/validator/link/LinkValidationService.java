@@ -21,13 +21,9 @@ public class LinkValidationService {
         }
 
         return validators.stream()
-            .filter(v -> v.supports(uri))
-            .findFirst()
-            .map(v -> v.validate(uri))
-            .orElse(LinkValidationResult.error(
-                "UNSUPPORTED_HOST",
-                "Поддерживаются только GitHub и StackOverflow"
-            ));
+                .filter(v -> v.supports(uri))
+                .findFirst()
+                .map(v -> v.validate(uri))
+                .orElse(LinkValidationResult.error("UNSUPPORTED_HOST", "Поддерживаются только GitHub и StackOverflow"));
     }
 }
-

@@ -8,7 +8,4 @@ import org.springframework.validation.annotation.Validated;
 
 @Validated
 @ConfigurationProperties(prefix = "bot")
-public record BotProperties (
-    Map<String, @Valid CommandMessage> messages
-) {
-}
+public record BotProperties(Map<String, @Valid CommandMessage> messages) {}

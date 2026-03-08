@@ -9,7 +9,7 @@ public class StackOverflowLinkValidator implements LinkValidator {
     @Override
     public boolean supports(URI uri) {
         return "stackoverflow.com".equalsIgnoreCase(uri.getHost())
-            || "www.stackoverflow.com".equalsIgnoreCase(uri.getHost());
+                || "www.stackoverflow.com".equalsIgnoreCase(uri.getHost());
     }
 
     @Override
@@ -17,9 +17,7 @@ public class StackOverflowLinkValidator implements LinkValidator {
         String[] parts = uri.getPath().split("/");
         if (parts.length < 3 || !"questions".equals(parts[1]) || !parts[2].matches("\\d+")) {
             return LinkValidationResult.error(
-                "INVALID_STACKOVERFLOW_URL",
-                "Ожидается ссылка вида https://stackoverflow.com/questions/{id}/..."
-            );
+                    "INVALID_STACKOVERFLOW_URL", "Ожидается ссылка вида https://stackoverflow.com/questions/{id}/...");
         }
         return LinkValidationResult.ok();
     }

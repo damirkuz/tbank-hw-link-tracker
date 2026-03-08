@@ -9,25 +9,18 @@ public class BotClient {
 
     private final RestClient restClient;
 
-
-    public BotClient(
-        RestClient.Builder restClientBuilder,
-        BotProperties properties
-    ) {
-        this.restClient = restClientBuilder
-            .baseUrl(properties.baseUrl())
-            .build();
+    public BotClient(RestClient.Builder restClientBuilder, BotProperties properties) {
+        this.restClient = restClientBuilder.baseUrl(properties.baseUrl()).build();
     }
-
 
     public void sendUpdate(LinkUpdate linkUpdate) {
         restClient
-            .post()
-            .uri("/updates")
-            .body(linkUpdate)
-            .retrieve()
-            .onStatus(status -> status.value() == 400, (request, response) -> {
-                throw new BadRequestException();
-            });
+                .post()
+                .uri("/updates")
+                .body(linkUpdate)
+                .retrieve()
+                .onStatus(status -> status.value() == 400, (request, response) -> {
+                    throw new BadRequestException();
+                });
     }
 }

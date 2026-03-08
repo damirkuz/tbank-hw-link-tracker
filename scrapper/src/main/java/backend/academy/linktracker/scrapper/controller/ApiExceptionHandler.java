@@ -17,64 +17,39 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ChatAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handleChatAlreadyExists(ChatAlreadyExistsException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(toResponse(
-                "Чат уже существует",
-                HttpStatus.CONFLICT,
-                e
-            ));
+                .body(toResponse("Чат уже существует", HttpStatus.CONFLICT, e));
     }
 
     @ExceptionHandler(ChatNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleChatNotFound(ChatNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(toResponse(
-                "Чат не существует или ссылка не найдена",
-                HttpStatus.NOT_FOUND,
-                e
-            ));
+                .body(toResponse("Чат не существует или ссылка не найдена", HttpStatus.NOT_FOUND, e));
     }
 
     @ExceptionHandler(LinkAlreadyTrackedException.class)
     public ResponseEntity<ApiErrorResponse> handleLinkAlreadyTracked(LinkAlreadyTrackedException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(toResponse(
-                "Ссылка уже отслеживается",
-                HttpStatus.CONFLICT,
-                e
-            ));
+                .body(toResponse("Ссылка уже отслеживается", HttpStatus.CONFLICT, e));
     }
 
     @ExceptionHandler(LinkNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleLinkNotFound(LinkNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(toResponse(
-                "Чат не существует или ссылка не найдена",
-                HttpStatus.NOT_FOUND,
-                e
-            ));
+                .body(toResponse("Чат не существует или ссылка не найдена", HttpStatus.NOT_FOUND, e));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleOther(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(toResponse(
-                "Внутренняя ошибка сервера",
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                e
-            ));
+                .body(toResponse("Внутренняя ошибка сервера", HttpStatus.INTERNAL_SERVER_ERROR, e));
     }
 
     private ApiErrorResponse toResponse(String description, HttpStatus status, Exception e) {
         String[] stacktrace = Arrays.stream(e.getStackTrace())
-            .map(StackTraceElement::toString)
-            .toArray(String[]::new);
+                .map(StackTraceElement::toString)
+                .toArray(String[]::new);
 
         return new ApiErrorResponse(
-            description,
-            String.valueOf(status.value()),
-            e.getClass().getSimpleName(),
-            e.getMessage(),
-            stacktrace
-        );
+                description, String.valueOf(status.value()), e.getClass().getSimpleName(), e.getMessage(), stacktrace);
     }
 }

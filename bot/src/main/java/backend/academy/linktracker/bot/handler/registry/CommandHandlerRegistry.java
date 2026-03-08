@@ -1,6 +1,5 @@
 package backend.academy.linktracker.bot.handler.registry;
 
-
 import backend.academy.linktracker.bot.handler.command.CommandHandler;
 import backend.academy.linktracker.bot.properties.BotProperties;
 import backend.academy.linktracker.bot.properties.message.CommandMessage;
@@ -9,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
 
 @Component
 @RequiredArgsConstructor
@@ -20,10 +18,10 @@ public class CommandHandlerRegistry {
 
     public Optional<CommandHandler> findByCommandText(String commandText) {
         return botProperties.messages().values().stream()
-            .map(CommandMessage::command)
-            .filter(command -> command.equals(commandText))
-            .map(handlers::get)
-            .findFirst();
+                .map(CommandMessage::command)
+                .filter(command -> command.equals(commandText))
+                .map(handlers::get)
+                .findFirst();
     }
 
     public List<MyBotCommand> getCommands() {
@@ -33,5 +31,4 @@ public class CommandHandlerRegistry {
                         entry.getValue().command(), entry.getValue().description(), handlers.get(entry.getKey())))
                 .toList();
     }
-
 }

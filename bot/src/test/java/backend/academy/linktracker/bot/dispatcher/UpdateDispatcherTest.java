@@ -1,32 +1,32 @@
-//package backend.academy.linktracker.bot.dispatcher;
+// package backend.academy.linktracker.bot.dispatcher;
 //
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.Mockito.verify;
-//import static org.mockito.Mockito.verifyNoInteractions;
-//import static org.mockito.Mockito.when;
+// import static org.mockito.ArgumentMatchers.any;
+// import static org.mockito.Mockito.verify;
+// import static org.mockito.Mockito.verifyNoInteractions;
+// import static org.mockito.Mockito.when;
 //
-//import backend.academy.linktracker.bot.handler.command.CommandHandler;
-//import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
-//import backend.academy.linktracker.bot.model.UserState;
-//import backend.academy.linktracker.bot.repository.StateRepository;
-//import backend.academy.linktracker.bot.router.CommandRouter;
-//import backend.academy.linktracker.bot.router.IdleRouter;
-//import backend.academy.linktracker.bot.router.StateRouter;
-//import backend.academy.linktracker.bot.util.StringParser;
-//import com.pengrad.telegrambot.model.Chat;
-//import com.pengrad.telegrambot.model.Message;
-//import com.pengrad.telegrambot.model.Update;
-//import org.junit.jupiter.api.DisplayName;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//import org.springframework.test.util.ReflectionTestUtils;
+// import backend.academy.linktracker.bot.handler.command.CommandHandler;
+// import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
+// import backend.academy.linktracker.bot.model.UserState;
+// import backend.academy.linktracker.bot.repository.StateRepository;
+// import backend.academy.linktracker.bot.router.CommandRouter;
+// import backend.academy.linktracker.bot.router.IdleRouter;
+// import backend.academy.linktracker.bot.router.StateRouter;
+// import backend.academy.linktracker.bot.util.StringParser;
+// import com.pengrad.telegrambot.model.Chat;
+// import com.pengrad.telegrambot.model.Message;
+// import com.pengrad.telegrambot.model.Update;
+// import org.junit.jupiter.api.DisplayName;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
+// import org.mockito.InjectMocks;
+// import org.mockito.Mock;
+// import org.mockito.junit.jupiter.MockitoExtension;
+// import org.springframework.test.util.ReflectionTestUtils;
 //
-//@ExtendWith(MockitoExtension.class)
-//@DisplayName("UpdateDispatcher: общая логика маршрутизации Update'ов")
-//class UpdateDispatcherTest {
+// @ExtendWith(MockitoExtension.class)
+// @DisplayName("UpdateDispatcher: общая логика маршрутизации Update'ов")
+// class UpdateDispatcherTest {
 //
 //    @Mock
 //    private CommandRouter commandRouter;
@@ -145,4 +145,4 @@
 //        verify(idleRouter).route(any(Update.class));
 //        verifyNoInteractions(commandRouter, stateRouter);
 //    }
-//}
+// }

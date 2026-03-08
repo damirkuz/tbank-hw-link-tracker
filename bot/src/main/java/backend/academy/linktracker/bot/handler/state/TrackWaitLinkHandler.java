@@ -43,7 +43,8 @@ public class TrackWaitLinkHandler implements StateHandler {
             answer = botTextService.get("bot.track.ask-tags");
         } else {
             // не меняем состояние, снова ждём ссылку
-            answer = botTextService.get("bot.track.invalid-link", linkValidationResult.code(), linkValidationResult.message());
+            answer = botTextService.get(
+                    "bot.track.invalid-link", linkValidationResult.code(), linkValidationResult.message());
         }
 
         botOperations.sendMessage(chatId, answer);

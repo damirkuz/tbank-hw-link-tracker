@@ -1,6 +1,5 @@
 package backend.academy.linktracker.bot.configuration;
 
-
 import backend.academy.linktracker.bot.handler.registry.CommandHandlerRegistry;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.BotCommand;
@@ -24,8 +23,8 @@ public class BotMenuInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         List<BotCommand> commands = commandHandlerRegistry.getCommands().stream()
-            .map(c -> new BotCommand(c.command(), c.description()))
-            .toList();
+                .map(c -> new BotCommand(c.command(), c.description()))
+                .toList();
 
         try {
             BaseResponse response = bot.execute(new SetMyCommands(commands.toArray(new BotCommand[0])));

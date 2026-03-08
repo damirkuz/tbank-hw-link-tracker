@@ -5,5 +5,6 @@ import java.time.Instant;
 
 public interface BaseTrackedClient {
     Instant getLastUpdate(String link);
+
     TrackedResource getTrackedResource();
 }

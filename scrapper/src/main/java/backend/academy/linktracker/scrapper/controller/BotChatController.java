@@ -23,7 +23,6 @@ public class BotChatController {
 
     // получается рядом с ссылкой нужно хранить ещё и время её актуального апдейта
 
-
     private final BotChatService botChatService;
 
     @PostMapping("/tg-chat/{chatId}")

@@ -1,25 +1,25 @@
-//package backend.academy.linktracker.bot.router;
+// package backend.academy.linktracker.bot.router;
 //
-//import static org.mockito.Mockito.times;
-//import static org.mockito.Mockito.verify;
-//import static org.mockito.Mockito.when;
+// import static org.mockito.Mockito.times;
+// import static org.mockito.Mockito.verify;
+// import static org.mockito.Mockito.when;
 //
-//import backend.academy.linktracker.bot.handler.command.CommandHandler;
-//import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
-//import backend.academy.linktracker.bot.util.StringParser;
-//import com.pengrad.telegrambot.model.Message;
-//import com.pengrad.telegrambot.model.Update;
-//import org.junit.jupiter.api.DisplayName;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//import org.springframework.test.util.ReflectionTestUtils;
+// import backend.academy.linktracker.bot.handler.command.CommandHandler;
+// import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
+// import backend.academy.linktracker.bot.util.StringParser;
+// import com.pengrad.telegrambot.model.Message;
+// import com.pengrad.telegrambot.model.Update;
+// import org.junit.jupiter.api.DisplayName;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
+// import org.mockito.InjectMocks;
+// import org.mockito.Mock;
+// import org.mockito.junit.jupiter.MockitoExtension;
+// import org.springframework.test.util.ReflectionTestUtils;
 //
-//@ExtendWith(MockitoExtension.class)
-//@DisplayName("CommandRouter: диспетчеризация команд")
-//class CommandRouterTest {
+// @ExtendWith(MockitoExtension.class)
+// @DisplayName("CommandRouter: диспетчеризация команд")
+// class CommandRouterTest {
 //
 //    @Mock
 //    private CommandHandlerRegistry handlerRegistry;
@@ -59,4 +59,4 @@
 //        verify(handlerRegistry, times(1)).getHandler(parsedCommand);
 //        verify(commandHandler, times(1)).handle(update);
 //    }
-//}
+// }

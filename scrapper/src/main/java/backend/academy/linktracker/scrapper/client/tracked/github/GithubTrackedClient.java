@@ -15,16 +15,14 @@ public class GithubTrackedClient implements BaseTrackedClient {
     private final StringParser stringParser;
 
     public GithubTrackedClient(
-        RestClient.Builder restClientBuilder,
-        GithubProperties properties, StringParser stringParser
-    ) {
+            RestClient.Builder restClientBuilder, GithubProperties properties, StringParser stringParser) {
         this.stringParser = stringParser;
         this.restClient = restClientBuilder
-            .baseUrl(properties.getBaseUrl())
-            .defaultHeader("Authorization", "Bearer " + properties.getToken())
-            .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
-            .defaultHeader("Accept", "application/vnd.github+json")
-            .build();
+                .baseUrl(properties.getBaseUrl())
+                .defaultHeader("Authorization", "Bearer " + properties.getToken())
+                .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
+                .defaultHeader("Accept", "application/vnd.github+json")
+                .build();
     }
 
     @Override
@@ -37,25 +35,20 @@ public class GithubTrackedClient implements BaseTrackedClient {
         return TrackedResource.GITHUB;
     }
 
-
     public GithubRepositorySnapshot getRepositorySnapshot(String repositoryLink) {
         RepoInfo repoInfo = stringParser.parseGithubRepositoryLink(repositoryLink);
 
         GithubRepositoryResponse response = restClient
-            .get()
-            .uri("/repos/{owner}/{repo}", repoInfo.owner(), repoInfo.repo())
-            .retrieve()
-            .body(GithubRepositoryResponse.class);
+                .get()
+                .uri("/repos/{owner}/{repo}", repoInfo.owner(), repoInfo.repo())
+                .retrieve()
+                .body(GithubRepositoryResponse.class);
 
         if (response == null) {
             throw new IllegalStateException("GitHub response is empty");
         }
 
         return new GithubRepositorySnapshot(
-            response.fullName(),
-            response.defaultBranch(),
-            response.pushedAt(),
-            response.updatedAt()
-        );
+                response.fullName(), response.defaultBranch(), response.pushedAt(), response.updatedAt());
     }
 }

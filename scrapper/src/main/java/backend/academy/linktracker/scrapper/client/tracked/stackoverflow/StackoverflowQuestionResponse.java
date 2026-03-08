@@ -3,17 +3,12 @@ package backend.academy.linktracker.scrapper.client.tracked.stackoverflow;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record StackoverflowQuestionResponse(
-    @JsonProperty("question_id")
-    Long questionId,
+        @JsonProperty("question_id") Long questionId,
 
-    String title,
+        String title,
 
-    String link,
+        String link,
 
-    @JsonProperty("last_activity_date")
-    Long lastActivityDate,
+        @JsonProperty("last_activity_date") Long lastActivityDate,
 
-    @JsonProperty("last_edit_date")
-    Long lastEditDate
-) {
-}
+        @JsonProperty("last_edit_date") Long lastEditDate) {}

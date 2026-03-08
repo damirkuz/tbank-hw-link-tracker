@@ -13,7 +13,7 @@ public class StringParser {
         return beforeSpace.split("@", 2)[0];
     }
 
-    //парсит тег из "/list дом"
+    // парсит тег из "/list дом"
     public String parseAfterSpace(String command) {
         return command.trim().split("\\s+", 3)[1].trim().toLowerCase(Locale.ROOT);
     }

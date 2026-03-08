@@ -1,6 +1,7 @@
 package backend.academy.linktracker.scrapper.service;
 
-import backend.academy.linktracker.scrapper.repository.UserLinksRepository;
+import backend.academy.linktracker.scrapper.model.Chat;
+import backend.academy.linktracker.scrapper.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -8,13 +9,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BotChatService {
 
-    private final UserLinksRepository userLinksRepository;
+    private final ChatRepository chatRepository;
 
     public void registerChat(long chatId) {
-        userLinksRepository.registerChat(chatId);
+        chatRepository.registerChat(new Chat(chatId));
     }
 
     public void deleteChat(long chatId) {
-        userLinksRepository.deleteChat(chatId);
+        chatRepository.deleteChat(new Chat(chatId));
     }
 }

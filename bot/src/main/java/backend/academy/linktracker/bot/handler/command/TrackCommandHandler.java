@@ -15,7 +15,6 @@ public class TrackCommandHandler implements CommandHandler {
     private final StateRepository stateRepository;
     private final BotOperations botOperations;
 
-
     @Override
     public boolean isCancelStateCommand() {
         return true;

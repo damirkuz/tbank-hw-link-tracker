@@ -29,7 +29,6 @@ public class ListCommandHandler implements CommandHandler {
     public void handle(Update update) {
         long chatId = update.message().chat().id();
 
-
         String answer = "";
         ListLinksResponse listLinksResponse = scrapperClient.getLinks(chatId);
 
@@ -38,11 +37,15 @@ public class ListCommandHandler implements CommandHandler {
 
         if (listLinksResponse.size() > 0) {
             StringBuilder sb = new StringBuilder(botTextService.get("bot.list.link-list"));
-            for (LinkResponse link: listLinksResponse.links()) {
+            for (LinkResponse link : listLinksResponse.links()) {
                 if (tag.isBlank() || Arrays.asList(link.tags()).contains(tag)) {
                     count++;
-                    sb.append("\n").append(link.id()).append(" ").append(link.url())
-                        .append(" ").append(String.join(", ", link.tags()));
+                    sb.append("\n")
+                            .append(link.id())
+                            .append(" ")
+                            .append(link.url())
+                            .append(" ")
+                            .append(String.join(", ", link.tags()));
                 }
             }
             answer = sb.toString();
@@ -51,7 +54,6 @@ public class ListCommandHandler implements CommandHandler {
         if (count == 0) {
             answer = botTextService.get("bot.list.empty-link-list");
         }
-
 
         botOperations.sendMessage(chatId, answer);
     }

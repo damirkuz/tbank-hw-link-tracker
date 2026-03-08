@@ -4,6 +4,4 @@ import jakarta.validation.Valid;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "bot")
-public record BotProperties(
-    @Valid String baseUrl
-) {}
+public record BotProperties(@Valid String baseUrl) {}

@@ -20,7 +20,6 @@ public class TrackWaitTagsHandler implements StateHandler {
     private final BotTextService botTextService;
     private final BotOperations botOperations;
 
-
     @Override
     public UserState getHandledState() {
         return UserState.TRACK_WAIT_TAGS;

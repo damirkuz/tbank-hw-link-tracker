@@ -7,4 +7,3 @@ public interface LinkValidator {
 
     LinkValidationResult validate(URI uri);
 }
-

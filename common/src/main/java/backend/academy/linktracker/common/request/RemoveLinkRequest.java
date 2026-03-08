@@ -1,5 +1,3 @@
 package backend.academy.linktracker.common.request;
 
-public record RemoveLinkRequest(
-    String uri
-) {}
+public record RemoveLinkRequest(String uri) {}

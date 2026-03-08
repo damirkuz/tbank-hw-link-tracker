@@ -18,15 +18,9 @@ public class ScrapperClient {
 
     private final RestClient restClient;
 
-    public ScrapperClient(
-        RestClient.Builder restClientBuilder,
-        ScrapperProperties properties
-    ) {
-        this.restClient = restClientBuilder
-            .baseUrl(properties.baseUrl())
-            .build();
+    public ScrapperClient(RestClient.Builder restClientBuilder, ScrapperProperties properties) {
+        this.restClient = restClientBuilder.baseUrl(properties.baseUrl()).build();
     }
-
 
     public void registerChat(long chatId) {
         restClient
@@ -54,7 +48,7 @@ public class ScrapperClient {
                 });
     }
 
-    public LinkResponse addLink(long chatId, AddLinkRequest addLinkRequest){
+    public LinkResponse addLink(long chatId, AddLinkRequest addLinkRequest) {
         return restClient
                 .post()
                 .uri("/links")

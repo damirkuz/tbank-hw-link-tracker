@@ -1,9 +1,9 @@
 package backend.academy.linktracker.bot.handler.command;
 
 import backend.academy.linktracker.bot.client.ScrapperClient;
-import backend.academy.linktracker.bot.client.exception.ChatAlreadyExistsException;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
+import backend.academy.linktracker.common.exception.ChatAlreadyExistsException;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,6 @@ public class StartCommandHandler implements CommandHandler {
         } catch (ChatAlreadyExistsException _) {
             // игнорируем
         }
-
     }
 
     @Override
