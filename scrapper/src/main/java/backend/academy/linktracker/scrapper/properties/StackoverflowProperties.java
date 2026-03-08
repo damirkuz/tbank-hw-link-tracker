@@ -15,6 +15,8 @@ import org.springframework.validation.annotation.Validated;
 @EqualsAndHashCode
 @NoArgsConstructor
 public class StackoverflowProperties {
+    @NotEmpty
+    private String baseUrl;
 
     @NotEmpty
     private String key;

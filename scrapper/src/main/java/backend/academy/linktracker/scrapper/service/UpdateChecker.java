@@ -1,15 +1,25 @@
 package backend.academy.linktracker.scrapper.service;
 
-// Используйте REST API репозиториев, чтобы проверять изменения — основные варианты:
-//
-// Получить метаданные репозитория и поле обновления
-// Вызов: GET /repos/{owner}/{repo}
-// Посмотрите поле updated_at в ответе — оно показывает время последнего обновления репозитория.
-// Документация: REST API — Repositories
-// Пример curl (по образцу REST-примеров):
-//
-// curl -H "Accept: application/vnd.github+json" \
-// -H "Authorization: Bearer <YOUR-TOKEN>" \
-// https://api.github.com/repos/OWNER/REPO
 
-public class UpdateChecker {}
+import backend.academy.linktracker.scrapper.client.tracked.BaseTrackedClient;
+import backend.academy.linktracker.scrapper.model.TrackedResource;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class UpdateChecker {
+
+    private final Map<TrackedResource, BaseTrackedClient> clients;
+
+    @Scheduled(fixedRate = 10000) // 10 секунд
+    public void getUpdates() {
+
+
+
+
+    }
+
+}

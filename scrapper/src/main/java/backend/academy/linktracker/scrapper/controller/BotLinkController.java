@@ -22,7 +22,7 @@ public class BotLinkController {
         botLinkService.addLink(chatId, addLinkRequest);
     }
 
-    @DeleteMapping("/links}")
+    @DeleteMapping("/links")
     public void deleteLink(@RequestHeader("Tg-Chat-Id") long chatId, @RequestBody RemoveLinkRequest removeLinkRequest) {
         botLinkService.deleteLink(chatId, removeLinkRequest);
     }

@@ -12,6 +12,7 @@ public class Link {
     private String uri;
     private String[] tags;
     private Instant lastUpdate;
+    private TrackedResource trackedResource;
 
 
 
