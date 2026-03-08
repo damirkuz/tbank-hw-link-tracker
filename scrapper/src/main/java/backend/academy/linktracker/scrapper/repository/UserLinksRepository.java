@@ -4,8 +4,6 @@ import backend.academy.linktracker.common.exception.ChatAlreadyExistsException;
 import backend.academy.linktracker.common.exception.ChatNotFoundException;
 import backend.academy.linktracker.common.exception.LinkAlreadyTrackedException;
 import backend.academy.linktracker.common.exception.LinkNotFoundException;
-import backend.academy.linktracker.common.request.AddLinkRequest;
-import backend.academy.linktracker.common.request.RemoveLinkRequest;
 import backend.academy.linktracker.scrapper.model.Link;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +32,8 @@ public class UserLinksRepository {
         }
     }
 
-    public void addLink(long chatId, AddLinkRequest addLinkRequest) {
+    public void addLink(long chatId, Link link) {
         Set<Link> links = getLinkSetFromChatId(chatId);
-        Link link = new Link(addLinkRequest.uri(), addLinkRequest.tags());
 
         boolean added = links.add(link);
 
@@ -45,9 +42,8 @@ public class UserLinksRepository {
         }
     }
 
-    public void deleteLink(long chatId, RemoveLinkRequest removeLinkRequest) {
+    public void deleteLink(long chatId, Link link) {
         Set<Link> links = getLinkSetFromChatId(chatId);
-        Link link = new Link(removeLinkRequest.uri(), null);
 
         boolean deleted = links.remove(link);
 

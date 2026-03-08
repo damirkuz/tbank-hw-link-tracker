@@ -1,17 +1,30 @@
 package backend.academy.linktracker.scrapper.model;
 
+import java.time.Instant;
 import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
-public record Link(String uri, String[] tags) {
+
+@Getter
+@Setter
+public class Link {
+    private String uri;
+    private String[] tags;
+    private Instant lastUpdate;
+
+
+
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Link link = (Link) o;
-        return Objects.equals(uri(), link.uri());
+        return Objects.equals(getUri(), link.getUri());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(uri());
+        return Objects.hashCode(getUri());
     }
 }
