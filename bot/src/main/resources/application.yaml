@@ -6,6 +6,9 @@ spring:
     name: bot
   messages:
     basename: "messages"
+  grpc:
+    server:
+      port: 9090
 
 app:
   telegram:
@@ -15,7 +18,12 @@ app:
     debug: false
 
 scrapper:
-  base-url: http://localhost:8081
+  transport: grpc
+  http:
+    base-url: http://localhost:8081
+  grpc:
+    host: localhost
+    port: 9091
 
 
 

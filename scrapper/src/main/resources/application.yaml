@@ -4,9 +4,17 @@ server:
 spring:
   application:
     name: scrapper
+  grpc:
+    server:
+      port: 9091
 
 bot:
-  base-url: http://localhost:8080
+  transport: grpc
+  http:
+    base-url: http://localhost:8080
+  grpc:
+    host: localhost
+    port: 9090
 
 app:
   stackoverflow:

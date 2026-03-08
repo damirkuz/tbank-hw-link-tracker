@@ -80,6 +80,7 @@
         <spotbugs-maven-plugin.version>${spotbugs.version}.2</spotbugs-maven-plugin.version>
         <spotbugs-slf4j-plugin.version>1.5.0</spotbugs-slf4j-plugin.version>
         <spotless-maven-plugin.version>3.2.1</spotless-maven-plugin.version>
+        <error_prone_annotations.version>2.41.0</error_prone_annotations.version>
     </properties>
 
     <dependencyManagement>
@@ -189,7 +190,13 @@
                 <artifactId>awaitility</artifactId>
                 <version>${awaitility.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>${error_prone_annotations.version}</version>
+            </dependency>
         </dependencies>
+
     </dependencyManagement>
 
     <dependencies>
@@ -309,6 +316,10 @@
                         <rulesets>
                             <ruleset>pmd.xml</ruleset>
                         </rulesets>
+
+                        <excludeRoots>
+                            <excludeRoot>${project.build.directory}/generated-sources/protobuf</excludeRoot>
+                        </excludeRoots>
                     </configuration>
                     <dependencies>
                         <dependency>

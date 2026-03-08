@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package backend.academy.linktracker.generated.grpc;
+
+option java_multiple_files = true;
+option java_package = "backend.academy.linktracker.generated.grpc";
+option java_outer_classname = "LinkTrackerProto";
+
+import "google/protobuf/empty.proto";
+
+service ScrapperService {
+    rpc RegisterChat(GrpcChatRequest) returns (google.protobuf.Empty);
+    rpc DeleteChat(GrpcChatRequest) returns (google.protobuf.Empty);
+    rpc AddLink(GrpcAddLinkCommand) returns (google.protobuf.Empty);
+    rpc DeleteLink(GrpcDeleteLinkCommand) returns (google.protobuf.Empty);
+    rpc GetLinks(GrpcChatRequest) returns (GrpcListLinksResponse);
+}
+
+service BotService {
+    rpc SendUpdate(GrpcLinkUpdate) returns (google.protobuf.Empty);
+}
+
+message GrpcChatRequest {
+    int64 chat_id = 1;
+}
+
+message GrpcAddLinkCommand {
+    int64 chat_id = 1;
+    GrpcAddLinkRequest request = 2;
+}
+
+message GrpcDeleteLinkCommand {
+    int64 chat_id = 1;
+    GrpcRemoveLinkRequest request = 2;
+}
+
+message GrpcAddLinkRequest {
+    string uri = 1;
+    repeated string tags = 2;
+    repeated string filters = 3;
+}
+
+message GrpcRemoveLinkRequest {
+    string uri = 1;
+}
+
+message GrpcLinkUpdate {
+    int64 id = 1;
+    string url = 2;
+    string description = 3;
+    repeated int64 tg_chat_ids = 4;
+}
+
+message GrpcApiErrorResponse {
+    string description = 1;
+    string code = 2;
+    string exception_name = 3;
+    string exception_message = 4;
+    repeated string stacktrace = 5;
+}
+
+message GrpcLinkResponse {
+    int64 id = 1;
+    string url = 2;
+    repeated string tags = 3;
+    repeated string filters = 4;
+}
+
+message GrpcListLinksResponse {
+    repeated GrpcLinkResponse links = 1;
+    int32 size = 2;
+}

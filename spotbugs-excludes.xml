@@ -68,4 +68,10 @@
     <Match>
         <Package name="~.*\.jmh_generated"/>
     </Match>
+
+    <!-- Protobuf / gRPC generated classes -->
+    <Match>
+        <Package name="backend.academy.linktracker.generated.grpc"/>
+    </Match>
+
 </FindBugsFilter>

@@ -1,7 +1,7 @@
 package backend.academy.linktracker.scrapper.service;
 
 import backend.academy.linktracker.common.request.LinkUpdate;
-import backend.academy.linktracker.scrapper.client.BotClient;
+import backend.academy.linktracker.scrapper.client.module.BotGateway;
 import backend.academy.linktracker.scrapper.client.tracked.BaseTrackedClient;
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.model.Link;
@@ -24,7 +24,7 @@ public class UpdateChecker {
     private final Map<TrackedResource, BaseTrackedClient> clients;
     private final LinkRepository linkRepository;
     private final SubscriptionRepository subscriptionRepository;
-    private final BotClient botClient;
+    private final BotGateway botClient;
 
     @Scheduled(fixedRate = 10000)
     public void getUpdates() {

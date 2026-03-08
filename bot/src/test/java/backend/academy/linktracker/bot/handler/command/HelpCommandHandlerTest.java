@@ -49,16 +49,14 @@ class HelpCommandHandlerTest {
 
         handler.handle(createUpdate(chatId));
 
-        verify(botOperations).sendMessage(
-            chatId,
-            "Доступные команды:\n/start - Запустить бота\n/help - Показать помощь");
+        verify(botOperations)
+                .sendMessage(chatId, "Доступные команды:\n/start - Запустить бота\n/help - Показать помощь");
     }
 
     @Test
     @DisplayName("Команда не является cancel-state командой")
     void shouldNotBeCancelStateCommand() {
-        HelpCommandHandler handler =
-            new HelpCommandHandler(botTextService, botOperations, new BotProperties(Map.of()));
+        HelpCommandHandler handler = new HelpCommandHandler(botTextService, botOperations, new BotProperties(Map.of()));
 
         assertThat(handler.isCancelStateCommand()).isFalse();
     }

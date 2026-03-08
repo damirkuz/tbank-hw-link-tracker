@@ -1,6 +1,5 @@
 package backend.academy.linktracker.bot.dispatcher;
 
-import backend.academy.linktracker.bot.handler.command.CommandHandler;
 import backend.academy.linktracker.bot.handler.registry.CommandHandlerRegistry;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.repository.StateRepository;
@@ -12,7 +11,6 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import jakarta.annotation.PostConstruct;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,8 +43,6 @@ public class UpdateDispatcher {
         String command = text.startsWith("/") ? parser.parseCommand(text) : null;
         UserState currentState = stateRepository.getUserSession(userId).getState();
 
-        Optional<CommandHandler> handler = commandHandlerRegistry.findByCommandText(command);
-
         log.atInfo()
                 .addKeyValue("chat_id", chatId)
                 .addKeyValue(
@@ -59,16 +55,26 @@ public class UpdateDispatcher {
                 .addKeyValue("is_command", command != null)
                 .log("Обработка входящего обновления");
 
-        if (handler.isPresent() && handler.get().isCancelStateCommand()) {
-            stateRepository.getUserSession(userId).setState(UserState.IDLE);
-            commandRouter.route(update, handler.get());
-        } else if (currentState != UserState.IDLE) {
-            stateRouter.route(update);
-        } else if (handler.isPresent()) {
-            commandRouter.route(update, handler.get());
-        } else {
-            idleRouter.route(update);
-        }
+        commandHandlerRegistry
+                .findByCommandText(command)
+                .ifPresentOrElse(
+                        handler -> {
+                            if (handler.isCancelStateCommand()) {
+                                stateRepository.getUserSession(userId).setState(UserState.IDLE);
+                                commandRouter.route(update, handler);
+                            } else if (currentState != UserState.IDLE) {
+                                stateRouter.route(update);
+                            } else {
+                                commandRouter.route(update, handler);
+                            }
+                        },
+                        () -> {
+                            if (currentState != UserState.IDLE) {
+                                stateRouter.route(update);
+                            } else {
+                                idleRouter.route(update);
+                            }
+                        });
     }
 
     @PostConstruct

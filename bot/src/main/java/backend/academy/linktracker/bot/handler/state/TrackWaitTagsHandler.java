@@ -1,6 +1,6 @@
 package backend.academy.linktracker.bot.handler.state;
 
-import backend.academy.linktracker.bot.client.ScrapperClient;
+import backend.academy.linktracker.bot.client.ScrapperGateway;
 import backend.academy.linktracker.bot.model.UserSession;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.repository.StateRepository;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class TrackWaitTagsHandler implements StateHandler {
-    private final ScrapperClient scrapperClient;
+    private final ScrapperGateway scrapperClient;
     private final StateRepository stateRepository;
     private final BotTextService botTextService;
     private final BotOperations botOperations;

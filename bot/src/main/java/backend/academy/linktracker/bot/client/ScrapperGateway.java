@@ -1,0 +1,17 @@
+package backend.academy.linktracker.bot.client;
+
+import backend.academy.linktracker.common.request.AddLinkRequest;
+import backend.academy.linktracker.common.request.RemoveLinkRequest;
+import backend.academy.linktracker.common.response.ListLinksResponse;
+
+public interface ScrapperGateway {
+    void registerChat(long chatId);
+
+    void deleteChat(long chatId);
+
+    void addLink(long chatId, AddLinkRequest addLinkRequest);
+
+    void deleteLink(long chatId, RemoveLinkRequest removeLinkRequest);
+
+    ListLinksResponse getLinks(long chatId);
+}

@@ -1,6 +1,6 @@
 package backend.academy.linktracker.bot.handler.command;
 
-import backend.academy.linktracker.bot.client.ScrapperClient;
+import backend.academy.linktracker.bot.client.ScrapperGateway;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.util.StringParser;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ListCommandHandler implements CommandHandler {
 
-    private final ScrapperClient scrapperClient;
+    private final ScrapperGateway scrapperClient;
     private final BotTextService botTextService;
     private final BotOperations botOperations;
     private final StringParser stringParser;

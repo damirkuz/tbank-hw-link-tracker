@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import backend.academy.linktracker.bot.client.ScrapperClient;
+import backend.academy.linktracker.bot.client.ScrapperGateway;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.common.exception.ChatAlreadyExistsException;
@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class StartCommandHandlerTest {
 
     @Mock
-    private ScrapperClient scrapperClient;
+    private ScrapperGateway scrapperClient;
 
     @Mock
     private BotOperations botOperations;
