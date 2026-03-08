@@ -3,8 +3,10 @@ package backend.academy.linktracker.scrapper.client;
 import backend.academy.linktracker.common.request.LinkUpdate;
 import backend.academy.linktracker.scrapper.properties.BotProperties;
 import org.apache.coyote.BadRequestException;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+@Component
 public class BotClient {
 
     private final RestClient restClient;

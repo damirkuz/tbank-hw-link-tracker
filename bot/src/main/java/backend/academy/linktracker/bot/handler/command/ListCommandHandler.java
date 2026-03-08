@@ -4,6 +4,7 @@ import backend.academy.linktracker.bot.client.ScrapperClient;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.util.StringParser;
+import backend.academy.linktracker.common.exception.ChatNotFoundException;
 import backend.academy.linktracker.common.response.LinkResponse;
 import backend.academy.linktracker.common.response.ListLinksResponse;
 import com.pengrad.telegrambot.model.Update;
@@ -30,7 +31,13 @@ public class ListCommandHandler implements CommandHandler {
         long chatId = update.message().chat().id();
 
         String answer = "";
-        ListLinksResponse listLinksResponse = scrapperClient.getLinks(chatId);
+        ListLinksResponse listLinksResponse;
+        try {
+            listLinksResponse = scrapperClient.getLinks(chatId);
+        } catch (ChatNotFoundException e) {
+            scrapperClient.registerChat(chatId);
+            listLinksResponse = scrapperClient.getLinks(chatId);
+        }
 
         String tag = stringParser.parseAfterSpace(update.message().text());
         int count = 0;

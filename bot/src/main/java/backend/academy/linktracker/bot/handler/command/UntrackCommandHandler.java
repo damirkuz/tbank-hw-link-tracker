@@ -35,7 +35,10 @@ public class UntrackCommandHandler implements CommandHandler {
         LinkValidationResult linkValidationResult = linkValidationService.validate(link);
 
         if (!linkValidationResult.valid()) {
-            botOperations.sendMessage(chatId, botTextService.get("bot.track.invalid-link", linkValidationResult.code(), linkValidationResult.message()));
+            botOperations.sendMessage(
+                    chatId,
+                    botTextService.get(
+                            "bot.track.invalid-link", linkValidationResult.code(), linkValidationResult.message()));
             return;
         }
 

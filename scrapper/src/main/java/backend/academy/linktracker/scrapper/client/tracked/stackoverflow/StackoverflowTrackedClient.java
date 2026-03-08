@@ -60,7 +60,7 @@ public class StackoverflowTrackedClient implements BaseTrackedClient {
 
     private URI buildQuestionUri(UriBuilder uriBuilder, long questionId) {
         UriBuilder builder = uriBuilder
-                .path("/2.3/questions/{id}")
+                .path("/questions/{id}")
                 .queryParam("site", "stackoverflow")
                 .queryParam("key", properties.getKey());
 

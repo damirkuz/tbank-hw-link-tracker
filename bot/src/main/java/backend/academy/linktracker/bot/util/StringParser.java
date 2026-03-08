@@ -22,5 +22,4 @@ public class StringParser {
 
         return parts[1].trim();
     }
-
 }

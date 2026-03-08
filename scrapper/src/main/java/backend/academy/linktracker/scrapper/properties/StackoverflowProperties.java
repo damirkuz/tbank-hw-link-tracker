@@ -21,6 +21,5 @@ public class StackoverflowProperties {
     @NotEmpty
     private String key;
 
-    @NotEmpty
     private String accessToken;
 }

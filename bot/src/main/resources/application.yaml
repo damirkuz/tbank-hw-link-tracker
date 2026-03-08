@@ -27,6 +27,9 @@ bot:
     help-command:
       command: "/help"
       description: "Показать помощь"
+    cancel-command:
+      command: "/cancel"
+      description: "Отменить"
     track-command:
       command: "/track"
       description: "Начать отслеживать ресурс"
