@@ -1,62 +1,92 @@
-// package backend.academy.linktracker.bot.router;
-//
-// import static org.mockito.Mockito.times;
-// import static org.mockito.Mockito.verify;
-// import static org.mockito.Mockito.when;
-//
-// import backend.academy.linktracker.bot.handler.command.CommandHandler;
-// import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
-// import backend.academy.linktracker.bot.util.StringParser;
-// import com.pengrad.telegrambot.model.Message;
-// import com.pengrad.telegrambot.model.Update;
-// import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
-// import org.springframework.test.util.ReflectionTestUtils;
-//
-// @ExtendWith(MockitoExtension.class)
-// @DisplayName("CommandRouter: диспетчеризация команд")
-// class CommandRouterTest {
-//
-//    @Mock
-//    private CommandHandlerRegistry handlerRegistry;
-//
-//    @Mock
-//    private StringParser parser;
-//
-//    @Mock
-//    private CommandHandler commandHandler;
-//
-//    @InjectMocks
-//    private CommandRouter commandRouter;
-//
-//    private Update createUpdateMock(String text) {
-//        Update update = new Update();
-//        Message message = new Message();
-//
-//        ReflectionTestUtils.setField(message, "text", text);
-//        ReflectionTestUtils.setField(update, "message", message);
-//
-//        return update;
-//    }
-//
-//    @Test
-//    @DisplayName("Маршрутизатор корректно парсит команду и вызывает нужный хендлер")
-//    void shouldRouteCommandToCorrectHandler() {
-//        String rawText = "/start param";
-//        String parsedCommand = "/start";
-//        Update update = createUpdateMock(rawText);
-//
-//        when(parser.parseCommand(rawText)).thenReturn(parsedCommand);
-//        when(handlerRegistry.getHandler(parsedCommand)).thenReturn(commandHandler);
-//
-//        commandRouter.route(update);
-//
-//        verify(parser, times(1)).parseCommand(rawText);
-//        verify(handlerRegistry, times(1)).getHandler(parsedCommand);
-//        verify(commandHandler, times(1)).handle(update);
-//    }
-// }
+package backend.academy.linktracker.bot.router;
+
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import backend.academy.linktracker.bot.handler.command.CommandHandler;
+import backend.academy.linktracker.bot.handler.registry.CommandHandlerRegistry;
+import backend.academy.linktracker.bot.util.StringParser;
+import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.Update;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("CommandRouter")
+class CommandRouterTest {
+
+    @Mock
+    private CommandHandlerRegistry commandHandlerRegistry;
+
+    @Mock
+    private StringParser parser;
+
+    @Mock
+    private CommandHandler commandHandler;
+
+    @InjectMocks
+    private CommandRouter commandRouter;
+
+    @Test
+    @DisplayName("Парсит команду и делегирует update найденному handler")
+    void shouldParseCommandAndDelegateToResolvedHandler() {
+        String rawText = "/start param";
+        String parsedCommand = "/start";
+        Update update = createUpdate(rawText);
+
+        when(parser.parseCommand(rawText)).thenReturn(parsedCommand);
+        when(commandHandlerRegistry.findByCommandText(parsedCommand)).thenReturn(Optional.of(commandHandler));
+
+        commandRouter.route(update);
+
+        verify(parser).parseCommand(rawText);
+        verify(commandHandlerRegistry).findByCommandText(parsedCommand);
+        verify(commandHandler).handle(same(update));
+    }
+
+    @Test
+    @DisplayName("Ничего не делает, если handler не найден")
+    void shouldDoNothingWhenHandlerNotFound() {
+        String rawText = "/unknown";
+        String parsedCommand = "/unknown";
+        Update update = createUpdate(rawText);
+
+        when(parser.parseCommand(rawText)).thenReturn(parsedCommand);
+        when(commandHandlerRegistry.findByCommandText(parsedCommand)).thenReturn(Optional.empty());
+
+        commandRouter.route(update);
+
+        verify(parser).parseCommand(rawText);
+        verify(commandHandlerRegistry).findByCommandText(parsedCommand);
+        verifyNoInteractions(commandHandler);
+    }
+
+    @Test
+    @DisplayName("Прямой route(update, handler) вызывает переданный handler")
+    void shouldCallProvidedHandlerDirectly() {
+        Update update = mock(Update.class);
+
+        commandRouter.route(update, commandHandler);
+
+        verify(commandHandler).handle(same(update));
+        verifyNoInteractions(commandHandlerRegistry, parser);
+    }
+
+    private Update createUpdate(String text) {
+        Update update = mock(Update.class);
+        Message message = mock(Message.class);
+
+        when(update.message()).thenReturn(message);
+        when(message.text()).thenReturn(text);
+
+        return update;
+    }
+}

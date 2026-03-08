@@ -1,148 +1,198 @@
-// package backend.academy.linktracker.bot.dispatcher;
-//
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.Mockito.verify;
-// import static org.mockito.Mockito.verifyNoInteractions;
-// import static org.mockito.Mockito.when;
-//
-// import backend.academy.linktracker.bot.handler.command.CommandHandler;
-// import backend.academy.linktracker.bot.handler.command.CommandHandlerRegistry;
-// import backend.academy.linktracker.bot.model.UserState;
-// import backend.academy.linktracker.bot.repository.StateRepository;
-// import backend.academy.linktracker.bot.router.CommandRouter;
-// import backend.academy.linktracker.bot.router.IdleRouter;
-// import backend.academy.linktracker.bot.router.StateRouter;
-// import backend.academy.linktracker.bot.util.StringParser;
-// import com.pengrad.telegrambot.model.Chat;
-// import com.pengrad.telegrambot.model.Message;
-// import com.pengrad.telegrambot.model.Update;
-// import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
-// import org.springframework.test.util.ReflectionTestUtils;
-//
-// @ExtendWith(MockitoExtension.class)
-// @DisplayName("UpdateDispatcher: общая логика маршрутизации Update'ов")
-// class UpdateDispatcherTest {
-//
-//    @Mock
-//    private CommandRouter commandRouter;
-//
-//    @Mock
-//    private IdleRouter idleRouter;
-//
-//    @Mock
-//    private StateRouter stateRouter;
-//
-//    @Mock
-//    private StateRepository stateRepository;
-//
-//    @Mock
-//    private CommandHandlerRegistry commandHandlers;
-//
-//    @Mock
-//    private StringParser parser;
-//
-//    @Mock
-//    private CommandHandler commandHandler;
-//
-//    @InjectMocks
-//    private UpdateDispatcher updateDispatcher;
-//
-//    private Update createUpdateMock(Long chatId, String text) {
-//        Update update = new Update();
-//        if (chatId != null || text != null) {
-//            Message message = new Message();
-//            if (chatId != null) {
-//                Chat chat = new Chat();
-//                ReflectionTestUtils.setField(chat, "id", chatId);
-//                ReflectionTestUtils.setField(message, "chat", chat);
-//            }
-//            if (text != null) {
-//                ReflectionTestUtils.setField(message, "text", text);
-//            }
-//            ReflectionTestUtils.setField(update, "message", message);
-//        }
-//        return update;
-//    }
-//
-//    @Test
-//    @DisplayName("Негативный сценарий: Update без сообщения (message == null) игнорируется")
-//    void shouldIgnoreUpdateWhenMessageIsNull() {
-//        // Создаем пустой апдейт (например, прилетел callback_query или edited_message)
-//        Update update = new Update();
-//
-//        updateDispatcher.dispatch(update);
-//
-//        verifyNoInteractions(commandRouter, stateRouter, idleRouter, stateRepository);
-//    }
-//
-//    @Test
-//    @DisplayName("Сценарий отмены: Известная команда отмены сбрасывает состояние и идет в CommandRouter")
-//    void shouldCancelStateOnCancelCommand() {
-//        long chatId = 1L;
-//        Update update = createUpdateMock(chatId, "/start");
-//
-//        when(parser.parseCommand("/start")).thenReturn("/start");
-//        when(stateRepository.getUserState(chatId)).thenReturn(UserState.AUTH_WAIT_LINK);
-//        when(commandHandlers.getHandler("/start")).thenReturn(commandHandler);
-//        when(commandHandler.isCancelStateCommand()).thenReturn(true);
-//
-//        updateDispatcher.dispatch(update);
-//
-//        // Используем any(), так как класс Update не переопределяет equals()
-//        verify(commandRouter).route(any(Update.class), any(String.class));
-//        verify(stateRepository).setUserState(chatId, UserState.IDLE);
-//        verifyNoInteractions(stateRouter, idleRouter);
-//    }
-//
-//    @Test
-//    @DisplayName("Обычная команда в состоянии IDLE уходит в CommandRouter")
-//    void shouldRouteToCommandRouterWhenIdle() {
-//        long chatId = 2L;
-//        Update update = createUpdateMock(chatId, "/help");
-//
-//        when(parser.parseCommand("/help")).thenReturn("/help");
-//        when(stateRepository.getUserState(chatId)).thenReturn(UserState.IDLE);
-//        when(commandHandlers.getHandler("/help")).thenReturn(commandHandler);
-//        when(commandHandler.isCancelStateCommand()).thenReturn(false);
-//
-//        updateDispatcher.dispatch(update);
-//
-//        verify(commandRouter).route(any(Update.class), any(String.class));
-//        verifyNoInteractions(stateRouter, idleRouter);
-//    }
-//
-//    @Test
-//    @DisplayName("При активном состоянии (не IDLE) и вводе текста маршрутизация уходит в StateRouter")
-//    void shouldRouteToStateRouterWhenNotIdle() {
-//        long chatId = 3L;
-//        Update update = createUpdateMock(chatId, "https://example.com");
-//
-//        when(stateRepository.getUserState(chatId)).thenReturn(UserState.AUTH_WAIT_LINK);
-//        // Убрали when(parser.parseCommand...), чтобы избежать UnnecessaryStubbingException
-//
-//        updateDispatcher.dispatch(update);
-//
-//        verify(stateRouter).route(any(Update.class));
-//        verifyNoInteractions(commandRouter, idleRouter);
-//    }
-//
-//    @Test
-//    @DisplayName("Неизвестный текст в состоянии IDLE уходит в IdleRouter")
-//    void shouldRouteToIdleRouterWhenUnknownText() {
-//        long chatId = 4L;
-//        Update update = createUpdateMock(chatId, "Просто текст");
-//
-//        when(stateRepository.getUserState(chatId)).thenReturn(UserState.IDLE);
-//        // Убрали when(parser.parseCommand...), чтобы избежать UnnecessaryStubbingException
-//
-//        updateDispatcher.dispatch(update);
-//
-//        verify(idleRouter).route(any(Update.class));
-//        verifyNoInteractions(commandRouter, stateRouter);
-//    }
-// }
+package backend.academy.linktracker.bot.dispatcher;
+
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import backend.academy.linktracker.bot.handler.command.CommandHandler;
+import backend.academy.linktracker.bot.handler.registry.CommandHandlerRegistry;
+import backend.academy.linktracker.bot.model.UserSession;
+import backend.academy.linktracker.bot.model.UserState;
+import backend.academy.linktracker.bot.repository.StateRepository;
+import backend.academy.linktracker.bot.router.CommandRouter;
+import backend.academy.linktracker.bot.router.IdleRouter;
+import backend.academy.linktracker.bot.router.StateRouter;
+import backend.academy.linktracker.bot.util.StringParser;
+import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.Chat;
+import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.User;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("UpdateDispatcher")
+class UpdateDispatcherTest {
+
+    @Mock
+    private TelegramBot bot;
+
+    @Mock
+    private CommandRouter commandRouter;
+
+    @Mock
+    private IdleRouter idleRouter;
+
+    @Mock
+    private StateRouter stateRouter;
+
+    @Mock
+    private StateRepository stateRepository;
+
+    @Mock
+    private CommandHandlerRegistry commandHandlerRegistry;
+
+    @Mock
+    private StringParser parser;
+
+    @Mock
+    private CommandHandler commandHandler;
+
+    @Mock
+    private UserSession userSession;
+
+    @InjectMocks
+    private UpdateDispatcher updateDispatcher;
+
+    @Test
+    @DisplayName("Игнорирует update без message")
+    void shouldIgnoreUpdateWithoutMessage() {
+        Update update = mock(Update.class);
+        when(update.message()).thenReturn(null);
+
+        updateDispatcher.dispatch(update);
+
+        verifyNoInteractions(commandRouter, idleRouter, stateRouter, stateRepository, commandHandlerRegistry, parser);
+    }
+
+    @Test
+    @DisplayName("Игнорирует update без chat")
+    void shouldIgnoreUpdateWithoutChat() {
+        Update update = mock(Update.class);
+        Message message = mock(Message.class);
+
+        when(update.message()).thenReturn(message);
+        when(message.chat()).thenReturn(null);
+
+        updateDispatcher.dispatch(update);
+
+        verifyNoInteractions(commandRouter, idleRouter, stateRouter, stateRepository, commandHandlerRegistry, parser);
+    }
+
+    @Test
+    @DisplayName("Сбрасывает состояние и отправляет cancel-команду в CommandRouter")
+    void shouldResetStateAndRouteCancelCommand() {
+        long chatId = 1L;
+        long userId = 11L;
+        Update update = createUpdate(chatId, userId, "/start");
+
+        when(parser.parseCommand("/start")).thenReturn("/start");
+        when(stateRepository.getUserSession(userId)).thenReturn(userSession);
+        when(userSession.getState()).thenReturn(UserState.TRACK_WAIT_LINK);
+        when(commandHandlerRegistry.findByCommandText("/start")).thenReturn(Optional.of(commandHandler));
+        when(commandHandler.isCancelStateCommand()).thenReturn(true);
+
+        updateDispatcher.dispatch(update);
+
+        verify(parser).parseCommand("/start");
+        verify(commandHandlerRegistry).findByCommandText("/start");
+        verify(userSession).getState();
+        verify(userSession).setState(UserState.IDLE);
+        verify(commandRouter).route(same(update), same(commandHandler));
+        verify(idleRouter, never()).route(same(update));
+        verify(stateRouter, never()).route(same(update));
+    }
+
+    @Test
+    @DisplayName("Маршрутизирует обычную команду в CommandRouter при состоянии IDLE")
+    void shouldRouteCommandToCommandRouterWhenStateIsIdle() {
+        long chatId = 2L;
+        long userId = 22L;
+        Update update = createUpdate(chatId, userId, "/help");
+
+        when(parser.parseCommand("/help")).thenReturn("/help");
+        when(stateRepository.getUserSession(userId)).thenReturn(userSession);
+        when(userSession.getState()).thenReturn(UserState.IDLE);
+        when(commandHandlerRegistry.findByCommandText("/help")).thenReturn(Optional.of(commandHandler));
+        when(commandHandler.isCancelStateCommand()).thenReturn(false);
+
+        updateDispatcher.dispatch(update);
+
+        verify(parser).parseCommand("/help");
+        verify(commandHandlerRegistry).findByCommandText("/help");
+        verify(userSession).getState();
+        verify(commandRouter).route(same(update), same(commandHandler));
+        verify(userSession, never()).setState(UserState.IDLE);
+        verify(idleRouter, never()).route(same(update));
+        verify(stateRouter, never()).route(same(update));
+    }
+
+    @Test
+    @DisplayName("Маршрутизирует текст в StateRouter при не-IDLE состоянии")
+    void shouldRouteTextToStateRouterWhenStateIsNotIdle() {
+        long chatId = 3L;
+        long userId = 33L;
+        Update update = createUpdate(chatId, userId, "https://example.com");
+
+        when(stateRepository.getUserSession(userId)).thenReturn(userSession);
+        when(userSession.getState()).thenReturn(UserState.TRACK_WAIT_LINK);
+        when(commandHandlerRegistry.findByCommandText(null)).thenReturn(Optional.empty());
+
+        updateDispatcher.dispatch(update);
+
+        verify(commandHandlerRegistry).findByCommandText(isNull());
+        verify(userSession).getState();
+        verify(stateRouter).route(same(update));
+        verify(commandRouter, never()).route(same(update), same(commandHandler));
+        verify(idleRouter, never()).route(same(update));
+        verifyNoInteractions(parser);
+    }
+
+    @Test
+    @DisplayName("Маршрутизирует неизвестный текст в IdleRouter при состоянии IDLE")
+    void shouldRouteUnknownTextToIdleRouterWhenStateIsIdle() {
+        long chatId = 4L;
+        long userId = 44L;
+        Update update = createUpdate(chatId, userId, "Просто текст");
+
+        when(stateRepository.getUserSession(userId)).thenReturn(userSession);
+        when(userSession.getState()).thenReturn(UserState.IDLE);
+        when(commandHandlerRegistry.findByCommandText(null)).thenReturn(Optional.empty());
+
+        updateDispatcher.dispatch(update);
+
+        verify(commandHandlerRegistry).findByCommandText(isNull());
+        verify(userSession).getState();
+        verify(idleRouter).route(same(update));
+        verify(commandRouter, never()).route(same(update), same(commandHandler));
+        verify(stateRouter, never()).route(same(update));
+        verifyNoInteractions(parser);
+    }
+
+    private Update createUpdate(long chatId, long userId, String text) {
+        Update update = mock(Update.class);
+        Message message = mock(Message.class);
+        Chat chat = mock(Chat.class);
+        User user = mock(User.class);
+
+        when(update.message()).thenReturn(message);
+        when(message.chat()).thenReturn(chat);
+        when(chat.id()).thenReturn(chatId);
+        when(message.from()).thenReturn(user);
+        when(user.id()).thenReturn(userId);
+        when(user.username()).thenReturn("test-user");
+        when(message.text()).thenReturn(text);
+
+        return update;
+    }
+}
