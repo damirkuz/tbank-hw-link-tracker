@@ -1,13 +1,13 @@
 package backend.academy.linktracker.bot.client.grpc;
 
 import backend.academy.linktracker.bot.client.ScrapperGateway;
-import backend.academy.linktracker.common.exception.ChatAlreadyExistsException;
-import backend.academy.linktracker.common.exception.ChatNotFoundException;
-import backend.academy.linktracker.common.exception.LinkAlreadyTrackedException;
-import backend.academy.linktracker.common.grpc.mapper.ScrapperGrpcMapper;
-import backend.academy.linktracker.common.request.AddLinkRequest;
-import backend.academy.linktracker.common.request.RemoveLinkRequest;
-import backend.academy.linktracker.common.response.ListLinksResponse;
+import backend.academy.linktracker.contracts.dto.request.AddLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.RemoveLinkRequest;
+import backend.academy.linktracker.contracts.dto.response.ListLinksResponse;
+import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
+import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
+import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
+import backend.academy.linktracker.contracts.grpc.mapper.ScrapperGrpcMapper;
 import backend.academy.linktracker.generated.grpc.ScrapperServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;

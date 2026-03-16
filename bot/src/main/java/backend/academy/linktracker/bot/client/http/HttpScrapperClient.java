@@ -1,13 +1,13 @@
 package backend.academy.linktracker.bot.client.http;
 
 import backend.academy.linktracker.bot.client.ScrapperGateway;
-import backend.academy.linktracker.bot.properties.ScrapperProperties;
-import backend.academy.linktracker.common.exception.ChatAlreadyExistsException;
-import backend.academy.linktracker.common.exception.ChatNotFoundException;
-import backend.academy.linktracker.common.exception.LinkAlreadyTrackedException;
-import backend.academy.linktracker.common.request.AddLinkRequest;
-import backend.academy.linktracker.common.request.RemoveLinkRequest;
-import backend.academy.linktracker.common.response.ListLinksResponse;
+import backend.academy.linktracker.bot.config.properties.ScrapperProperties;
+import backend.academy.linktracker.contracts.dto.request.AddLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.RemoveLinkRequest;
+import backend.academy.linktracker.contracts.dto.response.ListLinksResponse;
+import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
+import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
+import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
 import org.apache.coyote.BadRequestException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpMethod;

@@ -28,8 +28,9 @@
         <module>ai-agent</module>
         <module>bot</module>
         <module>build-report-aggregate</module>
-        <module>common</module>
+        <module>contracts</module>
         <module>scrapper</module>
+        <module>integration-tests</module>
     </modules>
 
     <scm>
@@ -81,6 +82,9 @@
         <spotbugs-slf4j-plugin.version>1.5.0</spotbugs-slf4j-plugin.version>
         <spotless-maven-plugin.version>3.2.1</spotless-maven-plugin.version>
         <error_prone_annotations.version>2.41.0</error_prone_annotations.version>
+        <testcontainers-junit-jupiter.version>1.21.3</testcontainers-junit-jupiter.version>
+        <testcontainers.version>1.21.3</testcontainers.version>
+        <rest-assured.version>5.5.1</rest-assured.version>
     </properties>
 
     <dependencyManagement>
@@ -195,8 +199,20 @@
                 <artifactId>error_prone_annotations</artifactId>
                 <version>${error_prone_annotations.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>rest-assured</artifactId>
+                <version>${rest-assured.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
-
     </dependencyManagement>
 
     <dependencies>

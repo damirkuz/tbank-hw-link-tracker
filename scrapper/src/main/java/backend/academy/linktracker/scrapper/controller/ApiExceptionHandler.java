@@ -1,10 +1,10 @@
 package backend.academy.linktracker.scrapper.controller;
 
-import backend.academy.linktracker.common.exception.ChatAlreadyExistsException;
-import backend.academy.linktracker.common.exception.ChatNotFoundException;
-import backend.academy.linktracker.common.exception.LinkAlreadyTrackedException;
-import backend.academy.linktracker.common.exception.LinkNotFoundException;
-import backend.academy.linktracker.common.response.ApiErrorResponse;
+import backend.academy.linktracker.contracts.dto.response.ApiErrorResponse;
+import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
+import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
+import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
+import backend.academy.linktracker.contracts.exception.LinkNotFoundException;
 import java.util.Arrays;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

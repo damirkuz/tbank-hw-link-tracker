@@ -1,6 +1,6 @@
 package backend.academy.linktracker.bot.service;
 
-import backend.academy.linktracker.common.request.LinkUpdate;
+import backend.academy.linktracker.contracts.dto.request.LinkUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,7 @@
 package backend.academy.linktracker.scrapper.repository;
 
-import backend.academy.linktracker.common.exception.ChatAlreadyExistsException;
-import backend.academy.linktracker.common.exception.ChatNotFoundException;
+import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
+import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import backend.academy.linktracker.scrapper.model.Chat;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

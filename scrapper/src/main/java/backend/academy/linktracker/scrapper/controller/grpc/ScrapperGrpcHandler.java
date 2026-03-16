@@ -1,8 +1,8 @@
 package backend.academy.linktracker.scrapper.controller.grpc;
 
-import backend.academy.linktracker.common.request.AddLinkRequest;
-import backend.academy.linktracker.common.request.RemoveLinkRequest;
-import backend.academy.linktracker.common.response.ListLinksResponse;
+import backend.academy.linktracker.contracts.dto.request.AddLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.RemoveLinkRequest;
+import backend.academy.linktracker.contracts.dto.response.ListLinksResponse;
 
 public interface ScrapperGrpcHandler {
     void registerChat(long chatId);

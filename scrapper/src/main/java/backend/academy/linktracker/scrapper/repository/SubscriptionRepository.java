@@ -1,7 +1,7 @@
 package backend.academy.linktracker.scrapper.repository;
 
-import backend.academy.linktracker.common.exception.LinkAlreadyTrackedException;
-import backend.academy.linktracker.common.exception.LinkNotFoundException;
+import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
+import backend.academy.linktracker.contracts.exception.LinkNotFoundException;
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.model.Link;
 import backend.academy.linktracker.scrapper.model.Subscription;

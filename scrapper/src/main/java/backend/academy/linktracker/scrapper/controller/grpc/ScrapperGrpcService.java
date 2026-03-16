@@ -1,10 +1,10 @@
 package backend.academy.linktracker.scrapper.controller.grpc;
 
-import backend.academy.linktracker.common.exception.ChatAlreadyExistsException;
-import backend.academy.linktracker.common.exception.ChatNotFoundException;
-import backend.academy.linktracker.common.exception.LinkAlreadyTrackedException;
-import backend.academy.linktracker.common.exception.LinkNotFoundException;
-import backend.academy.linktracker.common.grpc.mapper.ScrapperGrpcMapper;
+import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
+import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
+import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
+import backend.academy.linktracker.contracts.exception.LinkNotFoundException;
+import backend.academy.linktracker.contracts.grpc.mapper.ScrapperGrpcMapper;
 import backend.academy.linktracker.generated.grpc.GrpcAddLinkCommand;
 import backend.academy.linktracker.generated.grpc.GrpcChatRequest;
 import backend.academy.linktracker.generated.grpc.GrpcDeleteLinkCommand;

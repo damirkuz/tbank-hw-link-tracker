@@ -11,21 +11,21 @@
     <artifactId>build-report-aggregate</artifactId>
 
     <dependencies>
-        <dependency>
-            <groupId>backend.academy.link-tracker</groupId>
-            <artifactId>ai-agent</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>backend.academy.link-tracker</groupId>
-            <artifactId>bot</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>backend.academy.link-tracker</groupId>
-            <artifactId>scrapper</artifactId>
-            <version>${revision}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>backend.academy.linktracker</groupId>-->
+<!--            <artifactId>ai-agent</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>backend.academy.linktracker</groupId>-->
+<!--            <artifactId>bot</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>backend.academy.linktracker</groupId>-->
+<!--            <artifactId>scrapper</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

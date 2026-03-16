@@ -1,6 +1,6 @@
 package backend.academy.linktracker.bot.controller.grpc;
 
-import backend.academy.linktracker.common.grpc.mapper.BotGrpcMapper;
+import backend.academy.linktracker.contracts.grpc.mapper.BotGrpcMapper;
 import backend.academy.linktracker.generated.grpc.BotServiceGrpc;
 import backend.academy.linktracker.generated.grpc.GrpcLinkUpdate;
 import com.google.protobuf.Empty;

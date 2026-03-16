@@ -1,9 +1,9 @@
 package backend.academy.linktracker.scrapper.controller.grpc;
 
-import backend.academy.linktracker.common.request.AddLinkRequest;
-import backend.academy.linktracker.common.request.RemoveLinkRequest;
-import backend.academy.linktracker.common.response.LinkResponse;
-import backend.academy.linktracker.common.response.ListLinksResponse;
+import backend.academy.linktracker.contracts.dto.request.AddLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.RemoveLinkRequest;
+import backend.academy.linktracker.contracts.dto.response.LinkResponse;
+import backend.academy.linktracker.contracts.dto.response.ListLinksResponse;
 import backend.academy.linktracker.scrapper.model.Subscription;
 import backend.academy.linktracker.scrapper.service.BotChatService;
 import backend.academy.linktracker.scrapper.service.BotLinkService;

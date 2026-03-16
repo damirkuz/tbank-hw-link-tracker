@@ -1,6 +1,6 @@
 package backend.academy.linktracker.scrapper.util;
 
-import backend.academy.linktracker.scrapper.client.tracked.github.RepoInfo;
+import backend.academy.linktracker.scrapper.client.provider.github.RepoInfo;
 import java.net.URI;
 import org.springframework.stereotype.Component;
 

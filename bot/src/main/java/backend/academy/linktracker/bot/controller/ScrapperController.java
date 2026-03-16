@@ -1,7 +1,7 @@
 package backend.academy.linktracker.bot.controller;
 
 import backend.academy.linktracker.bot.service.LinkUpdateService;
-import backend.academy.linktracker.common.request.LinkUpdate;
+import backend.academy.linktracker.contracts.dto.request.LinkUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

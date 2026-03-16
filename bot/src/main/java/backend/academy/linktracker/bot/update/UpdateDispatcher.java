@@ -1,0 +1,96 @@
+package backend.academy.linktracker.bot.update;
+
+import backend.academy.linktracker.bot.model.UserState;
+import backend.academy.linktracker.bot.service.StateStorage;
+import backend.academy.linktracker.bot.update.handler.command.CommandHandlerRegistry;
+import backend.academy.linktracker.bot.update.router.CommandRouter;
+import backend.academy.linktracker.bot.update.router.IdleRouter;
+import backend.academy.linktracker.bot.update.router.StateRouter;
+import backend.academy.linktracker.bot.util.StringParser;
+import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.UpdatesListener;
+import com.pengrad.telegrambot.model.Update;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UpdateDispatcher {
+    private final TelegramBot bot;
+
+    private final CommandRouter commandRouter;
+    private final IdleRouter idleRouter;
+    private final StateRouter stateRouter;
+
+    private final StateStorage stateStorage;
+
+    private final CommandHandlerRegistry commandHandlerRegistry;
+
+    private final StringParser parser;
+
+    public void dispatch(Update update) {
+        if (update.message() == null || update.message().chat() == null) {
+            log.atDebug().log("Получен Update без message или chat. Пропускаем.");
+            return;
+        }
+
+        long chatId = update.message().chat().id();
+        long userId = update.message().from().id();
+        String text = update.message().text() != null ? update.message().text() : "";
+        String command = text.startsWith("/") ? parser.parseCommand(text) : null;
+        UserState currentState = stateStorage.getUserSession(userId).getState();
+
+        log.atInfo()
+                .addKeyValue("chat_id", chatId)
+                .addKeyValue(
+                        "username",
+                        update.message().from() != null
+                                ? update.message().from().username()
+                                : "unknown")
+                .addKeyValue("text", text)
+                .addKeyValue("current_state", currentState)
+                .addKeyValue("is_command", command != null)
+                .log("Обработка входящего обновления");
+
+        commandHandlerRegistry
+                .findByCommandText(command)
+                .ifPresentOrElse(
+                        handler -> {
+                            if (handler.isCancelStateCommand()) {
+                                stateStorage.getUserSession(userId).setState(UserState.IDLE);
+                                commandRouter.route(update, handler);
+                            } else if (currentState != UserState.IDLE) {
+                                stateRouter.route(update);
+                            } else {
+                                commandRouter.route(update, handler);
+                            }
+                        },
+                        () -> {
+                            if (currentState != UserState.IDLE) {
+                                stateRouter.route(update);
+                            } else {
+                                idleRouter.route(update);
+                            }
+                        });
+    }
+
+    @PostConstruct
+    public void init() {
+        bot.setUpdatesListener(updates -> {
+            for (Update update : updates) {
+                try {
+                    dispatch(update);
+                } catch (Exception e) {
+                    log.atError()
+                            .addKeyValue("update_id", update.updateId())
+                            .log("Ошибка во время обработки обновления", e);
+                }
+            }
+
+            return UpdatesListener.CONFIRMED_UPDATES_ALL;
+        });
+    }
+}
