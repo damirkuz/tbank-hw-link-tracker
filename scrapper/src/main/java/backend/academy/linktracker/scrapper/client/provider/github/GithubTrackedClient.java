@@ -4,6 +4,7 @@ import backend.academy.linktracker.scrapper.client.provider.BaseTrackedClient;
 import backend.academy.linktracker.scrapper.config.properties.GithubProperties;
 import backend.academy.linktracker.scrapper.model.TrackedResource;
 import backend.academy.linktracker.scrapper.util.StringParser;
+import java.net.URI;
 import java.time.Instant;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -18,15 +19,15 @@ public class GithubTrackedClient implements BaseTrackedClient {
             RestClient.Builder restClientBuilder, GithubProperties properties, StringParser stringParser) {
         this.stringParser = stringParser;
         this.restClient = restClientBuilder
-                .baseUrl(properties.getBaseUrl())
-                .defaultHeader("Authorization", "Bearer " + properties.getToken())
+                .baseUrl(properties.baseUrl())
+                .defaultHeader("Authorization", "Bearer " + properties.token())
                 .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
                 .defaultHeader("Accept", "application/vnd.github+json")
                 .build();
     }
 
     @Override
-    public Instant getLastUpdate(String link) {
+    public Instant getLastUpdate(URI link) {
         return getRepositorySnapshot(link).pushedAt();
     }
 
@@ -35,7 +36,7 @@ public class GithubTrackedClient implements BaseTrackedClient {
         return TrackedResource.GITHUB;
     }
 
-    public GithubRepositorySnapshot getRepositorySnapshot(String repositoryLink) {
+    public GithubRepositorySnapshot getRepositorySnapshot(URI repositoryLink) {
         RepoInfo repoInfo = stringParser.parseGithubRepositoryLink(repositoryLink);
 
         GithubRepositoryResponse response = restClient

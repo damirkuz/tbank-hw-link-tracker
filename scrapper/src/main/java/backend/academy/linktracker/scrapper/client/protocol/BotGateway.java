@@ -1,7 +1,7 @@
 package backend.academy.linktracker.scrapper.client.protocol;
 
-import backend.academy.linktracker.contracts.dto.request.LinkUpdate;
+import backend.academy.linktracker.contracts.dto.request.CommonLinkUpdate;
 
 public interface BotGateway {
-    void sendUpdate(LinkUpdate linkUpdate);
+    void sendUpdate(CommonLinkUpdate commonLinkUpdate);
 }

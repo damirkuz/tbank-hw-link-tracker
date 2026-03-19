@@ -6,9 +6,12 @@ import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.service.StateStorage;
-import backend.academy.linktracker.contracts.dto.request.AddLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.CommonAddLinkRequest;
+import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
 import com.pengrad.telegrambot.model.Update;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -33,22 +36,25 @@ public class TrackWaitTagsHandler implements StateHandler {
         long chatId = update.message().chat().id();
 
         String text = update.message().text().trim().toLowerCase(Locale.ROOT);
-        String[] tags = null;
+        List<String> tags = new ArrayList<>();
         if (!text.equals(botTextService.get("bot.reject"))) {
-            tags = text.split(",");
+            tags = List.of(text.split(","));
         }
 
         UserSession userSession = stateStorage.getUserSession(userId);
 
-        AddLinkRequest addLinkRequest = new AddLinkRequest(userSession.getTrackLink(), tags, null);
+        CommonAddLinkRequest commonAddLinkRequest =
+                new CommonAddLinkRequest(userSession.getTrackLink(), tags, new ArrayList<>());
 
         String answer;
 
         try {
-            scrapperClient.addLink(chatId, addLinkRequest);
+            scrapperClient.addLink(chatId, commonAddLinkRequest);
             answer = botTextService.get("bot.track.success");
         } catch (LinkAlreadyTrackedException e) {
             answer = botTextService.get("bot.track.link-already-add");
+        } catch (ChatNotFoundException e) {
+            answer = botTextService.get("bot.track.chat-not-found");
         }
 
         userSession.setTrackLink(null);

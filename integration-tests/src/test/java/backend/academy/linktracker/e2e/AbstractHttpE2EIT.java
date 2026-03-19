@@ -15,8 +15,7 @@ public abstract class AbstractHttpE2EIT {
 
     protected static final Network NETWORK = Network.newNetwork();
 
-    protected static final PostgreSQLContainer<?> POSTGRES =
-        new PostgreSQLContainer<>("postgres:17-alpine")
+    protected static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17-alpine")
             .withDatabaseName("link_tracker")
             .withUsername("postgres")
             .withPassword("postgres")
@@ -24,10 +23,10 @@ public abstract class AbstractHttpE2EIT {
             .withNetworkAliases("postgres")
             .withStartupTimeout(Duration.ofMinutes(2));
 
-    protected static final GenericContainer<?> BOT =
-        new GenericContainer<>(new ImageFromDockerfile("link-tracker-bot-it", false)
-            .withDockerfile(Path.of("../bot/Dockerfile"))
-            .withFileFromPath(".", Path.of("..")))
+    protected static final GenericContainer<?> BOT = new GenericContainer<>(
+                    new ImageFromDockerfile("link-tracker-bot-it", false)
+                            .withDockerfile(Path.of("../bot/Dockerfile"))
+                            .withFileFromPath(".", Path.of("..")))
             .withExposedPorts(8080)
             .withNetwork(NETWORK)
             .withNetworkAliases("bot")
@@ -38,10 +37,10 @@ public abstract class AbstractHttpE2EIT {
             .waitingFor(Wait.forHttp("/actuator/health").forStatusCode(200))
             .withStartupTimeout(Duration.ofMinutes(3));
 
-    protected static final GenericContainer<?> SCRAPPER =
-        new GenericContainer<>(new ImageFromDockerfile("link-tracker-scrapper-it", false)
-            .withDockerfile(Path.of("../scrapper/Dockerfile"))
-            .withFileFromPath(".", Path.of("..")))
+    protected static final GenericContainer<?> SCRAPPER = new GenericContainer<>(
+                    new ImageFromDockerfile("link-tracker-scrapper-it", false)
+                            .withDockerfile(Path.of("../scrapper/Dockerfile"))
+                            .withFileFromPath(".", Path.of("..")))
             .withExposedPorts(8081)
             .withNetwork(NETWORK)
             .withNetworkAliases("scrapper")

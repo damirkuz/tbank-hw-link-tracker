@@ -1,4 +1,4 @@
-package backend.academy.linktracker.scrapper.config.grpc;
+package backend.academy.linktracker.scrapper.config.client;
 
 import backend.academy.linktracker.scrapper.config.properties.BotProperties;
 import io.grpc.ManagedChannel;

@@ -6,9 +6,10 @@ import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.util.StringParser;
 import backend.academy.linktracker.bot.validator.link.LinkValidationResult;
 import backend.academy.linktracker.bot.validator.link.LinkValidationService;
-import backend.academy.linktracker.contracts.dto.request.RemoveLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.CommonRemoveLinkRequest;
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import com.pengrad.telegrambot.model.Update;
+import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -42,10 +43,10 @@ public class UntrackCommandHandler implements CommandHandler {
             return;
         }
 
-        RemoveLinkRequest removeLinkRequest = new RemoveLinkRequest(link);
+        CommonRemoveLinkRequest commonRemoveLinkRequest = new CommonRemoveLinkRequest(URI.create(link));
         String answer;
         try {
-            scrapperClient.deleteLink(chatId, removeLinkRequest);
+            scrapperClient.deleteLink(chatId, commonRemoveLinkRequest);
             answer = botTextService.get("bot.untrack.success");
         } catch (ChatNotFoundException e) {
             answer = botTextService.get("bot.untrack.chat-or-link-not-found");

@@ -1,18 +1,19 @@
 package backend.academy.linktracker.scrapper.controller.grpc;
 
-import backend.academy.linktracker.contracts.dto.request.AddLinkRequest;
-import backend.academy.linktracker.contracts.dto.request.RemoveLinkRequest;
-import backend.academy.linktracker.contracts.dto.response.LinkResponse;
-import backend.academy.linktracker.contracts.dto.response.ListLinksResponse;
-import backend.academy.linktracker.scrapper.model.Subscription;
+import backend.academy.linktracker.contracts.dto.request.CommonAddLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.CommonRemoveLinkRequest;
+import backend.academy.linktracker.contracts.dto.response.CommonLinkResponse;
+import backend.academy.linktracker.contracts.dto.response.CommonListLinksResponse;
 import backend.academy.linktracker.scrapper.service.BotChatService;
 import backend.academy.linktracker.scrapper.service.BotLinkService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "bot", name = "transport", havingValue = "grpc")
 public class DefaultScrapperGrpcHandler implements ScrapperGrpcHandler {
 
     private final BotChatService botChatService;
@@ -29,28 +30,25 @@ public class DefaultScrapperGrpcHandler implements ScrapperGrpcHandler {
     }
 
     @Override
-    public void addLink(long chatId, AddLinkRequest addLinkRequest) {
-        botLinkService.addLink(chatId, addLinkRequest);
+    public void addLink(long chatId, CommonAddLinkRequest commonAddLinkRequest) {
+        botLinkService.addLink(chatId, commonAddLinkRequest);
     }
 
     @Override
-    public void deleteLink(long chatId, RemoveLinkRequest removeLinkRequest) {
-        botLinkService.deleteLink(chatId, removeLinkRequest);
+    public void deleteLink(long chatId, CommonRemoveLinkRequest commonRemoveLinkRequest) {
+        botLinkService.deleteLink(chatId, commonRemoveLinkRequest);
     }
 
     @Override
-    public ListLinksResponse getLinks(long chatId) {
-        List<Subscription> subscriptionList = botLinkService.getSubscriptionsByChatId(chatId);
+    public CommonListLinksResponse getLinks(long chatId) {
+        List<CommonLinkResponse> commonLinkResponses = botLinkService.getSubscriptionsByChatId(chatId).stream()
+                .map(subscription -> new CommonLinkResponse(
+                        subscription.getLink().getId(),
+                        subscription.getLink().getUri(),
+                        subscription.getTags(),
+                        subscription.getFilters()))
+                .toList();
 
-        LinkResponse[] linkResponses = new LinkResponse[subscriptionList.size()];
-        int count = 0;
-
-        for (Subscription subscription : subscriptionList) {
-            LinkResponse linkResponse =
-                    new LinkResponse(count + 1, subscription.getLink().getUri(), subscription.getTags(), null);
-            linkResponses[count++] = linkResponse;
-        }
-
-        return new ListLinksResponse(linkResponses, linkResponses.length);
+        return new CommonListLinksResponse(commonLinkResponses, commonLinkResponses.size());
     }
 }

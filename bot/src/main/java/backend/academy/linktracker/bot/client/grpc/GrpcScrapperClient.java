@@ -1,13 +1,13 @@
 package backend.academy.linktracker.bot.client.grpc;
 
 import backend.academy.linktracker.bot.client.ScrapperGateway;
-import backend.academy.linktracker.contracts.dto.request.AddLinkRequest;
-import backend.academy.linktracker.contracts.dto.request.RemoveLinkRequest;
-import backend.academy.linktracker.contracts.dto.response.ListLinksResponse;
+import backend.academy.linktracker.contracts.dto.mapper.ScrapperGrpcMapper;
+import backend.academy.linktracker.contracts.dto.request.CommonAddLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.CommonRemoveLinkRequest;
+import backend.academy.linktracker.contracts.dto.response.CommonListLinksResponse;
 import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
-import backend.academy.linktracker.contracts.grpc.mapper.ScrapperGrpcMapper;
 import backend.academy.linktracker.generated.grpc.ScrapperServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
@@ -54,9 +54,9 @@ public class GrpcScrapperClient implements ScrapperGateway {
     }
 
     @Override
-    public void addLink(long chatId, AddLinkRequest addLinkRequest) {
+    public void addLink(long chatId, CommonAddLinkRequest commonAddLinkRequest) {
         try {
-            stub.addLink(ScrapperGrpcMapper.toGrpcAddLinkCommand(chatId, addLinkRequest));
+            stub.addLink(ScrapperGrpcMapper.toGrpcAddLinkCommand(chatId, commonAddLinkRequest));
         } catch (StatusRuntimeException e) {
             throw switch (e.getStatus().getCode()) {
                 case INVALID_ARGUMENT ->
@@ -69,9 +69,9 @@ public class GrpcScrapperClient implements ScrapperGateway {
     }
 
     @Override
-    public void deleteLink(long chatId, RemoveLinkRequest removeLinkRequest) {
+    public void deleteLink(long chatId, CommonRemoveLinkRequest commonRemoveLinkRequest) {
         try {
-            stub.deleteLink(ScrapperGrpcMapper.toGrpcDeleteLinkCommand(chatId, removeLinkRequest));
+            stub.deleteLink(ScrapperGrpcMapper.toGrpcDeleteLinkCommand(chatId, commonRemoveLinkRequest));
         } catch (StatusRuntimeException e) {
             throw switch (e.getStatus().getCode()) {
                 case INVALID_ARGUMENT ->
@@ -83,7 +83,7 @@ public class GrpcScrapperClient implements ScrapperGateway {
     }
 
     @Override
-    public ListLinksResponse getLinks(long chatId) {
+    public CommonListLinksResponse getLinks(long chatId) {
         try {
             return ScrapperGrpcMapper.fromGrpcListLinksResponse(
                     stub.getLinks(ScrapperGrpcMapper.toGrpcChatRequest(chatId)));

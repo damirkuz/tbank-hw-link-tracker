@@ -1,7 +1,7 @@
 package backend.academy.linktracker.scrapper.client.protocol.grpc;
 
-import backend.academy.linktracker.contracts.dto.request.LinkUpdate;
-import backend.academy.linktracker.contracts.grpc.mapper.BotGrpcMapper;
+import backend.academy.linktracker.contracts.dto.mapper.BotGrpcMapper;
+import backend.academy.linktracker.contracts.dto.request.CommonLinkUpdate;
 import backend.academy.linktracker.generated.grpc.BotServiceGrpc;
 import backend.academy.linktracker.scrapper.client.protocol.BotGateway;
 import io.grpc.ManagedChannel;
@@ -21,9 +21,9 @@ public class GrpcBotClient implements BotGateway {
     }
 
     @Override
-    public void sendUpdate(LinkUpdate linkUpdate) {
+    public void sendUpdate(CommonLinkUpdate commonLinkUpdate) {
         try {
-            stub.sendUpdate(BotGrpcMapper.toGrpcLinkUpdate(linkUpdate));
+            stub.sendUpdate(BotGrpcMapper.toGrpcLinkUpdate(commonLinkUpdate));
         } catch (StatusRuntimeException e) {
             throw switch (e.getStatus().getCode()) {
                 case INVALID_ARGUMENT ->

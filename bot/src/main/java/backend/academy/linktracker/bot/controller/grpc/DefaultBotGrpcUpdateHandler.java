@@ -1,7 +1,7 @@
 package backend.academy.linktracker.bot.controller.grpc;
 
 import backend.academy.linktracker.bot.service.LinkUpdateService;
-import backend.academy.linktracker.contracts.dto.request.LinkUpdate;
+import backend.academy.linktracker.contracts.dto.request.CommonLinkUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ public class DefaultBotGrpcUpdateHandler implements BotGrpcUpdateHandler {
     private final LinkUpdateService linkUpdateService;
 
     @Override
-    public void handle(LinkUpdate linkUpdate) {
-        linkUpdateService.handleLinkUpdate(linkUpdate);
+    public void handle(CommonLinkUpdate commonLinkUpdate) {
+        linkUpdateService.handleLinkUpdate(commonLinkUpdate);
     }
 }

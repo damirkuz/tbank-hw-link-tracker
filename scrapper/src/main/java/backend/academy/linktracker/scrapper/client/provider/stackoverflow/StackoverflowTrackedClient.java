@@ -22,11 +22,11 @@ public class StackoverflowTrackedClient implements BaseTrackedClient {
             RestClient.Builder restClientBuilder, StackoverflowProperties properties, StringParser stringParser) {
         this.properties = properties;
         this.stringParser = stringParser;
-        this.restClient = restClientBuilder.baseUrl(properties.getBaseUrl()).build();
+        this.restClient = restClientBuilder.baseUrl(properties.baseUrl()).build();
     }
 
     @Override
-    public Instant getLastUpdate(String link) {
+    public Instant getLastUpdate(URI link) {
         return getQuestionSnapshot(link).lastActivityDate();
     }
 
@@ -35,7 +35,7 @@ public class StackoverflowTrackedClient implements BaseTrackedClient {
         return TrackedResource.STACKOVERFLOW;
     }
 
-    public StackoverflowQuestionSnapshot getQuestionSnapshot(String questionLink) {
+    public StackoverflowQuestionSnapshot getQuestionSnapshot(URI questionLink) {
         long questionId = stringParser.parseStackoverflowQuestionId(questionLink);
 
         StackoverflowResponse response = restClient
@@ -62,10 +62,10 @@ public class StackoverflowTrackedClient implements BaseTrackedClient {
         UriBuilder builder = uriBuilder
                 .path("/questions/{id}")
                 .queryParam("site", "stackoverflow")
-                .queryParam("key", properties.getKey());
+                .queryParam("key", properties.key());
 
-        if (properties.getAccessToken() != null && !properties.getAccessToken().isBlank()) {
-            builder.queryParam("access_token", properties.getAccessToken());
+        if (properties.accessToken() != null && !properties.accessToken().isBlank()) {
+            builder.queryParam("access_token", properties.accessToken());
         }
 
         return builder.build(questionId);

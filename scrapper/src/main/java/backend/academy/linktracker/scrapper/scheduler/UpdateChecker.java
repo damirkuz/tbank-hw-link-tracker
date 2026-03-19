@@ -1,6 +1,6 @@
 package backend.academy.linktracker.scrapper.scheduler;
 
-import backend.academy.linktracker.contracts.dto.request.LinkUpdate;
+import backend.academy.linktracker.contracts.dto.request.CommonLinkUpdate;
 import backend.academy.linktracker.scrapper.client.protocol.BotGateway;
 import backend.academy.linktracker.scrapper.client.provider.BaseTrackedClient;
 import backend.academy.linktracker.scrapper.model.Chat;
@@ -8,6 +8,7 @@ import backend.academy.linktracker.scrapper.model.Link;
 import backend.academy.linktracker.scrapper.model.TrackedResource;
 import backend.academy.linktracker.scrapper.repository.LinkRepository;
 import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -29,14 +30,12 @@ public class UpdateChecker {
     @Scheduled(fixedRate = 10000)
     public void getUpdates() {
         List<Link> links = linkRepository.getLinks();
-        int id = 0;
 
         for (Link link : links) {
             Instant lastUpdate = getLastUpdate(link.getUri(), link.getTrackedResource());
 
             if (link.getLastUpdate() == null) {
                 link.setLastUpdate(lastUpdate);
-
                 continue;
             }
 
@@ -45,24 +44,25 @@ public class UpdateChecker {
                 link.setLastUpdate(lastUpdate);
 
                 List<Chat> chats = subscriptionRepository.getAllChatsByLink(link);
-                Long[] tgChatIds = chats.stream().map(Chat::getChatId).toArray(Long[]::new);
+                List<Long> tgChatIds = chats.stream().map(Chat::getChatId).toList();
 
-                LinkUpdate linkUpdate = new LinkUpdate(++id, link.getUri(), "Произошло обновление", tgChatIds);
+                CommonLinkUpdate commonLinkUpdate =
+                        new CommonLinkUpdate(link.getId(), link.getUri(), "Произошло обновление", tgChatIds);
 
-                botClient.sendUpdate(linkUpdate);
+                botClient.sendUpdate(commonLinkUpdate);
 
                 log.atInfo()
                         .addKeyValue("resource", link.getTrackedResource())
                         .addKeyValue("uri", link.getUri())
                         .addKeyValue("previous_update", previousUpdate)
                         .addKeyValue("current_update", lastUpdate)
-                        .addKeyValue("notified_chats", tgChatIds.length)
+                        .addKeyValue("notified_chats", tgChatIds.size())
                         .log("Обнаружено обновление ссылки");
             }
         }
     }
 
-    public Instant getLastUpdate(String uri, TrackedResource trackedResource) {
+    public Instant getLastUpdate(URI uri, TrackedResource trackedResource) {
         return clients.get(trackedResource).getLastUpdate(uri);
     }
 }

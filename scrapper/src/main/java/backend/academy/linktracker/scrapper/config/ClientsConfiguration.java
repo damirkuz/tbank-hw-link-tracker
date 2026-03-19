@@ -14,7 +14,7 @@ public class ClientsConfiguration {
 
     @Bean
     public Map<TrackedResource, BaseTrackedClient> getClients(List<BaseTrackedClient> clientList) {
-        EnumMap<TrackedResource, BaseTrackedClient> clients = new EnumMap<>(TrackedResource.class);
+        Map<TrackedResource, BaseTrackedClient> clients = new EnumMap<>(TrackedResource.class);
 
         for (BaseTrackedClient baseTrackedClient : clientList) {
             clients.put(baseTrackedClient.getTrackedResource(), baseTrackedClient);

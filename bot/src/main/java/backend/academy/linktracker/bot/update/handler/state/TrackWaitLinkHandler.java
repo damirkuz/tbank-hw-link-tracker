@@ -8,6 +8,7 @@ import backend.academy.linktracker.bot.service.StateStorage;
 import backend.academy.linktracker.bot.validator.link.LinkValidationResult;
 import backend.academy.linktracker.bot.validator.link.LinkValidationService;
 import com.pengrad.telegrambot.model.Update;
+import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +39,7 @@ public class TrackWaitLinkHandler implements StateHandler {
         if (linkValidationResult.valid()) {
             UserSession userSession = stateStorage.getUserSession(userId);
             userSession.setState(UserState.TRACK_WAIT_TAGS);
-            userSession.setTrackLink(rawLink);
+            userSession.setTrackLink(URI.create(rawLink));
 
             answer = botTextService.get("bot.track.ask-tags");
         } else {

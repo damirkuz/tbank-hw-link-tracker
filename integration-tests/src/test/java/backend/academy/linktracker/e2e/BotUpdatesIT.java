@@ -18,14 +18,13 @@ class BotUpdatesIT extends AbstractHttpE2EIT {
             }
             """;
 
-        given()
-            .baseUri(botUrl())
-            .contentType(ContentType.JSON)
-            .body(body)
-            .when()
-            .post("/updates")
-            .then()
-            .statusCode(200);
+        given().baseUri(botUrl())
+                .contentType(ContentType.JSON)
+                .body(body)
+                .when()
+                .post("/updates")
+                .then()
+                .statusCode(200);
     }
 
     @Test
@@ -37,16 +36,12 @@ class BotUpdatesIT extends AbstractHttpE2EIT {
             }
             """;
 
-        given()
-            .baseUri(botUrl())
-            .contentType(ContentType.JSON)
-            .body(body)
-            .when()
-            .post("/updates")
-            .then()
-            .statusCode(org.hamcrest.Matchers.anyOf(
-                org.hamcrest.Matchers.is(400),
-                org.hamcrest.Matchers.is(422)
-            ));
+        given().baseUri(botUrl())
+                .contentType(ContentType.JSON)
+                .body(body)
+                .when()
+                .post("/updates")
+                .then()
+                .statusCode(org.hamcrest.Matchers.anyOf(org.hamcrest.Matchers.is(400), org.hamcrest.Matchers.is(422)));
     }
 }

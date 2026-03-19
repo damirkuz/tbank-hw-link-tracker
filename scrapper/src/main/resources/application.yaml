@@ -16,6 +16,9 @@ bot:
     host: localhost
     port: 9090
 
+scheduler:
+  interval: 60000
+
 app:
   stackoverflow:
     base-url: https://api.stackexchange.com/2.3

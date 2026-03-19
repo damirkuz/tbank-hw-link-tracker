@@ -4,8 +4,8 @@ import backend.academy.linktracker.bot.client.ScrapperGateway;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.util.StringParser;
-import backend.academy.linktracker.contracts.dto.response.LinkResponse;
-import backend.academy.linktracker.contracts.dto.response.ListLinksResponse;
+import backend.academy.linktracker.contracts.dto.response.CommonLinkResponse;
+import backend.academy.linktracker.contracts.dto.response.CommonListLinksResponse;
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import com.pengrad.telegrambot.model.Update;
 import java.util.Arrays;
@@ -31,20 +31,20 @@ public class ListCommandHandler implements CommandHandler {
         long chatId = update.message().chat().id();
 
         String answer = "";
-        ListLinksResponse listLinksResponse;
+        CommonListLinksResponse commonListLinksResponse;
         try {
-            listLinksResponse = scrapperClient.getLinks(chatId);
+            commonListLinksResponse = scrapperClient.getLinks(chatId);
         } catch (ChatNotFoundException e) {
             scrapperClient.registerChat(chatId);
-            listLinksResponse = scrapperClient.getLinks(chatId);
+            commonListLinksResponse = scrapperClient.getLinks(chatId);
         }
 
         String tag = stringParser.parseAfterSpace(update.message().text());
         int count = 0;
 
-        if (listLinksResponse.size() > 0) {
+        if (commonListLinksResponse.size() > 0) {
             StringBuilder sb = new StringBuilder(botTextService.get("bot.list.link-list"));
-            for (LinkResponse link : listLinksResponse.links()) {
+            for (CommonLinkResponse link : commonListLinksResponse.links()) {
                 if (tag.isBlank() || Arrays.asList(link.tags()).contains(tag)) {
                     count++;
                     sb.append("\n")

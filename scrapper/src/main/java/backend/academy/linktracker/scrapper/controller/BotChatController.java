@@ -1,31 +1,33 @@
 package backend.academy.linktracker.scrapper.controller;
 
+import backend.academy.linktracker.scrapper.generated.api.TgChatApi;
 import backend.academy.linktracker.scrapper.service.BotChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class BotChatController {
+public class BotChatController implements TgChatApi {
 
     private final BotChatService botChatService;
 
-    @PostMapping("/tg-chat/{chatId}")
-    public void addChat(@PathVariable long chatId) {
-        log.atInfo().addKeyValue("chat_id", chatId).log("Запрос на регистрацию чата");
+    @Override
+    public ResponseEntity<@NotNull Void> tgChatIdDelete(Long id) {
+        log.atInfo().addKeyValue("chat_id", id).log("Запрос на удаление чата");
 
-        botChatService.registerChat(chatId);
+        botChatService.deleteChat(id);
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/tg-chat/{chatId}")
-    public void deleteChat(@PathVariable long chatId) {
-        log.atInfo().addKeyValue("chat_id", chatId).log("Запрос на удаление чата");
+    @Override
+    public ResponseEntity<@NotNull Void> tgChatIdPost(Long id) {
+        log.atInfo().addKeyValue("chat_id", id).log("Запрос на регистрацию чата");
 
-        botChatService.deleteChat(chatId);
+        botChatService.registerChat(id);
+        return ResponseEntity.ok().build();
     }
 }

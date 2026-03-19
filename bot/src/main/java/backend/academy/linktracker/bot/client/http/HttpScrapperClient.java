@@ -1,109 +1,123 @@
 package backend.academy.linktracker.bot.client.http;
 
 import backend.academy.linktracker.bot.client.ScrapperGateway;
-import backend.academy.linktracker.bot.config.properties.ScrapperProperties;
-import backend.academy.linktracker.contracts.dto.request.AddLinkRequest;
-import backend.academy.linktracker.contracts.dto.request.RemoveLinkRequest;
-import backend.academy.linktracker.contracts.dto.response.ListLinksResponse;
+import backend.academy.linktracker.contracts.dto.mapper.ScrapperHttpMapper;
+import backend.academy.linktracker.contracts.dto.request.CommonAddLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.CommonRemoveLinkRequest;
+import backend.academy.linktracker.contracts.dto.response.CommonListLinksResponse;
 import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
+import backend.academy.linktracker.scrapper.generated.client.DefaultApi;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.coyote.BadRequestException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 @Component
 @ConditionalOnProperty(prefix = "scrapper", name = "transport", havingValue = "http")
+@RequiredArgsConstructor
 public class HttpScrapperClient implements ScrapperGateway {
 
-    private final RestClient restClient;
-
-    public HttpScrapperClient(RestClient.Builder restClientBuilder, ScrapperProperties properties) {
-        this.restClient = restClientBuilder.baseUrl(properties.http().baseUrl()).build();
-    }
+    private final DefaultApi scrapperApi;
 
     @Override
     public void registerChat(long chatId) {
-        restClient
-                .post()
-                .uri("/tg-chat/" + chatId)
-                .retrieve()
-                .onStatus(status -> status.value() == 400, (request, response) -> {
-                    throw new BadRequestException();
-                })
-                .onStatus(status -> status.value() == 409, (request, response) -> {
-                    throw new ChatAlreadyExistsException();
-                })
-                .toBodilessEntity();
+        try {
+            scrapperApi.tgChatIdPost(chatId);
+        } catch (RestClientResponseException e) {
+            throw mapRegisterChatException(e);
+        }
     }
 
     @Override
     public void deleteChat(long chatId) {
-        restClient
-                .delete()
-                .uri("/tg-chat/" + chatId)
-                .retrieve()
-                .onStatus(status -> status.value() == 400, (request, response) -> {
-                    throw new BadRequestException();
-                })
-                .onStatus(status -> status.value() == 404, (request, response) -> {
-                    throw new ChatNotFoundException();
-                })
-                .toBodilessEntity();
+        try {
+            scrapperApi.tgChatIdDelete(chatId);
+        } catch (RestClientResponseException e) {
+            throw mapDeleteChatException(e);
+        }
     }
 
     @Override
-    public void addLink(long chatId, AddLinkRequest addLinkRequest) {
-        restClient
-                .post()
-                .uri("/links")
-                .header("Tg-Chat-Id", String.valueOf(chatId))
-                .body(addLinkRequest)
-                .retrieve()
-                .onStatus(status -> status.value() == 400, (request, response) -> {
-                    throw new BadRequestException();
-                })
-                .onStatus(status -> status.value() == 404, (request, response) -> {
-                    throw new ChatNotFoundException("Не найден чат: " + chatId);
-                })
-                .onStatus(status -> status.value() == 409, (request, response) -> {
-                    throw new LinkAlreadyTrackedException();
-                })
-                .toBodilessEntity();
+    public void addLink(long chatId, CommonAddLinkRequest commonAddLinkRequest) {
+        try {
+            scrapperApi.linksPost(chatId, ScrapperHttpMapper.toAddLinkRequest(commonAddLinkRequest));
+        } catch (RestClientResponseException e) {
+            throw mapAddLinkException(chatId, e);
+        }
     }
 
     @Override
-    public void deleteLink(long chatId, RemoveLinkRequest removeLinkRequest) {
-        restClient
-                .method(HttpMethod.DELETE)
-                .uri("/links")
-                .header("Tg-Chat-Id", String.valueOf(chatId))
-                .body(removeLinkRequest)
-                .retrieve()
-                .onStatus(status -> status.value() == 400, (request, response) -> {
-                    throw new BadRequestException();
-                })
-                .onStatus(status -> status.value() == 404, (request, response) -> {
-                    throw new ChatNotFoundException();
-                })
-                .toBodilessEntity();
+    public void deleteLink(long chatId, CommonRemoveLinkRequest commonRemoveLinkRequest) {
+        try {
+            scrapperApi.linksDelete(chatId, ScrapperHttpMapper.toRemoveLinkRequest(commonRemoveLinkRequest));
+        } catch (RestClientResponseException e) {
+            throw mapDeleteLinkException(e);
+        }
     }
 
     @Override
-    public ListLinksResponse getLinks(long chatId) {
-        return restClient
-                .get()
-                .uri("/links")
-                .header("Tg-Chat-Id", String.valueOf(chatId))
-                .retrieve()
-                .onStatus(status -> status.value() == 400, (request, response) -> {
-                    throw new BadRequestException();
-                })
-                .onStatus(status -> status.value() == 404, (request, response) -> {
-                    throw new ChatNotFoundException();
-                })
-                .body(ListLinksResponse.class);
+    public CommonListLinksResponse getLinks(long chatId) {
+        try {
+            var response = scrapperApi.linksGet(chatId);
+            var body = response.getBody();
+
+            if (body == null) {
+                throw new IllegalStateException("Scrapper вернул пустое тело ответа");
+            }
+
+            return ScrapperHttpMapper.fromListLinksResponse(body);
+        } catch (RestClientResponseException e) {
+            throw mapGetLinksException(e);
+        }
+    }
+
+    private RuntimeException mapRegisterChatException(RestClientResponseException e) {
+        return switch (e.getStatusCode().value()) {
+            case 400 -> badRequestException();
+            case 409 -> new ChatAlreadyExistsException();
+            default -> e;
+        };
+    }
+
+    private RuntimeException mapDeleteChatException(RestClientResponseException e) {
+        return switch (e.getStatusCode().value()) {
+            case 400 -> badRequestException();
+            case 404 -> new ChatNotFoundException();
+            default -> e;
+        };
+    }
+
+    private RuntimeException mapAddLinkException(long chatId, RestClientResponseException e) {
+        return switch (e.getStatusCode().value()) {
+            case 400 -> badRequestException();
+            case 404 -> new ChatNotFoundException("Не найден чат: " + chatId);
+            case 409 -> new LinkAlreadyTrackedException();
+            default -> e;
+        };
+    }
+
+    private RuntimeException mapDeleteLinkException(RestClientResponseException e) {
+        return switch (e.getStatusCode().value()) {
+            case 400 -> badRequestException();
+            case 404 -> new ChatNotFoundException();
+            default -> e;
+        };
+    }
+
+    private RuntimeException mapGetLinksException(RestClientResponseException e) {
+        return switch (e.getStatusCode().value()) {
+            case 400 -> badRequestException();
+            case 404 -> new ChatNotFoundException();
+            default -> e;
+        };
+    }
+
+    @SneakyThrows
+    private RuntimeException badRequestException() {
+        throw new BadRequestException();
     }
 }

@@ -28,11 +28,33 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>0.2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!--             .proto gRPC compilation: -->
+            <!--.proto gRPC generation-->
             <plugin>
                 <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
@@ -42,6 +64,137 @@
                             <goal>generate</goal>
                         </goals>
                     </execution>
+                </executions>
+            </plugin>
+
+            <!--            openapi generation-->
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>7.10.0</version>
+                <executions>
+                    <!--                     генератор для контроллеров -->
+                    <execution>
+                        <id>generate-bot-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/bot-api.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <addCompileSourceRoot>true</addCompileSourceRoot>
+                            <library>spring-boot</library>
+                            <apiPackage>backend.academy.linktracker.bot.generated.api</apiPackage>
+                            <modelPackage>backend.academy.linktracker.bot.generated.dto</modelPackage>
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <useJakartaEe>true</useJakartaEe>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>generate-scrapper-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/scrapper-api.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <addCompileSourceRoot>true</addCompileSourceRoot>
+                            <library>spring-boot</library>
+                            <apiPackage>backend.academy.linktracker.scrapper.generated.api</apiPackage>
+                            <modelPackage>backend.academy.linktracker.scrapper.generated.dto</modelPackage>
+                            <configOptions>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useSpringBoot3>true</useSpringBoot3>
+                                <useJakartaEe>true</useJakartaEe>
+                                <skipDefaultInterface>true</skipDefaultInterface>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+
+                    <!--                    генератор для клиентов-->
+                    <execution>
+                        <id>generate-scrapper-client</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/scrapper-api.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <library>spring-http-interface</library>
+
+                            <apiPackage>backend.academy.linktracker.scrapper.generated.client</apiPackage>
+                            <modelPackage>backend.academy.linktracker.scrapper.generated.dto</modelPackage>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+
+                            <importMappings>
+                                <importMapping>AddLinkRequest=backend.academy.linktracker.scrapper.generated.dto.AddLinkRequest</importMapping>
+                                <importMapping>ApiErrorResponse=backend.academy.linktracker.scrapper.generated.dto.ApiErrorResponse</importMapping>
+                                <importMapping>LinkResponse=backend.academy.linktracker.scrapper.generated.dto.LinkResponse</importMapping>
+                                <importMapping>ListLinksResponse=backend.academy.linktracker.scrapper.generated.dto.ListLinksResponse</importMapping>
+                                <importMapping>RemoveLinkRequest=backend.academy.linktracker.scrapper.generated.dto.RemoveLinkRequest</importMapping>
+                            </importMappings>
+
+                            <schemaMappings>
+                                <importMapping>AddLinkRequest=backend.academy.linktracker.scrapper.generated.dto.AddLinkRequest</importMapping>
+                                <importMapping>ApiErrorResponse=backend.academy.linktracker.scrapper.generated.dto.ApiErrorResponse</importMapping>
+                                <importMapping>LinkResponse=backend.academy.linktracker.scrapper.generated.dto.LinkResponse</importMapping>
+                                <importMapping>ListLinksResponse=backend.academy.linktracker.scrapper.generated.dto.ListLinksResponse</importMapping>
+                                <importMapping>RemoveLinkRequest=backend.academy.linktracker.scrapper.generated.dto.RemoveLinkRequest</importMapping>
+                            </schemaMappings>
+
+                            <configOptions>
+                                <!--                                <interfaceOnly>true</interfaceOnly>-->
+                                <!--                                <skipDefaultInterface>true</skipDefaultInterface>-->
+                                <useJakartaEe>true</useJakartaEe>
+                                <generateModels>true</generateModels>
+                                <useRecords>true</useRecords>
+                                <openApiNullable>false</openApiNullable>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>generate-bot-client</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <inputSpec>${project.basedir}/src/main/resources/bot-api.yaml</inputSpec>
+                            <generatorName>spring</generatorName>
+                            <library>spring-http-interface</library>
+
+                            <apiPackage>backend.academy.linktracker.bot.generated.client</apiPackage>
+                            <modelPackage>backend.academy.linktracker.bot.generated.dto</modelPackage>
+                            <generateSupportingFiles>false</generateSupportingFiles>
+
+                            <importMappings>
+                                <importMapping>ApiErrorResponse=backend.academy.linktracker.bot.generated.dto.ApiErrorResponse</importMapping>
+                                <importMapping>LinkUpdate=backend.academy.linktracker.bot.generated.dto.LinkUpdate</importMapping>
+                            </importMappings>
+
+                            <schemaMappings>
+                                <schemaMapping>ApiErrorResponse=backend.academy.linktracker.bot.generated.dto.ApiErrorResponse</schemaMapping>
+                                <schemaMapping>LinkUpdate=backend.academy.linktracker.bot.generated.dto.LinkUpdate</schemaMapping>
+                            </schemaMappings>
+
+                            <configOptions>
+                                <!--                                <interfaceOnly>true</interfaceOnly>-->
+                                <!--                                <skipDefaultInterface>true</skipDefaultInterface>-->
+                                <useJakartaEe>true</useJakartaEe>
+                                <generateModels>true</generateModels>
+                                <useRecords>true</useRecords>
+                                <openApiNullable>false</openApiNullable>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
         </plugins>

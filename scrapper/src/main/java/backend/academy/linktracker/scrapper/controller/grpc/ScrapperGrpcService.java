@@ -1,10 +1,10 @@
 package backend.academy.linktracker.scrapper.controller.grpc;
 
+import backend.academy.linktracker.contracts.dto.mapper.ScrapperGrpcMapper;
 import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
 import backend.academy.linktracker.contracts.exception.LinkNotFoundException;
-import backend.academy.linktracker.contracts.grpc.mapper.ScrapperGrpcMapper;
 import backend.academy.linktracker.generated.grpc.GrpcAddLinkCommand;
 import backend.academy.linktracker.generated.grpc.GrpcChatRequest;
 import backend.academy.linktracker.generated.grpc.GrpcDeleteLinkCommand;
@@ -15,11 +15,13 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.grpc.server.service.GrpcService;
 
 @GrpcService
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(prefix = "bot", name = "transport", havingValue = "grpc")
 public class ScrapperGrpcService extends ScrapperServiceGrpc.ScrapperServiceImplBase {
 
     private final ScrapperGrpcHandler scrapperGrpcHandler;

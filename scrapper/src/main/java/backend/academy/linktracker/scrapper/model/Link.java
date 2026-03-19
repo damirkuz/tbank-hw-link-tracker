@@ -1,5 +1,6 @@
 package backend.academy.linktracker.scrapper.model;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.Objects;
 import lombok.Getter;
@@ -10,7 +11,8 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 public class Link {
-    private final String uri;
+    private Long id;
+    private final URI uri;
     private final TrackedResource trackedResource;
     private Instant lastUpdate;
 

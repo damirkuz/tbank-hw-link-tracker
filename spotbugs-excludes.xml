@@ -69,9 +69,19 @@
         <Package name="~.*\.jmh_generated"/>
     </Match>
 
-    <!-- Protobuf / gRPC generated classes -->
+    <!-- generated classes -->
     <Match>
         <Package name="backend.academy.linktracker.generated.grpc"/>
+        <Package name="backend.academy.linktracker.bot.generated"/>
+        <Package name="backend.academy.linktracker.bot.generated.client"/>
+        <Package name="backend.academy.linktracker.bot.generated.api"/>
+        <Package name="backend.academy.linktracker.bot.generated.dto"/>
+        <Package name="backend.academy.linktracker.scrapper.generated"/>
+        <Package name="backend.academy.linktracker.scrapper.generated.api"/>
+        <Package name="backend.academy.linktracker.scrapper.generated.client"/>
+        <Package name="backend.academy.linktracker.scrapper.generated.dto"/>
+
+        <Package name="backend.academy.linktracker.contracts.exception"/>
     </Match>
 
 </FindBugsFilter>

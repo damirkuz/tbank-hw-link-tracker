@@ -1,16 +1,18 @@
 package backend.academy.linktracker.bot.controller.grpc;
 
-import backend.academy.linktracker.contracts.grpc.mapper.BotGrpcMapper;
+import backend.academy.linktracker.contracts.dto.mapper.BotGrpcMapper;
 import backend.academy.linktracker.generated.grpc.BotServiceGrpc;
 import backend.academy.linktracker.generated.grpc.GrpcLinkUpdate;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.grpc.server.service.GrpcService;
 
 @GrpcService
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "scrapper", name = "transport", havingValue = "grpc")
 public class BotGrpcService extends BotServiceGrpc.BotServiceImplBase {
 
     private final BotGrpcUpdateHandler botGrpcUpdateHandler;

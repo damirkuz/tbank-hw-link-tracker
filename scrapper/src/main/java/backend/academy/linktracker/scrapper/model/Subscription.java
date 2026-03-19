@@ -1,5 +1,6 @@
 package backend.academy.linktracker.scrapper.model;
 
+import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,8 @@ import lombok.Setter;
 public class Subscription {
     private final Chat chat;
     private final Link link;
-    private final String[] tags;
+    private final List<String> tags;
+    private final List<String> filters;
 
     @Override
     public boolean equals(Object o) {

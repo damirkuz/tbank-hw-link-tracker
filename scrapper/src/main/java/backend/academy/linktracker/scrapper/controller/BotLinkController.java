@@ -1,60 +1,51 @@
 package backend.academy.linktracker.scrapper.controller;
 
-import backend.academy.linktracker.contracts.dto.request.AddLinkRequest;
-import backend.academy.linktracker.contracts.dto.request.RemoveLinkRequest;
-import backend.academy.linktracker.contracts.dto.response.LinkResponse;
-import backend.academy.linktracker.contracts.dto.response.ListLinksResponse;
-import backend.academy.linktracker.scrapper.model.Subscription;
+import backend.academy.linktracker.contracts.dto.mapper.ScrapperHttpMapper;
+import backend.academy.linktracker.contracts.dto.request.CommonAddLinkRequest;
+import backend.academy.linktracker.contracts.dto.request.CommonRemoveLinkRequest;
+import backend.academy.linktracker.scrapper.generated.api.LinksApi;
+import backend.academy.linktracker.scrapper.generated.dto.AddLinkRequest;
+import backend.academy.linktracker.scrapper.generated.dto.LinkResponse;
+import backend.academy.linktracker.scrapper.generated.dto.ListLinksResponse;
+import backend.academy.linktracker.scrapper.generated.dto.RemoveLinkRequest;
 import backend.academy.linktracker.scrapper.service.BotLinkService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class BotLinkController {
+public class BotLinkController implements LinksApi {
 
     private final BotLinkService botLinkService;
 
-    @PostMapping("/links")
-    public void addLink(@RequestHeader("Tg-Chat-Id") long chatId, @RequestBody AddLinkRequest addLinkRequest) {
-        log.atInfo().addKeyValue("chat_id", chatId).log("Запрос на добавление ссылки");
+    @Override
+    public ResponseEntity<@NotNull LinkResponse> linksPost(Long tgChatId, AddLinkRequest addLinkRequest) {
+        log.atInfo().addKeyValue("chat_id", tgChatId).log("Запрос на добавление ссылки");
 
-        botLinkService.addLink(chatId, addLinkRequest);
+        CommonAddLinkRequest commonAddLinkRequest = ScrapperHttpMapper.fromAddLinkRequest(addLinkRequest);
+
+        return ResponseEntity.ok(
+                ScrapperHttpMapper.toLinkResponse(botLinkService.addLink(tgChatId, commonAddLinkRequest)));
     }
 
-    @DeleteMapping("/links")
-    public void deleteLink(@RequestHeader("Tg-Chat-Id") long chatId, @RequestBody RemoveLinkRequest removeLinkRequest) {
-        log.atInfo().addKeyValue("chat_id", chatId).log("Запрос на удаление ссылки");
+    @Override
+    public ResponseEntity<@NotNull LinkResponse> linksDelete(Long tgChatId, RemoveLinkRequest removeLinkRequest) {
+        log.atInfo().addKeyValue("chat_id", tgChatId).log("Запрос на удаление ссылки");
 
-        botLinkService.deleteLink(chatId, removeLinkRequest);
+        CommonRemoveLinkRequest commonRemoveLinkRequest = ScrapperHttpMapper.fromRemoveLinkRequest(removeLinkRequest);
+
+        return ResponseEntity.ok(
+                ScrapperHttpMapper.toLinkResponse(botLinkService.deleteLink(tgChatId, commonRemoveLinkRequest)));
     }
 
-    @GetMapping("/links")
-    public ListLinksResponse getLinks(@RequestHeader("Tg-Chat-Id") long chatId) {
-        List<Subscription> subscriptionList = botLinkService.getSubscriptionsByChatId(chatId);
+    @Override
+    public ResponseEntity<@NotNull ListLinksResponse> linksGet(Long tgChatId) {
+        log.atInfo().addKeyValue("chat_id", tgChatId).log("Запрос на получение списка ссылок");
 
-        log.atInfo()
-                .addKeyValue("chat_id", chatId)
-                .addKeyValue("links_count", subscriptionList.size())
-                .log("Запрос на получение списка ссылок");
-
-        LinkResponse[] linkResponses = new LinkResponse[subscriptionList.size()];
-        int count = 0;
-
-        for (Subscription subscription : subscriptionList) {
-            LinkResponse linkResponse =
-                    new LinkResponse(count + 1, subscription.getLink().getUri(), subscription.getTags(), null);
-            linkResponses[count++] = linkResponse;
-        }
-
-        return new ListLinksResponse(linkResponses, linkResponses.length);
+        return ResponseEntity.ok(ScrapperHttpMapper.toListLinksResponse(botLinkService.getLinks(tgChatId)));
     }
 }

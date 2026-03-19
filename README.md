@@ -10,6 +10,6 @@ LinkTracker – Telegram-бот, который отслеживает изме�
      - GITHUB_TOKEN=токен
      - STACKOVERFLOW_KEY=токен
      - STACKOVERFLOW_ACCESS_KEY=тут можно оставить пустым
-2. Запустить класс bot.src.main.java.backend.academy.linktracker.bot.BotApplication
-3. Запустить класс scrapper.src.main.java.backend.academy.linktracker.scrapper.ScrapperApplication
+2. Запустить класс /bot/src/main/java/backend/academy/linktracker/bot/BotApplication
+3. Запустить класс /scrapper/src/main/java/backend/academy/linktracker/scrapper/ScrapperApplication
 
