@@ -1,6 +1,6 @@
 package backend.academy.linktracker.bot.update.handler.command;
 
-import backend.academy.linktracker.bot.client.ScrapperGateway;
+import backend.academy.linktracker.bot.client.protocol.ScrapperGateway;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.util.StringParser;
@@ -8,7 +8,6 @@ import backend.academy.linktracker.contracts.dto.response.CommonLinkResponse;
 import backend.academy.linktracker.contracts.dto.response.CommonListLinksResponse;
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import com.pengrad.telegrambot.model.Update;
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -45,15 +44,13 @@ public class ListCommandHandler implements CommandHandler {
         if (commonListLinksResponse.size() > 0) {
             StringBuilder sb = new StringBuilder(botTextService.get("bot.list.link-list"));
             for (CommonLinkResponse link : commonListLinksResponse.links()) {
-                if (tag.isBlank() || Arrays.asList(link.tags()).contains(tag)) {
+                if (tag.isBlank() || link.tags().contains(tag)) {
                     count++;
-                    sb.append("\n")
-                            .append(link.id())
-                            .append(" ")
-                            .append(link.url())
-                            .append(" ");
+                    sb.append("\n").append(botTextService.get("bot.list.link-in-list", link.id(), link.url()));
                     if (link.tags() != null) {
-                        sb.append(String.join(", ", link.tags()));
+                        sb.append(" ")
+                                .append(botTextService.get(
+                                        "bot.list.link-in-list-tags", String.join(", ", link.tags())));
                     }
                 }
             }

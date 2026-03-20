@@ -4,9 +4,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://github.com/spotbugs/filter/4.8.4 https://raw.githubusercontent.com/spotbugs/spotbugs/4.8.4/spotbugs/etc/findbugsfilter.xsd">
 
-    <!--
-        see: https://find-sec-bugs.github.io/bugs.htm
-     -->
     <Match>
         <Or>
             <Bug pattern="INFORMATION_EXPOSURE_THROUGH_AN_ERROR_MESSAGE"/>
@@ -15,16 +12,12 @@
             <Bug pattern="PREDICTABLE_RANDOM"/>
         </Or>
     </Match>
+
     <Match>
         <Source name="~.*\.kt"/>
-        <Or>
-            <Bug pattern="SQL_INJECTION_VERTX"/>
-        </Or>
+        <Bug pattern="SQL_INJECTION_VERTX"/>
     </Match>
 
-    <!--
-        see: https://spotbugs.readthedocs.io/en/stable/
-     -->
     <Match>
         <Or>
             <Bug pattern="DM_DEFAULT_ENCODING"/>
@@ -33,7 +26,7 @@
             <Bug pattern="DM_EXIT"/>
         </Or>
     </Match>
-    <!-- Kotlin edge cases -->
+
     <Match>
         <Source name="~.*\.kt"/>
         <Or>
@@ -64,24 +57,17 @@
         </Or>
     </Match>
 
-    <!-- JMH exclusions -->
     <Match>
-        <Package name="~.*\.jmh_generated"/>
+        <Package name="~.*\.jmh_generated(\..*)?"/>
     </Match>
 
-    <!-- generated classes -->
     <Match>
-        <Package name="backend.academy.linktracker.generated.grpc"/>
-        <Package name="backend.academy.linktracker.bot.generated"/>
-        <Package name="backend.academy.linktracker.bot.generated.client"/>
-        <Package name="backend.academy.linktracker.bot.generated.api"/>
-        <Package name="backend.academy.linktracker.bot.generated.dto"/>
-        <Package name="backend.academy.linktracker.scrapper.generated"/>
-        <Package name="backend.academy.linktracker.scrapper.generated.api"/>
-        <Package name="backend.academy.linktracker.scrapper.generated.client"/>
-        <Package name="backend.academy.linktracker.scrapper.generated.dto"/>
-
-        <Package name="backend.academy.linktracker.contracts.exception"/>
+        <Or>
+            <Package name="~backend\.academy\.linktracker\.generated\.grpc(\..*)?"/>
+            <Package name="~backend\.academy\.linktracker\.bot\.generated(\..*)?"/>
+            <Package name="~backend\.academy\.linktracker\.scrapper\.generated(\..*)?"/>
+            <Package name="~backend\.academy\.linktracker\.contracts\.exception(\..*)?"/>
+        </Or>
     </Match>
 
 </FindBugsFilter>

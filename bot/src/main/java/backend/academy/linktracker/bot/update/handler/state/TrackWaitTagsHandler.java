@@ -1,6 +1,6 @@
 package backend.academy.linktracker.bot.update.handler.state;
 
-import backend.academy.linktracker.bot.client.ScrapperGateway;
+import backend.academy.linktracker.bot.client.protocol.ScrapperGateway;
 import backend.academy.linktracker.bot.model.UserSession;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
