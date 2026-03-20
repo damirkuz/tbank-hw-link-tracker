@@ -40,6 +40,7 @@ public class TrackWaitLinkHandler implements StateHandler {
             UserSession userSession = stateStorage.getUserSession(userId);
             userSession.setState(UserState.TRACK_WAIT_TAGS);
             userSession.setTrackLink(URI.create(rawLink));
+            stateStorage.save(userId, userSession);
 
             answer = botTextService.get("bot.track.ask-tags");
         } else {

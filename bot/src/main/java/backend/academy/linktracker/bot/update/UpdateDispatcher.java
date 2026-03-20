@@ -29,8 +29,6 @@ public class UpdateDispatcher {
 
     private final CommandHandlerRegistry commandHandlerRegistry;
 
-    private final StringParser parser;
-
     public void dispatch(Update update) {
         if (update.message() == null || update.message().chat() == null) {
             log.atDebug().log("Получен Update без message или chat. Пропускаем.");
@@ -40,7 +38,7 @@ public class UpdateDispatcher {
         long chatId = update.message().chat().id();
         long userId = update.message().from().id();
         String text = update.message().text() != null ? update.message().text() : "";
-        String command = text.startsWith("/") ? parser.parseCommand(text) : null;
+        String command = text.startsWith("/") ? StringParser.parseCommand(text) : null;
         UserState currentState = stateStorage.getUserSession(userId).getState();
 
         log.atInfo()
@@ -60,7 +58,7 @@ public class UpdateDispatcher {
                 .ifPresentOrElse(
                         handler -> {
                             if (handler.isCancelStateCommand()) {
-                                stateStorage.getUserSession(userId).setState(UserState.IDLE);
+                                stateStorage.updateState(userId, UserState.IDLE);
                                 commandRouter.route(update, handler);
                             } else if (currentState != UserState.IDLE) {
                                 stateRouter.route(update);
@@ -85,8 +83,9 @@ public class UpdateDispatcher {
                     dispatch(update);
                 } catch (Exception e) {
                     log.atError()
+                            .setCause(e)
                             .addKeyValue("update_id", update.updateId())
-                            .log("Ошибка во время обработки обновления", e);
+                            .log("Ошибка во время обработки обновления");
                 }
             }
 

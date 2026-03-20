@@ -20,7 +20,6 @@ public class UntrackCommandHandler implements CommandHandler {
     private final ScrapperGateway scrapperClient;
     private final BotTextService botTextService;
     private final BotOperations botOperations;
-    private final StringParser stringParser;
     private final LinkValidationService linkValidationService;
 
     @Override
@@ -32,7 +31,7 @@ public class UntrackCommandHandler implements CommandHandler {
     public void handle(Update update) {
         long chatId = update.message().chat().id();
 
-        String link = stringParser.parseAfterSpace(update.message().text());
+        String link = StringParser.parseAfterSpace(update.message().text());
         LinkValidationResult linkValidationResult = linkValidationService.validate(link);
 
         if (!linkValidationResult.valid()) {

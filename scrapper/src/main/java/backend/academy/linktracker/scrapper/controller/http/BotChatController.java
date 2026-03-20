@@ -1,4 +1,4 @@
-package backend.academy.linktracker.scrapper.controller;
+package backend.academy.linktracker.scrapper.controller.http;
 
 import backend.academy.linktracker.scrapper.generated.api.TgChatApi;
 import backend.academy.linktracker.scrapper.service.BotChatService;

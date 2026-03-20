@@ -16,8 +16,6 @@ import backend.academy.linktracker.bot.update.handler.command.CommandHandlerRegi
 import backend.academy.linktracker.bot.update.router.CommandRouter;
 import backend.academy.linktracker.bot.update.router.IdleRouter;
 import backend.academy.linktracker.bot.update.router.StateRouter;
-import backend.academy.linktracker.bot.util.StringParser;
-import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
@@ -35,9 +33,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class UpdateDispatcherTest {
 
     @Mock
-    private TelegramBot bot;
-
-    @Mock
     private CommandRouter commandRouter;
 
     @Mock
@@ -51,9 +46,6 @@ class UpdateDispatcherTest {
 
     @Mock
     private CommandHandlerRegistry commandHandlerRegistry;
-
-    @Mock
-    private StringParser parser;
 
     @Mock
     private CommandHandler commandHandler;
@@ -72,7 +64,7 @@ class UpdateDispatcherTest {
 
         updateDispatcher.dispatch(update);
 
-        verifyNoInteractions(commandRouter, idleRouter, stateRouter, stateStorage, commandHandlerRegistry, parser);
+        verifyNoInteractions(commandRouter, idleRouter, stateRouter, stateStorage, commandHandlerRegistry);
     }
 
     @Test
@@ -86,7 +78,7 @@ class UpdateDispatcherTest {
 
         updateDispatcher.dispatch(update);
 
-        verifyNoInteractions(commandRouter, idleRouter, stateRouter, stateStorage, commandHandlerRegistry, parser);
+        verifyNoInteractions(commandRouter, idleRouter, stateRouter, stateStorage, commandHandlerRegistry);
     }
 
     @Test
@@ -96,7 +88,6 @@ class UpdateDispatcherTest {
         long userId = 11L;
         Update update = createUpdate(chatId, userId, "/start");
 
-        when(parser.parseCommand("/start")).thenReturn("/start");
         when(stateStorage.getUserSession(userId)).thenReturn(userSession);
         when(userSession.getState()).thenReturn(UserState.TRACK_WAIT_LINK);
         when(commandHandlerRegistry.findByCommandText("/start")).thenReturn(Optional.of(commandHandler));
@@ -104,10 +95,9 @@ class UpdateDispatcherTest {
 
         updateDispatcher.dispatch(update);
 
-        verify(parser).parseCommand("/start");
         verify(commandHandlerRegistry).findByCommandText("/start");
         verify(userSession).getState();
-        verify(userSession).setState(UserState.IDLE);
+        verify(stateStorage).updateState(userId, UserState.IDLE);
         verify(commandRouter).route(same(update), same(commandHandler));
         verify(idleRouter, never()).route(same(update));
         verify(stateRouter, never()).route(same(update));
@@ -120,7 +110,6 @@ class UpdateDispatcherTest {
         long userId = 22L;
         Update update = createUpdate(chatId, userId, "/help");
 
-        when(parser.parseCommand("/help")).thenReturn("/help");
         when(stateStorage.getUserSession(userId)).thenReturn(userSession);
         when(userSession.getState()).thenReturn(UserState.IDLE);
         when(commandHandlerRegistry.findByCommandText("/help")).thenReturn(Optional.of(commandHandler));
@@ -128,7 +117,6 @@ class UpdateDispatcherTest {
 
         updateDispatcher.dispatch(update);
 
-        verify(parser).parseCommand("/help");
         verify(commandHandlerRegistry).findByCommandText("/help");
         verify(userSession).getState();
         verify(commandRouter).route(same(update), same(commandHandler));
@@ -155,7 +143,6 @@ class UpdateDispatcherTest {
         verify(stateRouter).route(same(update));
         verify(commandRouter, never()).route(same(update), same(commandHandler));
         verify(idleRouter, never()).route(same(update));
-        verifyNoInteractions(parser);
     }
 
     @Test
@@ -176,7 +163,6 @@ class UpdateDispatcherTest {
         verify(idleRouter).route(same(update));
         verify(commandRouter, never()).route(same(update), same(commandHandler));
         verify(stateRouter, never()).route(same(update));
-        verifyNoInteractions(parser);
     }
 
     private Update createUpdate(long chatId, long userId, String text) {

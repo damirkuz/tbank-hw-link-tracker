@@ -14,8 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TrackWaitTagsHandler implements StateHandler {
@@ -55,10 +57,14 @@ public class TrackWaitTagsHandler implements StateHandler {
             answer = botTextService.get("bot.track.link-already-add");
         } catch (ChatNotFoundException e) {
             answer = botTextService.get("bot.track.chat-not-found");
+        } catch (Exception e) {
+            answer = botTextService.get("bot.common.unknown-error");
+            log.atError().setCause(e).log(answer);
         }
 
         userSession.setTrackLink(null);
         userSession.setState(UserState.IDLE);
+        stateStorage.save(userId, userSession);
         botOperations.sendMessage(chatId, answer);
     }
 }

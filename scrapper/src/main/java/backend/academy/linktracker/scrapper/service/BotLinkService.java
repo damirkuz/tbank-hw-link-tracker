@@ -4,6 +4,9 @@ import backend.academy.linktracker.contracts.dto.request.CommonAddLinkRequest;
 import backend.academy.linktracker.contracts.dto.request.CommonRemoveLinkRequest;
 import backend.academy.linktracker.contracts.dto.response.CommonLinkResponse;
 import backend.academy.linktracker.contracts.dto.response.CommonListLinksResponse;
+import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
+import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
+import backend.academy.linktracker.scrapper.link.TrackedResourceResolver;
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.model.Link;
 import backend.academy.linktracker.scrapper.model.Subscription;
@@ -11,7 +14,6 @@ import backend.academy.linktracker.scrapper.model.TrackedResource;
 import backend.academy.linktracker.scrapper.repository.ChatRepository;
 import backend.academy.linktracker.scrapper.repository.LinkRepository;
 import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
-import backend.academy.linktracker.scrapper.util.TrackedResourceResolver;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,14 +30,19 @@ public class BotLinkService {
 
     private final TrackedResourceResolver trackedResourceResolver;
 
-    public CommonLinkResponse addLink(long chatId, CommonAddLinkRequest addLinkRequest) {
-        Chat chat = chatRepository.getChat(chatId);
+    public CommonLinkResponse addLink(long chatId, CommonAddLinkRequest addLinkRequest)
+            throws ChatNotFoundException, LinkAlreadyTrackedException {
+        Chat chat = getChat(chatId);
 
         Link link = createLink(addLinkRequest.uri());
         linkRepository.addLink(link);
 
         Subscription subscription = new Subscription(chat, link, addLinkRequest.tags(), addLinkRequest.filters());
-        subscriptionRepository.addSubscription(subscription);
+        boolean added = subscriptionRepository.addSubscription(subscription);
+
+        if (!added) {
+            throw new LinkAlreadyTrackedException();
+        }
 
         return new CommonLinkResponse(link.getId(), link.getUri(), addLinkRequest.tags(), addLinkRequest.filters());
     }
@@ -46,8 +53,13 @@ public class BotLinkService {
         return new Link(uri, trackedResource);
     }
 
-    public CommonLinkResponse deleteLink(long chatId, CommonRemoveLinkRequest removeLinkRequest) {
-        Chat chat = chatRepository.getChat(chatId);
+    public Chat getChat(long chatId) throws ChatNotFoundException {
+        return chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
+    }
+
+    public CommonLinkResponse deleteLink(long chatId, CommonRemoveLinkRequest removeLinkRequest)
+            throws ChatNotFoundException {
+        Chat chat = getChat(chatId);
         Link link = createLink(removeLinkRequest.uri());
 
         Subscription subscription = new Subscription(chat, link, null, null);
@@ -74,8 +86,8 @@ public class BotLinkService {
         return new CommonListLinksResponse(linkResponses, linkResponses.size());
     }
 
-    public List<Subscription> getSubscriptionsByChatId(long chatId) {
-        Chat chat = chatRepository.getChat(chatId);
+    public List<Subscription> getSubscriptionsByChatId(long chatId) throws ChatNotFoundException {
+        Chat chat = getChat(chatId);
         return subscriptionRepository.getAllSubscriptionsByChat(chat);
     }
 }

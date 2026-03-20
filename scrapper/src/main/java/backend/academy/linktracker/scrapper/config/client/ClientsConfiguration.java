@@ -1,4 +1,4 @@
-package backend.academy.linktracker.scrapper.config;
+package backend.academy.linktracker.scrapper.config.client;
 
 import backend.academy.linktracker.scrapper.client.provider.BaseTrackedClient;
 import backend.academy.linktracker.scrapper.model.TrackedResource;

@@ -1,4 +1,4 @@
-package backend.academy.linktracker.scrapper.controller;
+package backend.academy.linktracker.scrapper.controller.http;
 
 import backend.academy.linktracker.contracts.dto.mapper.ScrapperHttpMapper;
 import backend.academy.linktracker.contracts.dto.request.CommonAddLinkRequest;

@@ -1,5 +1,6 @@
 package backend.academy.linktracker.scrapper.client.provider.stackoverflow;
 
+import backend.academy.linktracker.scrapper.client.provider.AbstractRestTrackedClient;
 import backend.academy.linktracker.scrapper.client.provider.BaseTrackedClient;
 import backend.academy.linktracker.scrapper.config.properties.StackoverflowProperties;
 import backend.academy.linktracker.scrapper.model.TrackedResource;
@@ -7,23 +8,17 @@ import backend.academy.linktracker.scrapper.util.StringParser;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriBuilder;
 
 @Component
-public class StackoverflowTrackedClient implements BaseTrackedClient {
+@RequiredArgsConstructor
+public class StackoverflowTrackedClient extends AbstractRestTrackedClient implements BaseTrackedClient {
 
-    private final RestClient restClient;
+    private final RestClient stackoverflowRestClient;
     private final StackoverflowProperties properties;
-    private final StringParser stringParser;
-
-    public StackoverflowTrackedClient(
-            RestClient.Builder restClientBuilder, StackoverflowProperties properties, StringParser stringParser) {
-        this.properties = properties;
-        this.stringParser = stringParser;
-        this.restClient = restClientBuilder.baseUrl(properties.baseUrl()).build();
-    }
 
     @Override
     public Instant getLastUpdate(URI link) {
@@ -36,16 +31,18 @@ public class StackoverflowTrackedClient implements BaseTrackedClient {
     }
 
     public StackoverflowQuestionSnapshot getQuestionSnapshot(URI questionLink) {
-        long questionId = stringParser.parseStackoverflowQuestionId(questionLink);
+        long questionId = StringParser.parseStackoverflowQuestionId(questionLink);
 
-        StackoverflowResponse response = restClient
-                .get()
-                .uri(uriBuilder -> buildQuestionUri(uriBuilder, questionId))
-                .retrieve()
-                .body(StackoverflowResponse.class);
+        StackoverflowResponse response = getBody(
+                stackoverflowRestClient.get().uri(uriBuilder -> buildQuestionUri(uriBuilder, questionId)),
+                StackoverflowResponse.class,
+                questionLink,
+                "stackoverflow",
+                "getQuestionSnapshot");
 
-        if (response == null || response.items() == null || response.items().isEmpty()) {
-            throw new IllegalStateException("StackOverflow response is empty");
+        if (response.items() == null || response.items().isEmpty()) {
+            throw emptyResponse(
+                    "stackoverflow", "getQuestionSnapshot", questionLink, "StackOverflow response items are empty");
         }
 
         StackoverflowQuestionResponse question = response.items().getFirst();

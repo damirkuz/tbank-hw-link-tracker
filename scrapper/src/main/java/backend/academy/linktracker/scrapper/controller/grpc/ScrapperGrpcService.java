@@ -28,113 +28,185 @@ public class ScrapperGrpcService extends ScrapperServiceGrpc.ScrapperServiceImpl
 
     @Override
     public void registerChat(GrpcChatRequest request, StreamObserver<Empty> responseObserver) {
-        log.atInfo().addKeyValue("chat_id", request.getChatId()).log("gRPC запрос на регистрацию чата");
+        String operation = "registerChat";
+        long chatId = request.getChatId();
+
+        logRequest(operation, chatId, null);
 
         try {
-            scrapperGrpcHandler.registerChat(request.getChatId());
-            responseObserver.onNext(Empty.getDefaultInstance());
-            responseObserver.onCompleted();
-        } catch (IllegalArgumentException e) {
-            responseObserver.onError(
-                    Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-        } catch (ChatAlreadyExistsException e) {
-            responseObserver.onError(
-                    Status.ALREADY_EXISTS.withDescription("Чат уже существует").asRuntimeException());
+            scrapperGrpcHandler.registerChat(chatId);
+            completeEmpty(responseObserver);
+            logSuccess(operation, chatId, null, null);
         } catch (Exception e) {
-            responseObserver.onError(
-                    Status.INTERNAL.withDescription("Внутренняя ошибка сервера").asRuntimeException());
+            handleError(operation, chatId, null, e, responseObserver);
         }
     }
 
     @Override
     public void deleteChat(GrpcChatRequest request, StreamObserver<Empty> responseObserver) {
-        log.atInfo().addKeyValue("chat_id", request.getChatId()).log("gRPC запрос на удаление чата");
+        String operation = "deleteChat";
+        long chatId = request.getChatId();
+
+        logRequest(operation, chatId, null);
 
         try {
-            scrapperGrpcHandler.deleteChat(request.getChatId());
-            responseObserver.onNext(Empty.getDefaultInstance());
-            responseObserver.onCompleted();
-        } catch (IllegalArgumentException e) {
-            responseObserver.onError(
-                    Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-        } catch (ChatNotFoundException e) {
-            responseObserver.onError(Status.NOT_FOUND
-                    .withDescription("Чат не существует или ссылка не найдена")
-                    .asRuntimeException());
+            scrapperGrpcHandler.deleteChat(chatId);
+            completeEmpty(responseObserver);
+            logSuccess(operation, chatId, null, null);
         } catch (Exception e) {
-            responseObserver.onError(
-                    Status.INTERNAL.withDescription("Внутренняя ошибка сервера").asRuntimeException());
+            handleError(operation, chatId, null, e, responseObserver);
         }
     }
 
     @Override
     public void addLink(GrpcAddLinkCommand request, StreamObserver<Empty> responseObserver) {
-        log.atInfo().addKeyValue("chat_id", request.getChatId()).log("gRPC запрос на добавление ссылки");
+        String operation = "addLink";
+        long chatId = request.getChatId();
+        String link = request.getRequest().getUri();
+
+        logRequest(operation, chatId, link);
 
         try {
-            scrapperGrpcHandler.addLink(request.getChatId(), ScrapperGrpcMapper.fromGrpcAddLinkCommand(request));
-            responseObserver.onNext(Empty.getDefaultInstance());
-            responseObserver.onCompleted();
-        } catch (IllegalArgumentException e) {
-            responseObserver.onError(
-                    Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-        } catch (ChatNotFoundException e) {
-            responseObserver.onError(Status.NOT_FOUND
-                    .withDescription("Чат не существует или ссылка не найдена")
-                    .asRuntimeException());
-        } catch (LinkAlreadyTrackedException e) {
-            responseObserver.onError(Status.ALREADY_EXISTS
-                    .withDescription("Ссылка уже отслеживается")
-                    .asRuntimeException());
+            scrapperGrpcHandler.addLink(chatId, ScrapperGrpcMapper.fromGrpcAddLinkCommand(request));
+            completeEmpty(responseObserver);
+            logSuccess(operation, chatId, link, null);
         } catch (Exception e) {
-            responseObserver.onError(
-                    Status.INTERNAL.withDescription("Внутренняя ошибка сервера").asRuntimeException());
+            handleError(operation, chatId, link, e, responseObserver);
         }
     }
 
     @Override
     public void deleteLink(GrpcDeleteLinkCommand request, StreamObserver<Empty> responseObserver) {
-        log.atInfo().addKeyValue("chat_id", request.getChatId()).log("gRPC запрос на удаление ссылки");
+        String operation = "deleteLink";
+        long chatId = request.getChatId();
+        String link = request.getRequest().getUri();
+
+        logRequest(operation, chatId, link);
 
         try {
-            scrapperGrpcHandler.deleteLink(request.getChatId(), ScrapperGrpcMapper.fromGrpcDeleteLinkCommand(request));
-            responseObserver.onNext(Empty.getDefaultInstance());
-            responseObserver.onCompleted();
-        } catch (IllegalArgumentException e) {
-            responseObserver.onError(
-                    Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-        } catch (ChatNotFoundException | LinkNotFoundException e) {
-            responseObserver.onError(Status.NOT_FOUND
-                    .withDescription("Чат не существует или ссылка не найдена")
-                    .asRuntimeException());
+            scrapperGrpcHandler.deleteLink(chatId, ScrapperGrpcMapper.fromGrpcDeleteLinkCommand(request));
+            completeEmpty(responseObserver);
+            logSuccess(operation, chatId, link, null);
         } catch (Exception e) {
-            responseObserver.onError(
-                    Status.INTERNAL.withDescription("Внутренняя ошибка сервера").asRuntimeException());
+            handleError(operation, chatId, link, e, responseObserver);
         }
     }
 
     @Override
     public void getLinks(GrpcChatRequest request, StreamObserver<GrpcListLinksResponse> responseObserver) {
+        String operation = "getLinks";
+        long chatId = request.getChatId();
+
+        logRequest(operation, chatId, null);
+
         try {
-            var response = scrapperGrpcHandler.getLinks(request.getChatId());
-
-            log.atInfo()
-                    .addKeyValue("chat_id", request.getChatId())
-                    .addKeyValue("links_count", response.size())
-                    .log("gRPC запрос на получение списка ссылок");
-
+            var response = scrapperGrpcHandler.getLinks(chatId);
+            logSuccess(operation, chatId, null, response.size());
             responseObserver.onNext(ScrapperGrpcMapper.toGrpcListLinksResponse(response));
             responseObserver.onCompleted();
-        } catch (IllegalArgumentException e) {
-            responseObserver.onError(
-                    Status.INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-        } catch (ChatNotFoundException e) {
-            responseObserver.onError(Status.NOT_FOUND
-                    .withDescription("Чат не существует или ссылка не найдена")
-                    .asRuntimeException());
         } catch (Exception e) {
-            responseObserver.onError(
-                    Status.INTERNAL.withDescription("Внутренняя ошибка сервера").asRuntimeException());
+            handleError(operation, chatId, null, e, responseObserver);
         }
+    }
+
+    private void completeEmpty(StreamObserver<Empty> responseObserver) {
+        responseObserver.onNext(Empty.getDefaultInstance());
+        responseObserver.onCompleted();
+    }
+
+    private void handleError(
+            String operation, long chatId, String link, Exception e, StreamObserver<?> responseObserver) {
+        Status status = mapStatus(e);
+        String description = mapDescription(e);
+        boolean expected = isExpected(e);
+
+        logFailure(operation, chatId, link, status, e, expected);
+        responseObserver.onError(status.withDescription(description).asRuntimeException());
+    }
+
+    private Status mapStatus(Exception e) {
+        if (e instanceof IllegalArgumentException) {
+            return Status.INVALID_ARGUMENT;
+        }
+        if (e instanceof ChatAlreadyExistsException || e instanceof LinkAlreadyTrackedException) {
+            return Status.ALREADY_EXISTS;
+        }
+        if (e instanceof ChatNotFoundException || e instanceof LinkNotFoundException) {
+            return Status.NOT_FOUND;
+        }
+        return Status.INTERNAL;
+    }
+
+    private String mapDescription(Exception e) {
+        if (e instanceof IllegalArgumentException) {
+            return e.getMessage();
+        }
+        if (e instanceof ChatAlreadyExistsException) {
+            return "Чат уже существует";
+        }
+        if (e instanceof LinkAlreadyTrackedException) {
+            return "Ссылка уже отслеживается";
+        }
+        if (e instanceof ChatNotFoundException || e instanceof LinkNotFoundException) {
+            return "Чат не существует или ссылка не найдена";
+        }
+        return "Внутренняя ошибка сервера";
+    }
+
+    private boolean isExpected(Exception e) {
+        return e instanceof IllegalArgumentException
+                || e instanceof ChatAlreadyExistsException
+                || e instanceof ChatNotFoundException
+                || e instanceof LinkAlreadyTrackedException
+                || e instanceof LinkNotFoundException;
+    }
+
+    private void logRequest(String operation, long chatId, String link) {
+        var builder = log.atInfo()
+                .addKeyValue("transport", "grpc")
+                .addKeyValue("operation", operation)
+                .addKeyValue("chat_id", chatId);
+
+        if (link != null) {
+            builder = builder.addKeyValue("link", link);
+        }
+
+        builder.log("Получен gRPC запрос");
+    }
+
+    private void logSuccess(String operation, long chatId, String link, Integer linksCount) {
+        var builder = log.atInfo()
+                .addKeyValue("transport", "grpc")
+                .addKeyValue("operation", operation)
+                .addKeyValue("chat_id", chatId);
+
+        if (link != null) {
+            builder = builder.addKeyValue("link", link);
+        }
+        if (linksCount != null) {
+            builder = builder.addKeyValue("links_count", linksCount);
+        }
+
+        builder.log("gRPC запрос успешно обработан");
+    }
+
+    private void logFailure(String operation, long chatId, String link, Status status, Exception e, boolean expected) {
+        var builder = expected ? log.atWarn() : log.atError();
+
+        builder = builder.setCause(e)
+                .addKeyValue("transport", "grpc")
+                .addKeyValue("operation", operation)
+                .addKeyValue("chat_id", chatId)
+                .addKeyValue("grpc_status", status.getCode().name())
+                .addKeyValue("exception", e.getClass().getSimpleName());
+
+        if (link != null) {
+            builder = builder.addKeyValue("link", link);
+        }
+
+        builder.log(
+                expected
+                        ? "Ожидаемая ошибка при обработке gRPC запроса"
+                        : "Неожиданная ошибка при обработке gRPC запроса");
     }
 }

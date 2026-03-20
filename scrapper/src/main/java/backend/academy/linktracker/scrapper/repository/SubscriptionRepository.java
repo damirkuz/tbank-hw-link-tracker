@@ -1,7 +1,5 @@
 package backend.academy.linktracker.scrapper.repository;
 
-import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
-import backend.academy.linktracker.contracts.exception.LinkNotFoundException;
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.model.Link;
 import backend.academy.linktracker.scrapper.model.Subscription;
@@ -15,21 +13,12 @@ public class SubscriptionRepository {
 
     private final Set<Subscription> subscriptions = ConcurrentHashMap.newKeySet();
 
-    public void addSubscription(Subscription subscription) {
-
-        boolean added = subscriptions.add(subscription);
-
-        if (!added) {
-            throw new LinkAlreadyTrackedException();
-        }
+    public boolean addSubscription(Subscription subscription) {
+        return subscriptions.add(subscription);
     }
 
     public void deleteSubscription(Subscription subscription) {
-        boolean deleted = subscriptions.remove(subscription);
-
-        if (!deleted) {
-            throw new LinkNotFoundException();
-        }
+        subscriptions.remove(subscription);
     }
 
     public List<Subscription> getAllSubscriptionsByChat(Chat chat) {

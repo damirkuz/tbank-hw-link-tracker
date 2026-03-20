@@ -28,8 +28,8 @@ public class StartCommandHandler implements CommandHandler {
         botOperations.sendMessage(chatId, answer);
         try {
             scrapperClient.registerChat(chatId);
-        } catch (ChatAlreadyExistsException _) {
-            log.atDebug().addKeyValue("chat_id", chatId).log("Чат уже был зарегистрирован в scrapper");
+        } catch (ChatAlreadyExistsException e) {
+            log.atDebug().setCause(e).addKeyValue("chat_id", chatId).log("Чат уже был зарегистрирован в scrapper");
         }
     }
 

@@ -2,12 +2,10 @@ package backend.academy.linktracker.scrapper.util;
 
 import backend.academy.linktracker.scrapper.client.provider.github.RepoInfo;
 import java.net.URI;
-import org.springframework.stereotype.Component;
 
-@Component
 public class StringParser {
 
-    public RepoInfo parseGithubRepositoryLink(URI repositoryLink) {
+    public static RepoInfo parseGithubRepositoryLink(URI repositoryLink) {
         String host = repositoryLink.getHost();
 
         if (host == null || (!host.equals("github.com") && !host.equals("www.github.com"))) {
@@ -30,7 +28,7 @@ public class StringParser {
         return new RepoInfo(owner, repo);
     }
 
-    public long parseStackoverflowQuestionId(URI questionLink) {
+    public static long parseStackoverflowQuestionId(URI questionLink) {
         String host = questionLink.getHost();
 
         if (host == null || (!host.equals("stackoverflow.com") && !host.equals("ru.stackoverflow.com"))) {

@@ -1,8 +1,7 @@
 package backend.academy.linktracker.scrapper.repository;
 
-import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
-import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import backend.academy.linktracker.scrapper.model.Chat;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Repository;
@@ -12,27 +11,16 @@ public class ChatRepository {
 
     private final Set<Chat> chats = ConcurrentHashMap.newKeySet();
 
-    public void registerChat(Chat chat) {
-        boolean added = chats.add(chat);
-
-        if (!added) {
-            throw new ChatAlreadyExistsException();
-        }
+    public boolean registerChat(Chat chat) {
+        return chats.add(chat);
     }
 
-    public void deleteChat(Chat chat) {
-        boolean deleted = chats.remove(chat);
-        if (!deleted) {
-            throw new ChatNotFoundException();
-        }
+    public boolean deleteChat(Chat chat) {
+        return chats.remove(chat);
     }
 
-    public Chat getChat(long chatId) {
+    public Optional<Chat> findById(long chatId) {
         Chat chat = new Chat(chatId);
-        boolean hasChat = chats.contains(chat);
-        if (!hasChat) {
-            throw new ChatNotFoundException();
-        }
-        return chat;
+        return chats.contains(chat) ? Optional.of(chat) : Optional.empty();
     }
 }

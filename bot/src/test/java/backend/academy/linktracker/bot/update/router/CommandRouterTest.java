@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.bot.update.handler.command.CommandHandler;
 import backend.academy.linktracker.bot.update.handler.command.CommandHandlerRegistry;
-import backend.academy.linktracker.bot.util.StringParser;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import java.util.Optional;
@@ -27,9 +26,6 @@ class CommandRouterTest {
     private CommandHandlerRegistry commandHandlerRegistry;
 
     @Mock
-    private StringParser parser;
-
-    @Mock
     private CommandHandler commandHandler;
 
     @InjectMocks
@@ -42,12 +38,10 @@ class CommandRouterTest {
         String parsedCommand = "/start";
         Update update = createUpdate(rawText);
 
-        when(parser.parseCommand(rawText)).thenReturn(parsedCommand);
         when(commandHandlerRegistry.findByCommandText(parsedCommand)).thenReturn(Optional.of(commandHandler));
 
         commandRouter.route(update);
 
-        verify(parser).parseCommand(rawText);
         verify(commandHandlerRegistry).findByCommandText(parsedCommand);
         verify(commandHandler).handle(same(update));
     }
@@ -59,12 +53,10 @@ class CommandRouterTest {
         String parsedCommand = "/unknown";
         Update update = createUpdate(rawText);
 
-        when(parser.parseCommand(rawText)).thenReturn(parsedCommand);
         when(commandHandlerRegistry.findByCommandText(parsedCommand)).thenReturn(Optional.empty());
 
         commandRouter.route(update);
 
-        verify(parser).parseCommand(rawText);
         verify(commandHandlerRegistry).findByCommandText(parsedCommand);
         verifyNoInteractions(commandHandler);
     }
@@ -77,7 +69,7 @@ class CommandRouterTest {
         commandRouter.route(update, commandHandler);
 
         verify(commandHandler).handle(same(update));
-        verifyNoInteractions(commandHandlerRegistry, parser);
+        verifyNoInteractions(commandHandlerRegistry);
     }
 
     private Update createUpdate(String text) {

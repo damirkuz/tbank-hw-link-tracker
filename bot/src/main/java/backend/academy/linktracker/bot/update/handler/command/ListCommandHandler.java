@@ -18,7 +18,6 @@ public class ListCommandHandler implements CommandHandler {
     private final ScrapperGateway scrapperClient;
     private final BotTextService botTextService;
     private final BotOperations botOperations;
-    private final StringParser stringParser;
 
     @Override
     public boolean isCancelStateCommand() {
@@ -38,7 +37,7 @@ public class ListCommandHandler implements CommandHandler {
             commonListLinksResponse = scrapperClient.getLinks(chatId);
         }
 
-        String tag = stringParser.parseAfterSpace(update.message().text());
+        String tag = StringParser.parseAfterSpace(update.message().text());
         int count = 0;
 
         if (commonListLinksResponse.size() > 0) {
