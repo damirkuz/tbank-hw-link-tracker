@@ -177,7 +177,6 @@ public class GrpcScrapperClient implements ScrapperGateway {
         Status status = e.getStatus();
 
         log.atWarn()
-                .setCause(e)
                 .addKeyValue("client", "scrapper")
                 .addKeyValue("transport", "grpc")
                 .addKeyValue("operation", operation)

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,7 +23,7 @@ public class StateHandlerRegistry {
         this.map = Collections.unmodifiableMap(tempMap);
     }
 
-    public StateHandler getHandler(UserState state) {
-        return map.get(state);
+    public Optional<StateHandler> getHandler(UserState state) {
+        return Optional.ofNullable(map.get(state));
     }
 }

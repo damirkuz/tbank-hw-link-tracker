@@ -1,28 +1,36 @@
-package backend.academy.linktracker.bot.update.handler.command;
+package backend.academy.linktracker.bot.update.handler.global;
 
 import backend.academy.linktracker.bot.config.properties.BotProperties;
 import backend.academy.linktracker.bot.config.properties.CommandMessage;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
+import backend.academy.linktracker.bot.update.context.UpdateContext;
 import com.pengrad.telegrambot.model.Update;
 import jakarta.validation.Valid;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component("/help")
+@Component
 @RequiredArgsConstructor
-public class HelpCommandHandler implements CommandHandler {
+public class HelpGlobalActionHandler implements GlobalActionHandler {
 
-    private final BotTextService botTextService;
     private final BotOperations botOperations;
+    private final BotTextService botTextService;
     private final BotProperties botProperties;
 
     @Override
-    public void handle(Update update) {
-        long chatId = update.message().chat().id();
+    public boolean supports(UpdateContext context) {
+        return context.isCallbackOrCommandAction("help");
+    }
 
-        botOperations.sendMessage(chatId, getCommandsWithDescriptions());
+    @Override
+    public void handle(Update update, UpdateContext context) {
+        if (context.chatId() == null) {
+            return;
+        }
+
+        botOperations.sendMessage(context.chatId(), getCommandsWithDescriptions());
     }
 
     private String getCommandsWithDescriptions() {
@@ -34,10 +42,5 @@ public class HelpCommandHandler implements CommandHandler {
             answer.append("\n").append(value.command()).append(" - ").append(value.description());
         }
         return answer.toString();
-    }
-
-    @Override
-    public boolean isCancelStateCommand() {
-        return false;
     }
 }

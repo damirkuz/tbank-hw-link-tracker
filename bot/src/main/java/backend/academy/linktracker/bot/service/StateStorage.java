@@ -31,4 +31,12 @@ public class StateStorage {
         userSession.setState(userState);
         save(userId, userSession);
     }
+
+    public void clearState(long userId) {
+        UserSession userSession = getUserSession(userId);
+        userSession.setState(UserState.IDLE);
+        userSession.setTrackLink(null);
+
+        save(userId, userSession);
+    }
 }

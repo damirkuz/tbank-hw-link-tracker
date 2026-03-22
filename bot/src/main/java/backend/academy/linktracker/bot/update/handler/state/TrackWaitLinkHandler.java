@@ -5,6 +5,7 @@ import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.service.StateStorage;
+import backend.academy.linktracker.bot.update.context.UpdateContext;
 import backend.academy.linktracker.bot.validator.link.LinkValidationResult;
 import backend.academy.linktracker.bot.validator.link.LinkValidationService;
 import com.pengrad.telegrambot.model.Update;
@@ -27,10 +28,10 @@ public class TrackWaitLinkHandler implements StateHandler {
     }
 
     @Override
-    public void handle(Update update) {
+    public void handle(Update update, UpdateContext updateContext) {
 
-        long userId = update.message().from().id();
-        long chatId = update.message().chat().id();
+        long userId = updateContext.userId();
+        long chatId = updateContext.chatId();
 
         String rawLink = update.message().text().trim();
 
@@ -45,8 +46,7 @@ public class TrackWaitLinkHandler implements StateHandler {
             answer = botTextService.get("bot.track.ask-tags");
         } else {
             // не меняем состояние, снова ждём ссылку
-            answer = botTextService.get(
-                    "bot.track.invalid-link", linkValidationResult.code(), linkValidationResult.message());
+            answer = botTextService.get("bot.track.invalid-link");
         }
 
         botOperations.sendMessage(chatId, answer);

@@ -38,8 +38,9 @@ public class BotMenuInitializer implements ApplicationRunner {
             }
         } catch (Exception e) {
             log.atError()
+                    .setCause(e)
                     .addKeyValue("error_type", e.getClass().getSimpleName())
-                    .log("Ошибка сети при попытке зарегистрировать меню команд", e);
+                    .log("Ошибка сети при попытке зарегистрировать меню команд");
         }
     }
 }

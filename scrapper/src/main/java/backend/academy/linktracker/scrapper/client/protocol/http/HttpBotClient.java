@@ -42,7 +42,6 @@ public class HttpBotClient implements BotGateway {
 
     private void logExpected(String operation, RestClientResponseException e) {
         log.atWarn()
-                .setCause(e)
                 .addKeyValue("client", "bot")
                 .addKeyValue("transport", "http")
                 .addKeyValue("operation", operation)

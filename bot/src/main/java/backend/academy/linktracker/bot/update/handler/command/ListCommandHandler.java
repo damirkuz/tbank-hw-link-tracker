@@ -3,11 +3,13 @@ package backend.academy.linktracker.bot.update.handler.command;
 import backend.academy.linktracker.bot.client.protocol.ScrapperGateway;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
+import backend.academy.linktracker.bot.update.context.UpdateContext;
 import backend.academy.linktracker.bot.util.StringParser;
 import backend.academy.linktracker.contracts.dto.response.CommonLinkResponse;
 import backend.academy.linktracker.contracts.dto.response.CommonListLinksResponse;
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import com.pengrad.telegrambot.model.Update;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,13 +22,8 @@ public class ListCommandHandler implements CommandHandler {
     private final BotOperations botOperations;
 
     @Override
-    public boolean isCancelStateCommand() {
-        return true;
-    }
-
-    @Override
-    public void handle(Update update) {
-        long chatId = update.message().chat().id();
+    public void handle(Update update, UpdateContext updateContext) {
+        long chatId = updateContext.chatId();
 
         String answer = "";
         CommonListLinksResponse commonListLinksResponse;
@@ -37,7 +34,8 @@ public class ListCommandHandler implements CommandHandler {
             commonListLinksResponse = scrapperClient.getLinks(chatId);
         }
 
-        String tag = StringParser.parseAfterSpace(update.message().text());
+        String tag =
+                StringParser.parseAfterSpace(update.message().text()).trim().toLowerCase(Locale.ROOT);
         int count = 0;
 
         if (commonListLinksResponse.size() > 0) {

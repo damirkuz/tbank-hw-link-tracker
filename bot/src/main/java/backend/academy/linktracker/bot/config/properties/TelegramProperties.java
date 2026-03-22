@@ -9,4 +9,8 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "app.telegram")
 public record TelegramProperties(
-        @NotEmpty @URL String url, @NotEmpty String token, Duration updateListenerSleep, boolean debug) {}
+        @NotEmpty @URL String url,
+        @NotEmpty String token,
+        @NotEmpty String username,
+        Duration updateListenerSleep,
+        boolean debug) {}

@@ -21,4 +21,8 @@ public class UserSession {
     public UserSession copy() {
         return new UserSession(this.state, this.trackLink);
     }
+
+    public InterruptionPolicy getInterruptionPolicy() {
+        return state.getInterruptionPolicy();
+    }
 }

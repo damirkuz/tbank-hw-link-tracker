@@ -193,8 +193,11 @@ public class ScrapperGrpcService extends ScrapperServiceGrpc.ScrapperServiceImpl
     private void logFailure(String operation, long chatId, String link, Status status, Exception e, boolean expected) {
         var builder = expected ? log.atWarn() : log.atError();
 
-        builder = builder.setCause(e)
-                .addKeyValue("transport", "grpc")
+        if (!expected) {
+            builder = builder.setCause(e);
+        }
+
+        builder = builder.addKeyValue("transport", "grpc")
                 .addKeyValue("operation", operation)
                 .addKeyValue("chat_id", chatId)
                 .addKeyValue("grpc_status", status.getCode().name())

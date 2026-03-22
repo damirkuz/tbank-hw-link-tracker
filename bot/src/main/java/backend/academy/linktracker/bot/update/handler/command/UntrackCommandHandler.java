@@ -3,6 +3,7 @@ package backend.academy.linktracker.bot.update.handler.command;
 import backend.academy.linktracker.bot.client.protocol.ScrapperGateway;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
+import backend.academy.linktracker.bot.update.context.UpdateContext;
 import backend.academy.linktracker.bot.util.StringParser;
 import backend.academy.linktracker.bot.validator.link.LinkValidationResult;
 import backend.academy.linktracker.bot.validator.link.LinkValidationService;
@@ -23,22 +24,14 @@ public class UntrackCommandHandler implements CommandHandler {
     private final LinkValidationService linkValidationService;
 
     @Override
-    public boolean isCancelStateCommand() {
-        return true;
-    }
-
-    @Override
-    public void handle(Update update) {
-        long chatId = update.message().chat().id();
+    public void handle(Update update, UpdateContext updateContext) {
+        long chatId = updateContext.chatId();
 
         String link = StringParser.parseAfterSpace(update.message().text());
         LinkValidationResult linkValidationResult = linkValidationService.validate(link);
 
         if (!linkValidationResult.valid()) {
-            botOperations.sendMessage(
-                    chatId,
-                    botTextService.get(
-                            "bot.track.invalid-link", linkValidationResult.code(), linkValidationResult.message()));
+            botOperations.sendMessage(chatId, botTextService.get("bot.track.invalid-link"));
             return;
         }
 

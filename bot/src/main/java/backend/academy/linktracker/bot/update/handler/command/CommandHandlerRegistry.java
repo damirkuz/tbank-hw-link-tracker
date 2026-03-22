@@ -25,10 +25,9 @@ public class CommandHandlerRegistry {
     }
 
     public List<MyBotCommand> getCommands() {
-        return botProperties.messages().entrySet().stream()
-                .filter(entry -> handlers.containsKey(entry.getKey()))
-                .map(entry -> new MyBotCommand(
-                        entry.getValue().command(), entry.getValue().description(), handlers.get(entry.getKey())))
+        return botProperties.messages().values().stream()
+                .map(commandMessage -> new MyBotCommand(
+                        commandMessage.command(), commandMessage.description(), handlers.get(commandMessage.command())))
                 .toList();
     }
 }

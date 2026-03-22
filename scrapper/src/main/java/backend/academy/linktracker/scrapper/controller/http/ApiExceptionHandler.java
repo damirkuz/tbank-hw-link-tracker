@@ -53,8 +53,11 @@ public class ApiExceptionHandler {
     private void logException(String description, HttpStatus status, Exception e, boolean expected) {
         var builder = expected ? log.atWarn() : log.atError();
 
-        builder.setCause(e)
-                .addKeyValue("layer", "rest")
+        if (!expected) {
+            builder = builder.setCause(e);
+        }
+
+        builder.addKeyValue("layer", "rest")
                 .addKeyValue("http_status", status.value())
                 .addKeyValue("exception", e.getClass().getSimpleName())
                 .addKeyValue("message", e.getMessage())

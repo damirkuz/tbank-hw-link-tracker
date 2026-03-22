@@ -14,6 +14,7 @@ app:
   telegram:
     url: https://api.telegram.org/bot
     token: ${APP_TELEGRAM_TOKEN}
+    username: notification_tracker_robot
     update-listener-sleep: 1s
     debug: false
 
