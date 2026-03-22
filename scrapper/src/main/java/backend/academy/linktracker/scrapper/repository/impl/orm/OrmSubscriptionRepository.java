@@ -77,6 +77,14 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
                 .orElseGet(List::of);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Subscription> findByChatIdAndLinkId(long chatId, long linkId) {
+        return subscriptionJpaRepository
+                .findByChat_ChatIdAndLink_Id(chatId, linkId)
+                .map(subscriptionEntityMapper::toDomain);
+    }
+
     private Optional<LinkEntity> resolveExistingLink(Link link) {
         if (link.getId() != null) {
             Optional<LinkEntity> byId = linkJpaRepository.findById(link.getId());
@@ -107,6 +115,7 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
         entity.setUri(link.getUri());
         entity.setTrackedResource(link.getTrackedResource());
         entity.setLastUpdate(link.getLastUpdate());
+        entity.setNextCheckAt(link.getNextCheckAt());
         return entity;
     }
 }

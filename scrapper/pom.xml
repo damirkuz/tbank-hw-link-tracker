@@ -216,11 +216,7 @@
         </dependency>
     </dependencies>
 
-
-
     <build>
-
-
 
         <plugins>
             <!-- To build OCI image: https://docs.spring.io/spring-boot/maven-plugin/build-image.html -->

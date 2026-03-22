@@ -13,6 +13,7 @@ public class LinkEntityMapper {
         entity.setUri(link.getUri());
         entity.setTrackedResource(link.getTrackedResource());
         entity.setLastUpdate(link.getLastUpdate());
+        entity.setNextCheckAt(link.getNextCheckAt());
         return entity;
     }
 
@@ -20,6 +21,7 @@ public class LinkEntityMapper {
         Link link = new Link(entity.getUri(), entity.getTrackedResource());
         link.setId(entity.getId());
         link.setLastUpdate(entity.getLastUpdate());
+        link.setNextCheckAt(entity.getNextCheckAt());
         return link;
     }
 }

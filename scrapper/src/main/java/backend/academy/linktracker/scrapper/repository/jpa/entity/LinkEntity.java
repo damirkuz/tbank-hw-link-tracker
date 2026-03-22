@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.net.URI;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,6 +39,9 @@ public class LinkEntity {
 
     @Column(name = "last_update")
     private Instant lastUpdate;
+
+    @Column(name = "next_check_at")
+    private OffsetDateTime nextCheckAt;
 
     public LinkEntity(URI uri, TrackedResource trackedResource, Instant lastUpdate) {
         this.uri = uri;

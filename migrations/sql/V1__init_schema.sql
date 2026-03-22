@@ -36,6 +36,3 @@ create table if not exists subscription_filters (
                                                         foreign key (subscription_id) references subscriptions (id) on delete cascade,
                                                     constraint uq_subscription_filters unique (subscription_id, filter_value)
 );
-
-create index if not exists idx_subscriptions_chat_id on subscriptions(chat_id);
-create index if not exists idx_subscriptions_link_id on subscriptions(link_id);

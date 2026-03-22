@@ -1,14 +1,21 @@
 package backend.academy.linktracker.scrapper.repository.impl.orm;
 
 import backend.academy.linktracker.scrapper.model.Link;
+import backend.academy.linktracker.scrapper.model.TrackedResource;
 import backend.academy.linktracker.scrapper.repository.LinkRepository;
 import backend.academy.linktracker.scrapper.repository.jpa.entity.LinkEntity;
 import backend.academy.linktracker.scrapper.repository.jpa.mapper.LinkEntityMapper;
 import backend.academy.linktracker.scrapper.repository.jpa.repository.LinkJpaRepository;
+import java.net.URI;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,8 +30,10 @@ public class OrmLinkRepository implements LinkRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Link> getLinks() {
-        return linkJpaRepository.findAll().stream()
+    public List<Link> findLinksForUpdate(OffsetDateTime before, long lastSeenId, int limit) {
+        return linkJpaRepository
+                .findLinksForUpdate(before, lastSeenId, PageRequest.of(0, limit, Sort.by(Sort.Direction.ASC, "id")))
+                .stream()
                 .map(linkEntityMapper::toDomain)
                 .toList();
     }
@@ -32,9 +41,40 @@ public class OrmLinkRepository implements LinkRepository {
     @Override
     public void addLink(Link link) {
         try {
-            linkJpaRepository.saveAndFlush(newLinkEntity(link));
+            LinkEntity saved = linkJpaRepository.saveAndFlush(newLinkEntity(link));
+            link.setId(saved.getId());
         } catch (DataIntegrityViolationException ignored) {
         }
+    }
+
+    @Override
+    public void updateCheckState(long linkId, Instant lastUpdate, OffsetDateTime nextCheckAt) {
+        linkJpaRepository.updateCheckState(linkId, lastUpdate, nextCheckAt);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Link> findById(long id) {
+        return linkJpaRepository.findById(id).map(linkEntityMapper::toDomain);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Link> findByUriAndTrackedResource(URI uri, TrackedResource trackedResource) {
+        return linkJpaRepository
+                .findByUriAndTrackedResource(uri, trackedResource)
+                .map(linkEntityMapper::toDomain);
+    }
+
+    @Override
+    public boolean deleteById(long id) {
+        if (!linkJpaRepository.existsById(id)) {
+            return false;
+        }
+
+        linkJpaRepository.deleteById(id);
+        linkJpaRepository.flush();
+        return true;
     }
 
     private LinkEntity newLinkEntity(Link link) {
@@ -42,6 +82,7 @@ public class OrmLinkRepository implements LinkRepository {
         entity.setUri(link.getUri());
         entity.setTrackedResource(link.getTrackedResource());
         entity.setLastUpdate(link.getLastUpdate());
+        entity.setNextCheckAt(link.getNextCheckAt());
         return entity;
     }
 }

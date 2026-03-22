@@ -2,6 +2,7 @@ package backend.academy.linktracker.scrapper.model;
 
 import java.net.URI;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ public class Link {
     private final URI uri;
     private final TrackedResource trackedResource;
     private Instant lastUpdate;
+    private OffsetDateTime nextCheckAt;
 
     @Override
     public boolean equals(Object o) {

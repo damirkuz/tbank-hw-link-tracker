@@ -10,7 +10,9 @@ import backend.academy.linktracker.scrapper.model.TrackedResource;
 import backend.academy.linktracker.scrapper.repository.LinkRepository;
 import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
 import java.net.URI;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -31,36 +33,52 @@ public class UpdateChecker {
 
     @Scheduled(fixedRateString = "${scheduler.interval}")
     public void getUpdates() {
-        List<Link> links = linkRepository.getLinks();
+        OffsetDateTime before = OffsetDateTime.now();
+        long lastSeenId = 0L;
+        int batchSize = schedulerProperties.batchSize();
 
-        for (Link link : links) {
-            Instant lastUpdate = getLastUpdate(link.getUri(), link.getTrackedResource());
-
-            if (link.getLastUpdate() == null) {
-                link.setLastUpdate(lastUpdate);
-                continue;
+        while (true) {
+            List<Link> batch = linkRepository.findLinksForUpdate(before, lastSeenId, batchSize);
+            if (batch.isEmpty()) {
+                break;
             }
 
-            if (lastUpdate.isAfter(link.getLastUpdate())) {
-                Instant previousUpdate = link.getLastUpdate();
-                link.setLastUpdate(lastUpdate);
-
-                List<Chat> chats = subscriptionRepository.getAllChatsByLink(link);
-                List<Long> tgChatIds = chats.stream().map(Chat::getChatId).toList();
-
-                CommonLinkUpdate commonLinkUpdate =
-                        new CommonLinkUpdate(link.getId(), link.getUri(), "Произошло обновление", tgChatIds);
-
-                botClient.sendUpdate(commonLinkUpdate);
-
-                log.atInfo()
-                        .addKeyValue("resource", link.getTrackedResource())
-                        .addKeyValue("uri", link.getUri())
-                        .addKeyValue("previous_update", previousUpdate)
-                        .addKeyValue("current_update", lastUpdate)
-                        .addKeyValue("notified_chats", tgChatIds.size())
-                        .log("Обнаружено обновление ссылки");
+            for (Link link : batch) {
+                processLink(link);
             }
+
+            lastSeenId = batch.getLast().getId();
+        }
+    }
+
+    private void processLink(Link link) {
+        Instant actualLastUpdate = getLastUpdate(link.getUri(), link.getTrackedResource());
+        Instant previousLastUpdate = link.getLastUpdate();
+
+        Instant persistedLastUpdate = previousLastUpdate == null || actualLastUpdate.isAfter(previousLastUpdate)
+                ? actualLastUpdate
+                : previousLastUpdate;
+
+        OffsetDateTime nextCheckAt = OffsetDateTime.now().plus(Duration.ofMillis(schedulerProperties.interval()));
+
+        linkRepository.updateCheckState(link.getId(), persistedLastUpdate, nextCheckAt);
+
+        if (previousLastUpdate != null && actualLastUpdate.isAfter(previousLastUpdate)) {
+            List<Chat> chats = subscriptionRepository.getAllChatsByLink(link);
+            List<Long> tgChatIds = chats.stream().map(Chat::getChatId).toList();
+
+            CommonLinkUpdate commonLinkUpdate =
+                    new CommonLinkUpdate(link.getId(), link.getUri(), "Произошло обновление", tgChatIds);
+
+            botClient.sendUpdate(commonLinkUpdate);
+
+            log.atInfo()
+                    .addKeyValue("resource", link.getTrackedResource())
+                    .addKeyValue("uri", link.getUri())
+                    .addKeyValue("previous_update", previousLastUpdate)
+                    .addKeyValue("current_update", actualLastUpdate)
+                    .addKeyValue("notified_chats", tgChatIds.size())
+                    .log("Обнаружено обновление ссылки");
         }
     }
 

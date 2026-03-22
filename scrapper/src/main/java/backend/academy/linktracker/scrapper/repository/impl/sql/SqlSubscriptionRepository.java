@@ -8,6 +8,7 @@ import backend.academy.linktracker.scrapper.repository.sql.mapper.ChatSqlMapper;
 import backend.academy.linktracker.scrapper.repository.sql.mapper.SubscriptionSqlMapper;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -31,8 +32,8 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
             where chat_id = ?
         ),
         inserted_link as (
-            insert into links (uri, tracked_resource, last_update)
-            select ?, ?, ?
+            insert into links (uri, tracked_resource, last_update, next_check_at)
+            select ?, ?, ?, ?
             where exists (select 1 from existing_chat)
             on conflict (uri, tracked_resource) do nothing
             returning id
@@ -71,6 +72,7 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
             l.uri as uri,
             l.tracked_resource as tracked_resource,
             l.last_update as last_update,
+            l.next_check_at as next_check_at,
             array_remove(array_agg(distinct st.tag), null) as tags,
             array_remove(array_agg(distinct sf.filter_value), null) as filters
         from subscriptions s
@@ -79,7 +81,7 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
         left join subscription_tags st on st.subscription_id = s.id
         left join subscription_filters sf on sf.subscription_id = s.id
         where s.chat_id = ?
-        group by s.id, c.chat_id, l.id, l.uri, l.tracked_resource, l.last_update
+        group by s.id, c.chat_id, l.id, l.uri, l.tracked_resource, l.last_update, l.next_check_at
         order by s.id
         """;
 
@@ -101,6 +103,26 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
         select id
         from links
         where uri = ? and tracked_resource = ?
+        """;
+
+    private static final String FIND_SUBSCRIPTION_BY_CHAT_AND_LINK = """
+        select
+            s.id as subscription_id,
+            c.chat_id as chat_id,
+            l.id as link_id,
+            l.uri as uri,
+            l.tracked_resource as tracked_resource,
+            l.last_update as last_update,
+            l.next_check_at as next_check_at,
+            array_remove(array_agg(distinct st.tag), null) as tags,
+            array_remove(array_agg(distinct sf.filter_value), null) as filters
+        from subscriptions s
+        join chats c on c.chat_id = s.chat_id
+        join links l on l.id = s.link_id
+        left join subscription_tags st on st.subscription_id = s.id
+        left join subscription_filters sf on sf.subscription_id = s.id
+        where s.chat_id = ? and s.link_id = ?
+        group by s.id, c.chat_id, l.id, l.uri, l.tracked_resource, l.last_update, l.next_check_at
         """;
 
     private static final String INSERT_TAG = """
@@ -128,6 +150,7 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
                 subscription.getLink().getUri().toString(),
                 subscription.getLink().getTrackedResource().name(),
                 toTimestamp(subscription.getLink()),
+                toOffsetDateTime(subscription.getLink()),
                 subscription.getLink().getUri().toString(),
                 subscription.getLink().getTrackedResource().name(),
                 subscription.getChat().getChatId());
@@ -163,10 +186,16 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
                 .orElseGet(List::of);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Subscription> findByChatIdAndLinkId(long chatId, long linkId) {
+        return jdbcTemplate.query(FIND_SUBSCRIPTION_BY_CHAT_AND_LINK, subscriptionSqlMapper, chatId, linkId).stream()
+                .findFirst();
+    }
+
     private Optional<Long> resolveLinkId(Link link) {
         if (link.getId() != null) {
             List<Long> byId = jdbcTemplate.query(FIND_LINK_ID_BY_ID, (rs, rowNum) -> rs.getLong("id"), link.getId());
-
             if (!byId.isEmpty()) {
                 return Optional.of(byId.getFirst());
             }
@@ -220,5 +249,9 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
 
     private Timestamp toTimestamp(Link link) {
         return link.getLastUpdate() == null ? null : Timestamp.from(link.getLastUpdate());
+    }
+
+    private OffsetDateTime toOffsetDateTime(Link link) {
+        return link.getNextCheckAt();
     }
 }

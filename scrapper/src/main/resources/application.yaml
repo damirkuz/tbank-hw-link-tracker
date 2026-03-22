@@ -31,7 +31,8 @@ bot:
   transport: http
 
 scheduler:
-  interval: 10000
+  interval: 60000
+  batch-size: 100
 
 app:
   # SQL/ORM/MEMORY

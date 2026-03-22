@@ -4,4 +4,5 @@ import jakarta.validation.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "scheduler")
-public record SchedulerProperties(@NotEmpty int interval) {}
+public record SchedulerProperties(
+        @NotEmpty int interval, @NotEmpty int batchSize) {}
