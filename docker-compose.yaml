@@ -1,0 +1,51 @@
+services:
+  bot:
+    build:
+      dockerfile: bot/Dockerfile
+    container_name: link_tracker_bot
+    env_file:
+      - .env
+  scrapper:
+    build:
+      dockerfile: scrapper/Dockerfile
+    container_name: link_tracker_scrapper
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+  postgres:
+    image: postgres:15
+    container_name: pg_linktracker
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  flyway:
+    image: flyway/flyway
+    depends_on:
+      - postgres
+    command:
+      - "migrate"
+      - "-baselineOnMigrate=true"
+    volumes:
+      - ./db/migrations:/flyway/sql
+    environment:
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      FLYWAY_USER: ${DB_USER}
+      FLYWAY_PASSWORD: ${DB_PASSWORD}
+      FLYWAY_BASELINE_VERSION: 1
+      FLYWAY_BASELINE_DESCRIPTION: "Initial baseline"
+      FLYWAY_SCHEMAS: public
+
+volumes:
+  pg_data:
+  grafana_data:

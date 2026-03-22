@@ -20,13 +20,6 @@ app:
 
 scrapper:
   transport: grpc
-  http:
-    base-url: http://localhost:8081
-  grpc:
-    host: localhost
-    port: 9091
-
-
 
 bot:
   messages:

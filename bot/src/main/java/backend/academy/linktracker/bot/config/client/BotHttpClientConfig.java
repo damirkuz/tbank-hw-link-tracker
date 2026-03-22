@@ -1,7 +1,7 @@
 package backend.academy.linktracker.bot.config.client;
 
-import backend.academy.linktracker.bot.config.properties.ScrapperProperties;
 import backend.academy.linktracker.scrapper.generated.client.DefaultApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
@@ -12,8 +12,9 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 public class BotHttpClientConfig {
 
     @Bean
-    public RestClient restClient(RestClient.Builder restClientBuilder, ScrapperProperties properties) {
-        return restClientBuilder.baseUrl(properties.http().baseUrl()).build();
+    public RestClient restClient(
+            RestClient.Builder restClientBuilder, @Value("${SCRAPPER_HTTP_URL}") String scrapperUrl) {
+        return restClientBuilder.baseUrl(scrapperUrl).build();
     }
 
     @Bean

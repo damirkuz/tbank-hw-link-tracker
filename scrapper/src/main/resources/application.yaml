@@ -10,16 +10,14 @@ spring:
 
 bot:
   transport: grpc
-  http:
-    base-url: http://localhost:8080
-  grpc:
-    host: localhost
-    port: 9090
 
 scheduler:
   interval: 60000
 
 app:
+  access-type: MEMORY # SQL/ORM/MEMORY
+
+provider:
   stackoverflow:
     base-url: https://api.stackexchange.com/2.3
     key: ${STACKOVERFLOW_KEY}

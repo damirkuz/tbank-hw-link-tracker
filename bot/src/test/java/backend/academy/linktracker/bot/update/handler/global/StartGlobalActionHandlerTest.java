@@ -12,8 +12,6 @@ import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.service.StateStorage;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
 import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
-import com.pengrad.telegrambot.model.Chat;
-import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -104,11 +102,6 @@ class StartGlobalActionHandlerTest {
 
     private Update mockUpdate(long chatId) {
         Update update = mock(Update.class);
-        Message message = mock(Message.class);
-        Chat chat = mock(Chat.class);
-        when(update.message()).thenReturn(message);
-        when(message.chat()).thenReturn(chat);
-        when(chat.id()).thenReturn(chatId);
         return update;
     }
 

@@ -34,7 +34,7 @@ public class StartGlobalActionHandler implements GlobalActionHandler {
             return;
         }
 
-        long chatId = update.message().chat().id();
+        long chatId = context.chatId();
 
         stateStorage.clearState(context.userId());
         botOperations.sendMessage(context.chatId(), botTextService.get("bot.common.start"));

@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-@ConfigurationProperties(prefix = "provider.github")
+@ConfigurationProperties(prefix = "app")
 @Validated
-public record GithubProperties(
-        @NotEmpty String baseUrl, @NotEmpty String token) {}
+public record AppProperties(@NotEmpty String accessType) {}
