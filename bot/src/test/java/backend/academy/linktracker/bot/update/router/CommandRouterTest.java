@@ -1,84 +1,84 @@
-// package backend.academy.linktracker.bot.update.router;
-//
-// import static org.mockito.ArgumentMatchers.same;
-// import static org.mockito.Mockito.mock;
-// import static org.mockito.Mockito.verify;
-// import static org.mockito.Mockito.verifyNoInteractions;
-// import static org.mockito.Mockito.when;
-//
-// import backend.academy.linktracker.bot.update.handler.command.CommandHandler;
-// import backend.academy.linktracker.bot.update.handler.command.CommandHandlerRegistry;
-// import com.pengrad.telegrambot.model.Message;
-// import com.pengrad.telegrambot.model.Update;
-// import java.util.Optional;
-// import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
-//
-// @ExtendWith(MockitoExtension.class)
-// @DisplayName("CommandRouter")
-// class CommandRouterTest {
-//
-//    @Mock
-//    private CommandHandlerRegistry commandHandlerRegistry;
-//
-//    @Mock
-//    private CommandHandler commandHandler;
-//
-//    @InjectMocks
-//    private CommandRouter commandRouter;
-//
-//    @Test
-//    @DisplayName("Парсит команду и делегирует update найденному handler")
-//    void shouldParseCommandAndDelegateToResolvedHandler() {
-//        String rawText = "/start param";
-//        String parsedCommand = "/start";
-//        Update update = createUpdate(rawText);
-//
-//        when(commandHandlerRegistry.findByCommandText(parsedCommand)).thenReturn(Optional.of(commandHandler));
-//
-//        commandRouter.route(update);
-//
-//        verify(commandHandlerRegistry).findByCommandText(parsedCommand);
-//        verify(commandHandler).handle(same(update), );
-//    }
-//
-//    @Test
-//    @DisplayName("Ничего не делает, если handler не найден")
-//    void shouldDoNothingWhenHandlerNotFound() {
-//        String rawText = "/unknown";
-//        String parsedCommand = "/unknown";
-//        Update update = createUpdate(rawText);
-//
-//        when(commandHandlerRegistry.findByCommandText(parsedCommand)).thenReturn(Optional.empty());
-//
-//        commandRouter.route(update);
-//
-//        verify(commandHandlerRegistry).findByCommandText(parsedCommand);
-//        verifyNoInteractions(commandHandler);
-//    }
-//
-//    @Test
-//    @DisplayName("Прямой route(update, handler) вызывает переданный handler")
-//    void shouldCallProvidedHandlerDirectly() {
-//        Update update = mock(Update.class);
-//
-//        commandRouter.route(update, commandHandler);
-//
-//        verify(commandHandler).handle(same(update), );
-//        verifyNoInteractions(commandHandlerRegistry);
-//    }
-//
-//    private Update createUpdate(String text) {
-//        Update update = mock(Update.class);
-//        Message message = mock(Message.class);
-//
-//        when(update.message()).thenReturn(message);
-//        when(message.text()).thenReturn(text);
-//
-//        return update;
-//    }
-// }
+package backend.academy.linktracker.bot.update.router;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import backend.academy.linktracker.bot.config.properties.TelegramProperties;
+import backend.academy.linktracker.bot.update.context.UpdateContext;
+import backend.academy.linktracker.bot.update.handler.UnknownUpdateHandler;
+import backend.academy.linktracker.bot.update.handler.command.CommandHandler;
+import backend.academy.linktracker.bot.update.handler.command.CommandHandlerRegistry;
+import com.pengrad.telegrambot.model.Update;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("CommandRouter")
+class CommandRouterTest {
+
+    @Mock
+    private CommandHandlerRegistry commandHandlerRegistry;
+
+    @Mock
+    private TelegramProperties telegramProperties;
+
+    @Mock
+    private UnknownUpdateHandler unknownUpdateHandler;
+
+    @Mock
+    private CommandHandler commandHandler;
+
+    @InjectMocks
+    private CommandRouter commandRouter;
+
+    @Test
+    @DisplayName("Находит handler и вызывает его")
+    void shouldFindHandlerAndDelegate() {
+        Update update = mock(Update.class);
+        UpdateContext ctx = mock(UpdateContext.class);
+        when(telegramProperties.username()).thenReturn("mybot");
+        when(ctx.commandIdentifierForBot("mybot")).thenReturn(Optional.of("/start"));
+        when(commandHandlerRegistry.findByCommandText("/start")).thenReturn(Optional.of(commandHandler));
+
+        commandRouter.route(update, ctx);
+
+        verify(commandHandler).handle(update, ctx);
+        verifyNoInteractions(unknownUpdateHandler);
+    }
+
+    @Test
+    @DisplayName("Вызывает unknownUpdateHandler если handler не найден")
+    void shouldCallUnknownHandlerWhenNotFound() {
+        Update update = mock(Update.class);
+        UpdateContext ctx = mock(UpdateContext.class);
+        when(telegramProperties.username()).thenReturn("mybot");
+        when(ctx.commandIdentifierForBot("mybot")).thenReturn(Optional.of("/unknown"));
+        when(commandHandlerRegistry.findByCommandText("/unknown")).thenReturn(Optional.empty());
+
+        commandRouter.route(update, ctx);
+
+        verify(unknownUpdateHandler).handle(update, ctx);
+        verifyNoInteractions(commandHandler);
+    }
+
+    @Test
+    @DisplayName("Вызывает unknownUpdateHandler если команда не для этого бота")
+    void shouldCallUnknownHandlerWhenCommandNotForThisBot() {
+        Update update = mock(Update.class);
+        UpdateContext ctx = mock(UpdateContext.class);
+        when(telegramProperties.username()).thenReturn("mybot");
+        when(ctx.commandIdentifierForBot("mybot")).thenReturn(Optional.empty());
+
+        commandRouter.route(update, ctx);
+
+        verify(unknownUpdateHandler).handle(update, ctx);
+        verifyNoInteractions(commandHandler, commandHandlerRegistry);
+    }
+}

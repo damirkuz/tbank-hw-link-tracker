@@ -3,6 +3,7 @@ package backend.academy.linktracker.scrapper.scheduler;
 import backend.academy.linktracker.contracts.dto.request.CommonLinkUpdate;
 import backend.academy.linktracker.scrapper.client.protocol.BotGateway;
 import backend.academy.linktracker.scrapper.client.provider.BaseTrackedClient;
+import backend.academy.linktracker.scrapper.config.properties.SchedulerProperties;
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.model.Link;
 import backend.academy.linktracker.scrapper.model.TrackedResource;
@@ -26,8 +27,9 @@ public class UpdateChecker {
     private final LinkRepository linkRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final BotGateway botClient;
+    private final SchedulerProperties schedulerProperties;
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedRateString = "${scheduler.interval}")
     public void getUpdates() {
         List<Link> links = linkRepository.getLinks();
 

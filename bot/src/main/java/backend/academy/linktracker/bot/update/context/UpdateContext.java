@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public record UpdateContext(Integer updateId, Long chatId, Long userId, String messageText, String callbackData) {
+
     public boolean hasMessageText() {
         return messageText != null && !messageText.isBlank();
     }
@@ -47,28 +48,39 @@ public record UpdateContext(Integer updateId, Long chatId, Long userId, String m
             return false;
         }
 
-        String normalized = normalizeCommandName(commandName);
-        return commandName().map(normalized::equals).orElse(false);
-    }
-
-    public boolean isCommandForBot(String botUsername) {
         Optional<String> token = commandToken();
         if (token.isEmpty()) {
             return false;
         }
 
-        String commandToken = token.get();
-        int mentionIndex = commandToken.indexOf('@');
-        if (mentionIndex < 0) {
-            return true;
-        }
-
-        if (botUsername == null || botUsername.isBlank()) {
+        if (token.orElseThrow().contains("@")) {
             return false;
         }
 
-        String actualBotUsername = commandToken.substring(mentionIndex + 1);
-        return actualBotUsername.equalsIgnoreCase(botUsername);
+        String normalized = normalizeCommandName(commandName);
+        return commandName().map(normalized::equals).orElse(false);
+    }
+
+    public boolean isCommandNameForBot(String commandName, String botUsername) {
+        return isCommandForBot(botUsername) && isCommandName(commandName);
+    }
+
+    public boolean isCommandForBot(String botUsername) {
+        return commandToken()
+                .map(token -> {
+                    int mentionIndex = token.indexOf('@');
+                    if (mentionIndex < 0) {
+                        return true;
+                    }
+
+                    if (botUsername == null || botUsername.isBlank()) {
+                        return false;
+                    }
+
+                    String actualBotUsername = token.substring(mentionIndex + 1);
+                    return actualBotUsername.equalsIgnoreCase(botUsername);
+                })
+                .orElse(false);
     }
 
     public Optional<String> commandIdentifierForBot(String botUsername) {
