@@ -8,6 +8,24 @@ spring:
     server:
       port: 9091
 
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+    jpa:
+      hibernate:
+        ddl-auto: validate
+      open-in-view: false
+      properties:
+        hibernate:
+          format_sql: true
+
+    flyway:
+      enabled: true
+      locations: filesystem:./migrations
+
+
 bot:
   transport: grpc
 
@@ -15,7 +33,8 @@ scheduler:
   interval: 60000
 
 app:
-  access-type: MEMORY # SQL/ORM/MEMORY
+  # SQL/ORM/MEMORY
+  access-type: ORM
 
 provider:
   stackoverflow:
