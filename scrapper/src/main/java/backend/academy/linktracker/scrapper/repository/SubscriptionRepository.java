@@ -16,5 +16,5 @@ public interface SubscriptionRepository {
 
     List<Chat> getAllChatsByLink(Link link);
 
-    Optional<Subscription> findByChatIdAndLinkId(long chatId, long linkId); // Read
+    Optional<Subscription> findByChatIdAndLinkId(long chatId, long linkId);
 }

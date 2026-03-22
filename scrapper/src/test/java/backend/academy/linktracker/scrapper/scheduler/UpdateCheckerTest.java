@@ -1,186 +1,222 @@
-// package backend.academy.linktracker.scrapper.scheduler;
-//
-// import static org.assertj.core.api.Assertions.assertThat;
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.Mockito.never;
-// import static org.mockito.Mockito.verify;
-// import static org.mockito.Mockito.when;
-//
-// import backend.academy.linktracker.contracts.dto.request.CommonLinkUpdate;
-// import backend.academy.linktracker.scrapper.client.protocol.BotGateway;
-// import backend.academy.linktracker.scrapper.client.provider.BaseTrackedClient;
-// import backend.academy.linktracker.scrapper.config.properties.SchedulerProperties;
-// import backend.academy.linktracker.scrapper.model.Chat;
-// import backend.academy.linktracker.scrapper.model.Link;
-// import backend.academy.linktracker.scrapper.model.TrackedResource;
-// import backend.academy.linktracker.scrapper.repository.LinkRepository;
-// import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
-// import java.net.URI;
-// import java.time.Instant;
-// import java.util.List;
-// import java.util.Map;
-// import org.junit.jupiter.api.BeforeEach;
-// import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.ArgumentCaptor;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
-//
-// @ExtendWith(MockitoExtension.class)
-// @DisplayName("UpdateChecker")
-// class UpdateCheckerTest {
-//
-//    @Mock
-//    private BaseTrackedClient githubClient;
-//
-//    @Mock
-//    private LinkRepository linkRepository;
-//
-//    @Mock
-//    private SubscriptionRepository subscriptionRepository;
-//
-//    @Mock
-//    private BotGateway botClient;
-//
-//    @Mock
-//    private SchedulerProperties schedulerProperties;
-//
-//    private UpdateChecker checker;
-//
-//    private static final URI GITHUB_URI = URI.create("https://github.com/user/repo");
-//
-//    @BeforeEach
-//    void setUp() {
-//        Map<TrackedResource, BaseTrackedClient> clients = Map.of(TrackedResource.GITHUB, githubClient);
-//        checker = new UpdateChecker(clients, linkRepository, subscriptionRepository, botClient, schedulerProperties);
-//    }
-//
-//    @Test
-//    @DisplayName("getUpdates — при firstUpdate=null сохраняет lastUpdate, не отправляет уведомление")
-//    void firstUpdateSavedNoNotification() {
-//        Link link = new Link(GITHUB_URI, TrackedResource.GITHUB);
-//        // lastUpdate == null
-//
-//        Instant now = Instant.now();
-//        when(linkRepository.getLinks()).thenReturn(List.of(link));
-//        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(now);
-//
-//        checker.getUpdates();
-//
-//        assertThat(link.getLastUpdate()).isEqualTo(now);
-//        verify(botClient, never()).sendUpdate(any());
-//    }
-//
-//    @Test
-//    @DisplayName("getUpdates — нет нового обновления, sendUpdate не вызывается")
-//    void noNewUpdateNoNotification() {
-//        Instant past = Instant.parse("2024-01-01T00:00:00Z");
-//        Link link = new Link(GITHUB_URI, TrackedResource.GITHUB);
-//        link.setLastUpdate(past);
-//
-//        when(linkRepository.getLinks()).thenReturn(List.of(link));
-//        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(past); // не после
-//
-//        checker.getUpdates();
-//
-//        verify(botClient, never()).sendUpdate(any());
-//    }
-//
-//    @Test
-//    @DisplayName("getUpdates — есть новое обновление, sendUpdate вызывается с правильными данными")
-//    void newUpdateSendsNotification() {
-//        Instant old = Instant.parse("2024-01-01T00:00:00Z");
-//        Instant newer = Instant.parse("2024-06-01T00:00:00Z");
-//
-//        Link link = new Link(GITHUB_URI, TrackedResource.GITHUB);
-//        link.setId(42L);
-//        link.setLastUpdate(old);
-//
-//        Chat chat1 = new Chat(100L);
-//        Chat chat2 = new Chat(200L);
-//
-//        when(linkRepository.getLinks()).thenReturn(List.of(link));
-//        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(newer);
-//        when(subscriptionRepository.getAllChatsByLink(link)).thenReturn(List.of(chat1, chat2));
-//
-//        checker.getUpdates();
-//
-//        ArgumentCaptor<CommonLinkUpdate> captor = ArgumentCaptor.forClass(CommonLinkUpdate.class);
-//        verify(botClient).sendUpdate(captor.capture());
-//
-//        CommonLinkUpdate sent = captor.getValue();
-//        assertThat(sent.id()).isEqualTo(42L);
-//        assertThat(sent.url()).isEqualTo(GITHUB_URI);
-//        assertThat(sent.tgChatIds()).containsExactlyInAnyOrder(100L, 200L);
-//        assertThat(sent.description()).isNotBlank();
-//    }
-//
-//    @Test
-//    @DisplayName("getUpdates — lastUpdate обновляется после уведомления")
-//    void lastUpdateIsUpdatedAfterNotification() {
-//        Instant old = Instant.parse("2024-01-01T00:00:00Z");
-//        Instant newer = Instant.parse("2024-06-01T00:00:00Z");
-//
-//        Link link = new Link(GITHUB_URI, TrackedResource.GITHUB);
-//        link.setId(1L);
-//        link.setLastUpdate(old);
-//
-//        when(linkRepository.getLinks()).thenReturn(List.of(link));
-//        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(newer);
-//        when(subscriptionRepository.getAllChatsByLink(link)).thenReturn(List.of(new Chat(1L)));
-//
-//        checker.getUpdates();
-//
-//        assertThat(link.getLastUpdate()).isEqualTo(newer);
-//    }
-//
-//    @Test
-//    @DisplayName("getUpdates — нет ссылок, ничего не происходит")
-//    void emptyLinksNoInteraction() {
-//        when(linkRepository.getLinks()).thenReturn(List.of());
-//
-//        checker.getUpdates();
-//
-//        verify(botClient, never()).sendUpdate(any());
-//        verify(githubClient, never()).getLastUpdate(any());
-//    }
-//
-//    @Test
-//    @DisplayName("getUpdates — несколько ссылок, уведомление только по обновлённым")
-//    void multipleLinksOnlyUpdatedAreNotified() {
-//        Instant old = Instant.parse("2024-01-01T00:00:00Z");
-//        Instant newer = Instant.parse("2024-06-01T00:00:00Z");
-//
-//        URI uri1 = URI.create("https://github.com/user/repo1");
-//        URI uri2 = URI.create("https://github.com/user/repo2");
-//
-//        Link updatedLink = new Link(uri1, TrackedResource.GITHUB);
-//        updatedLink.setId(1L);
-//        updatedLink.setLastUpdate(old);
-//
-//        Link notUpdatedLink = new Link(uri2, TrackedResource.GITHUB);
-//        notUpdatedLink.setId(2L);
-//        notUpdatedLink.setLastUpdate(old);
-//
-//        when(linkRepository.getLinks()).thenReturn(List.of(updatedLink, notUpdatedLink));
-//        when(githubClient.getLastUpdate(uri1)).thenReturn(newer);
-//        when(githubClient.getLastUpdate(uri2)).thenReturn(old); // без изменений
-//        when(subscriptionRepository.getAllChatsByLink(updatedLink)).thenReturn(List.of(new Chat(1L)));
-//
-//        checker.getUpdates();
-//
-//        verify(botClient).sendUpdate(any()); // ровно один раз
-//    }
-//
-//    @Test
-//    @DisplayName("getLastUpdate — делегирует в правильный клиент по TrackedResource")
-//    void getLastUpdateDelegatesToClient() {
-//        Instant expected = Instant.now();
-//        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(expected);
-//
-//        Instant result = checker.getLastUpdate(GITHUB_URI, TrackedResource.GITHUB);
-//
-//        assertThat(result).isEqualTo(expected);
-//    }
-// }
+package backend.academy.linktracker.scrapper.scheduler;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import backend.academy.linktracker.contracts.dto.request.CommonLinkUpdate;
+import backend.academy.linktracker.scrapper.client.protocol.BotGateway;
+import backend.academy.linktracker.scrapper.client.provider.BaseTrackedClient;
+import backend.academy.linktracker.scrapper.config.properties.SchedulerProperties;
+import backend.academy.linktracker.scrapper.model.Chat;
+import backend.academy.linktracker.scrapper.model.Link;
+import backend.academy.linktracker.scrapper.model.TrackedResource;
+import backend.academy.linktracker.scrapper.repository.LinkRepository;
+import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
+import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("UpdateChecker")
+class UpdateCheckerTest {
+
+    @Mock
+    private BaseTrackedClient githubClient;
+
+    @Mock
+    private LinkRepository linkRepository;
+
+    @Mock
+    private SubscriptionRepository subscriptionRepository;
+
+    @Mock
+    private BotGateway botClient;
+
+    @Mock
+    private SchedulerProperties schedulerProperties;
+
+    private UpdateChecker checker;
+
+    private static final URI GITHUB_URI = URI.create("https://github.com/user/repo");
+    private static final int BATCH_SIZE = 100;
+    private static final int INTERVAL_MS = 60_000;
+
+    @BeforeEach
+    void setUp() {
+        checker = new UpdateChecker(
+                Map.of(TrackedResource.GITHUB, githubClient),
+                linkRepository,
+                subscriptionRepository,
+                botClient,
+                schedulerProperties);
+    }
+
+    @Test
+    @DisplayName("getUpdates — если ссылок нет, ничего не делает")
+    void getUpdatesWhenNoLinksDoNothing() {
+        when(schedulerProperties.batchSize()).thenReturn(BATCH_SIZE);
+        when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE)))
+                .thenReturn(List.of());
+
+        checker.getUpdates();
+
+        verify(linkRepository).findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE));
+        verify(linkRepository, never()).updateCheckState(anyLong(), any(), any());
+        verify(githubClient, never()).getLastUpdate(any());
+        verify(botClient, never()).sendUpdate(any());
+    }
+
+    @Test
+    @DisplayName("getUpdates — при первом обновлении сохраняет lastUpdate и не шлёт уведомление")
+    void getUpdatesFirstObservationOnlyPersistState() {
+        Instant actualLastUpdate = Instant.parse("2024-06-01T00:00:00Z");
+
+        Link link = new Link(GITHUB_URI, TrackedResource.GITHUB);
+        link.setId(1L);
+
+        when(schedulerProperties.batchSize()).thenReturn(BATCH_SIZE);
+        when(schedulerProperties.interval()).thenReturn(INTERVAL_MS);
+        when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE)))
+                .thenReturn(List.of(link))
+                .thenReturn(List.of());
+        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(actualLastUpdate);
+
+        OffsetDateTime beforeCall = OffsetDateTime.now();
+        checker.getUpdates();
+        OffsetDateTime afterCall = OffsetDateTime.now();
+
+        ArgumentCaptor<OffsetDateTime> nextCheckCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
+        verify(linkRepository).updateCheckState(eq(1L), eq(actualLastUpdate), nextCheckCaptor.capture());
+        verify(subscriptionRepository, never()).getAllChatsByLink(any());
+        verify(botClient, never()).sendUpdate(any());
+
+        OffsetDateTime nextCheckAt = nextCheckCaptor.getValue();
+        assertThat(nextCheckAt)
+                .isAfterOrEqualTo(beforeCall.plus(Duration.ofMillis(INTERVAL_MS)))
+                .isBeforeOrEqualTo(
+                        afterCall.plus(Duration.ofMillis(INTERVAL_MS)).plusSeconds(1));
+    }
+
+    @Test
+    @DisplayName("getUpdates — если нового обновления нет, уведомление не отправляет")
+    void getUpdatesWhenNoFreshUpdateDoNotNotify() {
+        Instant previousLastUpdate = Instant.parse("2024-06-01T00:00:00Z");
+
+        Link link = new Link(GITHUB_URI, TrackedResource.GITHUB);
+        link.setId(2L);
+        link.setLastUpdate(previousLastUpdate);
+
+        when(schedulerProperties.batchSize()).thenReturn(BATCH_SIZE);
+        when(schedulerProperties.interval()).thenReturn(INTERVAL_MS);
+        when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE)))
+                .thenReturn(List.of(link))
+                .thenReturn(List.of());
+        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(previousLastUpdate);
+
+        checker.getUpdates();
+
+        verify(linkRepository).updateCheckState(eq(2L), eq(previousLastUpdate), any(OffsetDateTime.class));
+        verify(subscriptionRepository, never()).getAllChatsByLink(any());
+        verify(botClient, never()).sendUpdate(any());
+    }
+
+    @Test
+    @DisplayName("getUpdates — если есть новое обновление, обновляет state и шлёт уведомление")
+    void getUpdatesWhenFreshUpdateSendNotification() {
+        Instant previousLastUpdate = Instant.parse("2024-01-01T00:00:00Z");
+        Instant actualLastUpdate = Instant.parse("2024-06-01T00:00:00Z");
+
+        Link link = new Link(GITHUB_URI, TrackedResource.GITHUB);
+        link.setId(42L);
+        link.setLastUpdate(previousLastUpdate);
+
+        Chat chat1 = new Chat(100L);
+        Chat chat2 = new Chat(200L);
+
+        when(schedulerProperties.batchSize()).thenReturn(BATCH_SIZE);
+        when(schedulerProperties.interval()).thenReturn(INTERVAL_MS);
+        when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE)))
+                .thenReturn(List.of(link))
+                .thenReturn(List.of());
+        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(actualLastUpdate);
+        when(subscriptionRepository.getAllChatsByLink(link)).thenReturn(List.of(chat1, chat2));
+
+        checker.getUpdates();
+
+        verify(linkRepository).updateCheckState(eq(42L), eq(actualLastUpdate), any(OffsetDateTime.class));
+
+        ArgumentCaptor<CommonLinkUpdate> captor = ArgumentCaptor.forClass(CommonLinkUpdate.class);
+        verify(botClient).sendUpdate(captor.capture());
+
+        CommonLinkUpdate sentUpdate = captor.getValue();
+        assertThat(sentUpdate.id()).isEqualTo(42L);
+        assertThat(sentUpdate.url()).isEqualTo(GITHUB_URI);
+        assertThat(sentUpdate.description()).isEqualTo("Произошло обновление");
+        assertThat(sentUpdate.tgChatIds()).containsExactly(100L, 200L);
+    }
+
+    @Test
+    @DisplayName("getUpdates — обрабатывает ссылки батчами, пока репозиторий не вернёт пустой список")
+    void getUpdatesProcessAllBatches() {
+        when(schedulerProperties.batchSize()).thenReturn(1);
+        when(schedulerProperties.interval()).thenReturn(INTERVAL_MS);
+
+        checker = new UpdateChecker(
+                Map.of(TrackedResource.GITHUB, githubClient),
+                linkRepository,
+                subscriptionRepository,
+                botClient,
+                schedulerProperties);
+
+        Link first = new Link(URI.create("https://github.com/user/repo1"), TrackedResource.GITHUB);
+        first.setId(1L);
+
+        Link second = new Link(URI.create("https://github.com/user/repo2"), TrackedResource.GITHUB);
+        second.setId(2L);
+
+        when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(1)))
+                .thenReturn(List.of(first));
+        when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(1L), eq(1)))
+                .thenReturn(List.of(second));
+        when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(2L), eq(1)))
+                .thenReturn(List.of());
+
+        when(githubClient.getLastUpdate(first.getUri())).thenReturn(Instant.parse("2024-06-01T00:00:00Z"));
+        when(githubClient.getLastUpdate(second.getUri())).thenReturn(Instant.parse("2024-06-02T00:00:00Z"));
+
+        checker.getUpdates();
+
+        verify(linkRepository).findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(1));
+        verify(linkRepository).findLinksForUpdate(any(OffsetDateTime.class), eq(1L), eq(1));
+        verify(linkRepository).findLinksForUpdate(any(OffsetDateTime.class), eq(2L), eq(1));
+        verify(linkRepository, times(2)).updateCheckState(anyLong(), any(), any(OffsetDateTime.class));
+    }
+
+    @Test
+    @DisplayName("getLastUpdate — делегирует вызов клиенту нужного ресурса")
+    void getLastUpdateDelegatesToProperClient() {
+        Instant expected = Instant.parse("2024-06-01T00:00:00Z");
+        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(expected);
+
+        Instant result = checker.getLastUpdate(GITHUB_URI, TrackedResource.GITHUB);
+
+        assertThat(result).isEqualTo(expected);
+        verify(githubClient).getLastUpdate(GITHUB_URI);
+    }
+}

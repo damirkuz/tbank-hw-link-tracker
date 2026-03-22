@@ -13,20 +13,22 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "subscriptions", uniqueConstraints = @UniqueConstraint(columnNames = {"chat_id", "link_id"}))
+@Table(
+        name = "subscription_filter_links",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"subscription_id", "filter_id"}))
 @Getter
 @Setter
-public class SubscriptionEntity {
+public class SubscriptionFilterLinkEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_id", nullable = false)
-    private ChatEntity chat;
+    @JoinColumn(name = "subscription_id", nullable = false)
+    private SubscriptionEntity subscription;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "link_id", nullable = false)
-    private LinkEntity link;
+    @JoinColumn(name = "filter_id", nullable = false)
+    private FilterEntity filter;
 }

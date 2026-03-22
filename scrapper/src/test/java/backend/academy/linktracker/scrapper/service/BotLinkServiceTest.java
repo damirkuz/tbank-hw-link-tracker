@@ -1,8 +1,14 @@
 package backend.academy.linktracker.scrapper.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,25 +20,36 @@ import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
 import backend.academy.linktracker.scrapper.link.TrackedResourceResolver;
 import backend.academy.linktracker.scrapper.model.Chat;
+import backend.academy.linktracker.scrapper.model.Filter;
 import backend.academy.linktracker.scrapper.model.Link;
 import backend.academy.linktracker.scrapper.model.Subscription;
+import backend.academy.linktracker.scrapper.model.Tag;
 import backend.academy.linktracker.scrapper.model.TrackedResource;
 import backend.academy.linktracker.scrapper.repository.ChatRepository;
+import backend.academy.linktracker.scrapper.repository.FilterRepository;
 import backend.academy.linktracker.scrapper.repository.LinkRepository;
 import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
+import backend.academy.linktracker.scrapper.repository.TagRepository;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("BotLinkService")
 class BotLinkServiceTest {
+
+    private static final long CHAT_ID = 1L;
+    private static final long LINK_ID = 10L;
+    private static final long SUBSCRIPTION_ID = 100L;
+    private static final URI TEST_URI = URI.create("https://github.com/octocat/Hello-World");
+    private static final TrackedResource RESOURCE = TrackedResource.values()[0];
 
     @Mock
     private ChatRepository chatRepository;
@@ -44,126 +61,243 @@ class BotLinkServiceTest {
     private SubscriptionRepository subscriptionRepository;
 
     @Mock
+    private TagRepository tagRepository;
+
+    @Mock
+    private FilterRepository filterRepository;
+
+    @Mock
     private TrackedResourceResolver trackedResourceResolver;
 
     @InjectMocks
-    private BotLinkService service;
+    private BotLinkService botLinkService;
 
-    private static final URI URI_LINK = URI.create("https://github.com/user/repo");
-    private static final long CHAT_ID = 1L;
-    private static final Chat CHAT = new Chat(CHAT_ID);
+    private Chat chat;
 
-    // --- addLink ---
-
-    @Test
-    @DisplayName("addLink — успешно добавляет ссылку и возвращает ответ")
-    void addLinkSuccess() {
-        CommonAddLinkRequest request = new CommonAddLinkRequest(URI_LINK, List.of("java"), List.of());
-        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(CHAT));
-        when(trackedResourceResolver.resolve(URI_LINK)).thenReturn(TrackedResource.GITHUB);
-        when(subscriptionRepository.addSubscription(any(Subscription.class))).thenReturn(true);
-
-        CommonLinkResponse result = service.addLink(CHAT_ID, request);
-
-        assertThat(result.url()).isEqualTo(URI_LINK);
-        assertThat(result.tags()).containsExactly("java");
-        verify(linkRepository).addLink(any(Link.class));
+    @BeforeEach
+    void setUp() {
+        chat = new Chat(CHAT_ID);
     }
 
     @Test
-    @DisplayName("addLink — бросает ChatNotFoundException если чат не найден")
-    void addLinkChatNotFound() {
-        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.empty());
+    void addLink_shouldCreateSubscriptionBindNormalizedTagsAndFilters_andReturnResponse()
+            throws ChatNotFoundException, LinkAlreadyTrackedException {
+        CommonAddLinkRequest request = new CommonAddLinkRequest(
+                TEST_URI,
+                Arrays.asList(" java ", "backend", "java", "", "   ", null),
+                Arrays.asList(" status:open ", "status:open", "author:me", null, " "));
 
-        assertThatThrownBy(() -> service.addLink(CHAT_ID, new CommonAddLinkRequest(URI_LINK, List.of(), List.of())))
-                .isInstanceOf(ChatNotFoundException.class);
+        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
+        when(trackedResourceResolver.resolve(TEST_URI)).thenReturn(RESOURCE);
+        when(linkRepository.findByUriAndTrackedResource(TEST_URI, RESOURCE)).thenReturn(Optional.empty());
+
+        doAnswer(invocation -> {
+                    Link link = invocation.getArgument(0);
+                    link.setId(LINK_ID);
+                    return null;
+                })
+                .when(linkRepository)
+                .addLink(any(Link.class));
+
+        doAnswer(invocation -> {
+                    Subscription subscription = invocation.getArgument(0);
+                    subscription.setId(SUBSCRIPTION_ID);
+                    return true;
+                })
+                .when(subscriptionRepository)
+                .addSubscription(any(Subscription.class));
+
+        Tag javaTag = mockTagWithId(11L, "java");
+        Tag backendTag = mockTagWithId(12L, "backend");
+        Filter statusOpen = mockFilterWithId(21L, "status:open");
+        Filter authorMe = mockFilterWithId(22L, "author:me");
+
+        when(tagRepository.findByChatIdAndName(CHAT_ID, "java")).thenReturn(Optional.of(javaTag));
+        when(tagRepository.findByChatIdAndName(CHAT_ID, "backend")).thenReturn(Optional.of(backendTag));
+        when(filterRepository.findByChatIdAndValue(CHAT_ID, "status:open")).thenReturn(Optional.of(statusOpen));
+        when(filterRepository.findByChatIdAndValue(CHAT_ID, "author:me")).thenReturn(Optional.of(authorMe));
+
+        when(tagRepository.findAllBySubscription(SUBSCRIPTION_ID)).thenReturn(List.of(javaTag, backendTag));
+        when(filterRepository.findAllBySubscription(SUBSCRIPTION_ID)).thenReturn(List.of(statusOpen, authorMe));
+
+        CommonLinkResponse response = botLinkService.addLink(CHAT_ID, request);
+
+        assertEquals(LINK_ID, response.id());
+        assertEquals(TEST_URI, response.url());
+        assertIterableEquals(List.of("java", "backend"), response.tags());
+        assertIterableEquals(List.of("status:open", "author:me"), response.filters());
+
+        ArgumentCaptor<Subscription> subscriptionCaptor = ArgumentCaptor.forClass(Subscription.class);
+        verify(subscriptionRepository).addSubscription(subscriptionCaptor.capture());
+
+        Subscription savedSubscription = subscriptionCaptor.getValue();
+        assertEquals(chat, savedSubscription.getChat());
+        assertEquals(LINK_ID, savedSubscription.getLink().getId());
+        assertEquals(TEST_URI, savedSubscription.getLink().getUri());
+
+        verify(tagRepository).bindToSubscription(SUBSCRIPTION_ID, 11L);
+        verify(tagRepository).bindToSubscription(SUBSCRIPTION_ID, 12L);
+        verify(filterRepository).bindToSubscription(SUBSCRIPTION_ID, 21L);
+        verify(filterRepository).bindToSubscription(SUBSCRIPTION_ID, 22L);
     }
 
     @Test
-    @DisplayName("addLink — бросает LinkAlreadyTrackedException если подписка уже есть")
-    void addLinkAlreadyTracked() {
-        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(CHAT));
-        when(trackedResourceResolver.resolve(URI_LINK)).thenReturn(TrackedResource.GITHUB);
+    void addLink_shouldThrowWhenSubscriptionAlreadyExists() throws ChatNotFoundException {
+        Link existingLink = new Link(TEST_URI, RESOURCE);
+        existingLink.setId(LINK_ID);
+
+        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
+        when(trackedResourceResolver.resolve(TEST_URI)).thenReturn(RESOURCE);
+        when(linkRepository.findByUriAndTrackedResource(TEST_URI, RESOURCE)).thenReturn(Optional.of(existingLink));
         when(subscriptionRepository.addSubscription(any(Subscription.class))).thenReturn(false);
 
-        assertThatThrownBy(() -> service.addLink(CHAT_ID, new CommonAddLinkRequest(URI_LINK, List.of(), List.of())))
-                .isInstanceOf(LinkAlreadyTrackedException.class);
-    }
+        assertThrows(
+                LinkAlreadyTrackedException.class,
+                () -> botLinkService.addLink(
+                        CHAT_ID, new CommonAddLinkRequest(TEST_URI, List.of("java"), List.of("f:1"))));
 
-    // --- deleteLink ---
-
-    @Test
-    @DisplayName("deleteLink — возвращает ответ с uri и null полями")
-    void deleteLinkSuccess() {
-        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(CHAT));
-        when(trackedResourceResolver.resolve(URI_LINK)).thenReturn(TrackedResource.GITHUB);
-
-        CommonLinkResponse result = service.deleteLink(CHAT_ID, new CommonRemoveLinkRequest(URI_LINK));
-
-        assertThat(result.url()).isEqualTo(URI_LINK);
-        assertThat(result.id()).isNull();
-        assertThat(result.tags()).isNull();
-        verify(subscriptionRepository).deleteSubscription(any(Subscription.class));
+        verify(tagRepository, never()).bindToSubscription(anyLong(), anyLong());
+        verify(filterRepository, never()).bindToSubscription(anyLong(), anyLong());
+        verify(linkRepository, never()).addLink(any(Link.class));
     }
 
     @Test
-    @DisplayName("deleteLink — бросает ChatNotFoundException если чат не найден")
-    void deleteLinkChatNotFound() {
+    void deleteLink_shouldReturnDeletedLink_unbindMetadata_deleteSubscription_andDeleteOrphanLink()
+            throws ChatNotFoundException {
+        Link link = new Link(TEST_URI, RESOURCE);
+        link.setId(LINK_ID);
+
+        Subscription subscription = new Subscription(chat, link);
+        subscription.setId(SUBSCRIPTION_ID);
+
+        Tag javaTag = mockTagWithId(11L, "java");
+        Filter statusOpen = mockFilterWithId(21L, "status:open");
+
+        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
+        when(trackedResourceResolver.resolve(TEST_URI)).thenReturn(RESOURCE);
+        when(linkRepository.findByUriAndTrackedResource(TEST_URI, RESOURCE)).thenReturn(Optional.of(link));
+        when(subscriptionRepository.findByChatIdAndLinkId(CHAT_ID, LINK_ID)).thenReturn(Optional.of(subscription));
+        when(tagRepository.findAllBySubscription(SUBSCRIPTION_ID)).thenReturn(List.of(javaTag));
+        when(filterRepository.findAllBySubscription(SUBSCRIPTION_ID)).thenReturn(List.of(statusOpen));
+        when(subscriptionRepository.getAllChatsByLink(link)).thenReturn(List.of());
+
+        CommonLinkResponse response = botLinkService.deleteLink(CHAT_ID, new CommonRemoveLinkRequest(TEST_URI));
+
+        assertEquals(LINK_ID, response.id());
+        assertEquals(TEST_URI, response.url());
+        assertIterableEquals(List.of("java"), response.tags());
+        assertIterableEquals(List.of("status:open"), response.filters());
+
+        verify(tagRepository).unbindFromSubscription(SUBSCRIPTION_ID, 11L);
+        verify(filterRepository).unbindFromSubscription(SUBSCRIPTION_ID, 21L);
+        verify(subscriptionRepository).deleteSubscription(subscription);
+        verify(linkRepository).deleteById(LINK_ID);
+    }
+
+    @Test
+    void deleteLink_shouldReturnEmptyResponseWhenSubscriptionDoesNotExist() throws ChatNotFoundException {
+        Link link = new Link(TEST_URI, RESOURCE);
+        link.setId(LINK_ID);
+
+        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
+        when(trackedResourceResolver.resolve(TEST_URI)).thenReturn(RESOURCE);
+        when(linkRepository.findByUriAndTrackedResource(TEST_URI, RESOURCE)).thenReturn(Optional.of(link));
+        when(subscriptionRepository.findByChatIdAndLinkId(CHAT_ID, LINK_ID)).thenReturn(Optional.empty());
+
+        CommonLinkResponse response = botLinkService.deleteLink(CHAT_ID, new CommonRemoveLinkRequest(TEST_URI));
+
+        assertNull(response.id());
+        assertEquals(TEST_URI, response.url());
+        assertIterableEquals(List.of(), response.tags());
+        assertIterableEquals(List.of(), response.filters());
+
+        verify(subscriptionRepository, never()).deleteSubscription(any(Subscription.class));
+        verify(linkRepository, never()).deleteById(anyLong());
+        verify(tagRepository, never()).unbindFromSubscription(anyLong(), anyLong());
+        verify(filterRepository, never()).unbindFromSubscription(anyLong(), anyLong());
+    }
+
+    @Test
+    void getLinks_shouldReturnAllLinksWithTagsAndFilters() throws ChatNotFoundException {
+        URI firstUri = URI.create("https://github.com/org/repo");
+        URI secondUri = URI.create("https://github.com/org/another");
+
+        Link firstLink = new Link(firstUri, RESOURCE);
+        firstLink.setId(1L);
+
+        Link secondLink = new Link(secondUri, RESOURCE);
+        secondLink.setId(2L);
+
+        Subscription firstSubscription = new Subscription(chat, firstLink);
+        firstSubscription.setId(101L);
+
+        Subscription secondSubscription = new Subscription(chat, secondLink);
+        secondSubscription.setId(102L);
+
+        Tag javaTag = mockTagNameOnly("java");
+        Tag backendTag = mockTagNameOnly("backend");
+        Filter firstFilter = mockFilterValueOnly("status:open");
+        Filter secondFilter = mockFilterValueOnly("label:bug");
+
+        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
+        when(subscriptionRepository.getAllSubscriptionsByChat(chat))
+                .thenReturn(List.of(firstSubscription, secondSubscription));
+
+        when(tagRepository.findAllBySubscription(101L)).thenReturn(List.of(javaTag));
+        when(filterRepository.findAllBySubscription(101L)).thenReturn(List.of(firstFilter));
+        when(tagRepository.findAllBySubscription(102L)).thenReturn(List.of(backendTag));
+        when(filterRepository.findAllBySubscription(102L)).thenReturn(List.of(secondFilter));
+
+        CommonListLinksResponse response = botLinkService.getLinks(CHAT_ID);
+
+        assertEquals(2, response.size());
+        assertEquals(2, response.links().size());
+
+        CommonLinkResponse first = response.links().get(0);
+        assertEquals(1L, first.id());
+        assertEquals(firstUri, first.url());
+        assertIterableEquals(List.of("java"), first.tags());
+        assertIterableEquals(List.of("status:open"), first.filters());
+
+        CommonLinkResponse second = response.links().get(1);
+        assertEquals(2L, second.id());
+        assertEquals(secondUri, second.url());
+        assertIterableEquals(List.of("backend"), second.tags());
+        assertIterableEquals(List.of("label:bug"), second.filters());
+    }
+
+    @Test
+    void getLinks_shouldThrowWhenChatNotFound() {
         when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.deleteLink(CHAT_ID, new CommonRemoveLinkRequest(URI_LINK)))
-                .isInstanceOf(ChatNotFoundException.class);
+        assertThrows(ChatNotFoundException.class, () -> botLinkService.getLinks(CHAT_ID));
+
+        verify(subscriptionRepository, never()).getAllSubscriptionsByChat(any(Chat.class));
     }
 
-    // --- getLinks ---
-
-    @Test
-    @DisplayName("getLinks — возвращает список подписок чата")
-    void getLinksSuccess() {
-        Link link = new Link(URI_LINK, TrackedResource.GITHUB);
-        Subscription sub = new Subscription(CHAT, link, List.of("java"), List.of());
-        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(CHAT));
-        when(subscriptionRepository.getAllSubscriptionsByChat(CHAT)).thenReturn(List.of(sub));
-
-        CommonListLinksResponse result = service.getLinks(CHAT_ID);
-
-        assertThat(result.size()).isEqualTo(1);
-        assertThat(result.links().get(0).url()).isEqualTo(URI_LINK);
-        assertThat(result.links().get(0).tags()).containsExactly("java");
+    private Tag mockTagWithId(Long id, String name) {
+        Tag tag = mock(Tag.class);
+        when(tag.getId()).thenReturn(id);
+        when(tag.getName()).thenReturn(name);
+        return tag;
     }
 
-    @Test
-    @DisplayName("getLinks — возвращает пустой список если нет подписок")
-    void getLinksEmpty() {
-        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(CHAT));
-        when(subscriptionRepository.getAllSubscriptionsByChat(CHAT)).thenReturn(List.of());
-
-        CommonListLinksResponse result = service.getLinks(CHAT_ID);
-
-        assertThat(result.size()).isZero();
-        assertThat(result.links()).isEmpty();
+    private Tag mockTagNameOnly(String name) {
+        Tag tag = mock(Tag.class);
+        when(tag.getName()).thenReturn(name);
+        return tag;
     }
 
-    @Test
-    @DisplayName("getLinks — бросает ChatNotFoundException если чат не найден")
-    void getLinksChatNotFound() {
-        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.getLinks(CHAT_ID)).isInstanceOf(ChatNotFoundException.class);
+    private Filter mockFilterWithId(Long id, String value) {
+        Filter filter = mock(Filter.class);
+        when(filter.getId()).thenReturn(id);
+        when(filter.getValue()).thenReturn(value);
+        return filter;
     }
 
-    // --- getChat (косвенно через getSubscriptionsByChatId) ---
-
-    @Test
-    @DisplayName("getSubscriptionsByChatId — возвращает подписки для существующего чата")
-    void getSubscriptionsByChatId() {
-        Link link = new Link(URI_LINK, TrackedResource.GITHUB);
-        Subscription sub = new Subscription(CHAT, link, List.of(), List.of());
-        when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(CHAT));
-        when(subscriptionRepository.getAllSubscriptionsByChat(CHAT)).thenReturn(List.of(sub));
-
-        List<Subscription> result = service.getSubscriptionsByChatId(CHAT_ID);
-
-        assertThat(result).hasSize(1);
+    private Filter mockFilterValueOnly(String value) {
+        Filter filter = mock(Filter.class);
+        when(filter.getValue()).thenReturn(value);
+        return filter;
     }
 }

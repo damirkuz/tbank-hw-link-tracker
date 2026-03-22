@@ -6,14 +6,14 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Subscription {
+public class Tag {
     private Long id;
     private final Chat chat;
-    private final Link link;
+    private String name;
 
-    public Subscription(Chat chat, Link link) {
+    public Tag(Chat chat, String name) {
         this.chat = chat;
-        this.link = link;
+        this.name = name;
     }
 
     @Override
@@ -21,12 +21,12 @@ public class Subscription {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Subscription that = (Subscription) o;
-        return Objects.equals(chat, that.chat) && Objects.equals(link, that.link);
+        Tag tag = (Tag) o;
+        return Objects.equals(chat, tag.chat) && Objects.equals(name, tag.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(chat, link);
+        return Objects.hash(chat, name);
     }
 }

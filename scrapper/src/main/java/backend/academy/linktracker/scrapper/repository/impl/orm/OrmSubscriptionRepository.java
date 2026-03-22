@@ -4,8 +4,8 @@ import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.model.Link;
 import backend.academy.linktracker.scrapper.model.Subscription;
 import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
-import backend.academy.linktracker.scrapper.repository.jpa.entity.ChatEntity;
 import backend.academy.linktracker.scrapper.repository.jpa.entity.LinkEntity;
+import backend.academy.linktracker.scrapper.repository.jpa.entity.SubscriptionEntity;
 import backend.academy.linktracker.scrapper.repository.jpa.mapper.ChatEntityMapper;
 import backend.academy.linktracker.scrapper.repository.jpa.mapper.SubscriptionEntityMapper;
 import backend.academy.linktracker.scrapper.repository.jpa.repository.ChatJpaRepository;
@@ -34,21 +34,21 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
 
     @Override
     public boolean addSubscription(Subscription subscription) {
-        Optional<ChatEntity> chatEntity =
-                chatJpaRepository.findById(subscription.getChat().getChatId());
-        if (chatEntity.isEmpty()) {
-            return false;
-        }
+        return chatJpaRepository
+                .findById(subscription.getChat().getChatId())
+                .map(chatEntity -> {
+                    LinkEntity linkEntity = resolveOrCreateLink(subscription.getLink());
 
-        LinkEntity linkEntity = resolveOrCreateLink(subscription.getLink());
-
-        try {
-            subscriptionJpaRepository.saveAndFlush(
-                    subscriptionEntityMapper.toEntity(subscription, chatEntity.get(), linkEntity));
-            return true;
-        } catch (DataIntegrityViolationException e) {
-            return false;
-        }
+                    try {
+                        SubscriptionEntity saved = subscriptionJpaRepository.saveAndFlush(
+                                subscriptionEntityMapper.toEntity(subscription, chatEntity, linkEntity));
+                        subscription.setId(saved.getId());
+                        return true;
+                    } catch (DataIntegrityViolationException e) {
+                        return false;
+                    }
+                })
+                .orElse(false);
     }
 
     @Override

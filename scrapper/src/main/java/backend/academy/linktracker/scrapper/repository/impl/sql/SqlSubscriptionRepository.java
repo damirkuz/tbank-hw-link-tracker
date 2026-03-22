@@ -6,13 +6,9 @@ import backend.academy.linktracker.scrapper.model.Subscription;
 import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
 import backend.academy.linktracker.scrapper.repository.sql.mapper.ChatSqlMapper;
 import backend.academy.linktracker.scrapper.repository.sql.mapper.SubscriptionSqlMapper;
-import java.sql.PreparedStatement;
 import java.sql.Timestamp;
-import java.time.OffsetDateTime;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -72,16 +68,11 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
             l.uri as uri,
             l.tracked_resource as tracked_resource,
             l.last_update as last_update,
-            l.next_check_at as next_check_at,
-            array_remove(array_agg(distinct st.tag), null) as tags,
-            array_remove(array_agg(distinct sf.filter_value), null) as filters
+            l.next_check_at as next_check_at
         from subscriptions s
         join chats c on c.chat_id = s.chat_id
         join links l on l.id = s.link_id
-        left join subscription_tags st on st.subscription_id = s.id
-        left join subscription_filters sf on sf.subscription_id = s.id
         where s.chat_id = ?
-        group by s.id, c.chat_id, l.id, l.uri, l.tracked_resource, l.last_update, l.next_check_at
         order by s.id
         """;
 
@@ -113,28 +104,11 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
             l.uri as uri,
             l.tracked_resource as tracked_resource,
             l.last_update as last_update,
-            l.next_check_at as next_check_at,
-            array_remove(array_agg(distinct st.tag), null) as tags,
-            array_remove(array_agg(distinct sf.filter_value), null) as filters
+            l.next_check_at as next_check_at
         from subscriptions s
         join chats c on c.chat_id = s.chat_id
         join links l on l.id = s.link_id
-        left join subscription_tags st on st.subscription_id = s.id
-        left join subscription_filters sf on sf.subscription_id = s.id
         where s.chat_id = ? and s.link_id = ?
-        group by s.id, c.chat_id, l.id, l.uri, l.tracked_resource, l.last_update, l.next_check_at
-        """;
-
-    private static final String INSERT_TAG = """
-        insert into subscription_tags (subscription_id, tag)
-        values (?, ?)
-        on conflict (subscription_id, tag) do nothing
-        """;
-
-    private static final String INSERT_FILTER = """
-        insert into subscription_filters (subscription_id, filter_value)
-        values (?, ?)
-        on conflict (subscription_id, filter_value) do nothing
         """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -150,7 +124,7 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
                 subscription.getLink().getUri().toString(),
                 subscription.getLink().getTrackedResource().name(),
                 toTimestamp(subscription.getLink()),
-                toOffsetDateTime(subscription.getLink()),
+                subscription.getLink().getNextCheckAt(),
                 subscription.getLink().getUri().toString(),
                 subscription.getLink().getTrackedResource().name(),
                 subscription.getChat().getChatId());
@@ -159,9 +133,7 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
             return false;
         }
 
-        Long subscriptionId = insertedIds.getFirst();
-        insertTags(subscriptionId, normalize(subscription.getTags()));
-        insertFilters(subscriptionId, normalize(subscription.getFilters()));
+        subscription.setId(insertedIds.getFirst());
         return true;
     }
 
@@ -210,48 +182,7 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
         return byNaturalKey.stream().findFirst();
     }
 
-    private void insertTags(Long subscriptionId, List<String> tags) {
-        if (tags.isEmpty()) {
-            return;
-        }
-
-        jdbcTemplate.batchUpdate(INSERT_TAG, tags, tags.size(), (PreparedStatement ps, String tag) -> {
-            ps.setLong(1, subscriptionId);
-            ps.setString(2, tag);
-        });
-    }
-
-    private void insertFilters(Long subscriptionId, List<String> filters) {
-        if (filters.isEmpty()) {
-            return;
-        }
-
-        jdbcTemplate.batchUpdate(INSERT_FILTER, filters, filters.size(), (PreparedStatement ps, String filter) -> {
-            ps.setLong(1, subscriptionId);
-            ps.setString(2, filter);
-        });
-    }
-
-    private List<String> normalize(List<String> values) {
-        if (values == null) {
-            return List.of();
-        }
-
-        Set<String> normalized = new LinkedHashSet<>();
-        for (String value : values) {
-            if (value != null) {
-                normalized.add(value);
-            }
-        }
-
-        return List.copyOf(normalized);
-    }
-
     private Timestamp toTimestamp(Link link) {
         return link.getLastUpdate() == null ? null : Timestamp.from(link.getLastUpdate());
-    }
-
-    private OffsetDateTime toOffsetDateTime(Link link) {
-        return link.getNextCheckAt();
     }
 }

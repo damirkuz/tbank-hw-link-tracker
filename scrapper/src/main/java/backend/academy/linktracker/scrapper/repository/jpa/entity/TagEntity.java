@@ -1,5 +1,6 @@
 package backend.academy.linktracker.scrapper.repository.jpa.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -13,10 +14,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "subscriptions", uniqueConstraints = @UniqueConstraint(columnNames = {"chat_id", "link_id"}))
+@Table(name = "tags", uniqueConstraints = @UniqueConstraint(columnNames = {"chat_id", "name"}))
 @Getter
 @Setter
-public class SubscriptionEntity {
+public class TagEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +27,6 @@ public class SubscriptionEntity {
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatEntity chat;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "link_id", nullable = false)
-    private LinkEntity link;
+    @Column(nullable = false)
+    private String name;
 }
