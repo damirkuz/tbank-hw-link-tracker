@@ -4,6 +4,7 @@ server:
 spring:
   application:
     name: scrapper
+
   grpc:
     server:
       port: 9091
@@ -13,24 +14,24 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
 
-    jpa:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
       hibernate:
-        ddl-auto: validate
-      open-in-view: false
-      properties:
-        hibernate:
-          format_sql: true
+        format_sql: true
 
-    flyway:
-      enabled: true
-      locations: filesystem:./migrations
-
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: filesystem:./migrations/sql
 
 bot:
-  transport: grpc
+  transport: http
 
 scheduler:
-  interval: 60000
+  interval: 10000
 
 app:
   # SQL/ORM/MEMORY

@@ -19,7 +19,7 @@ app:
     debug: false
 
 scrapper:
-  transport: grpc
+  transport: http
 
 bot:
   messages:

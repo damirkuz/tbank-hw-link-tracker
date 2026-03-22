@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class BotLinkService {
 
     private final TrackedResourceResolver trackedResourceResolver;
 
+    @Transactional
     public CommonLinkResponse addLink(long chatId, CommonAddLinkRequest addLinkRequest)
             throws ChatNotFoundException, LinkAlreadyTrackedException {
         Chat chat = getChat(chatId);
@@ -57,6 +59,7 @@ public class BotLinkService {
         return chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
     }
 
+    @Transactional
     public CommonLinkResponse deleteLink(long chatId, CommonRemoveLinkRequest removeLinkRequest)
             throws ChatNotFoundException {
         Chat chat = getChat(chatId);
@@ -71,6 +74,7 @@ public class BotLinkService {
         return new CommonLinkResponse(null, removeLinkRequest.uri(), null, null);
     }
 
+    @Transactional
     public CommonListLinksResponse getLinks(long chatId) {
         List<Subscription> subscriptionList = getSubscriptionsByChatId(chatId);
         List<CommonLinkResponse> linkResponses = new ArrayList<>();

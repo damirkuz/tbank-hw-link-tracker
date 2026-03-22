@@ -38,7 +38,6 @@ public class OrmChatRepository implements ChatRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Chat> findById(long chatId) {
-        return chatJpaRepository.findById(chatId)
-            .map(chatEntityMapper::toDomain);
+        return chatJpaRepository.findById(chatId).map(chatEntityMapper::toDomain);
     }
 }

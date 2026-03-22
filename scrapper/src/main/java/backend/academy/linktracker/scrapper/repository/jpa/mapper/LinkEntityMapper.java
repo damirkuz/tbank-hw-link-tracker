@@ -1,6 +1,5 @@
 package backend.academy.linktracker.scrapper.repository.jpa.mapper;
 
-
 import backend.academy.linktracker.scrapper.model.Link;
 import backend.academy.linktracker.scrapper.repository.jpa.entity.LinkEntity;
 import org.springframework.stereotype.Component;

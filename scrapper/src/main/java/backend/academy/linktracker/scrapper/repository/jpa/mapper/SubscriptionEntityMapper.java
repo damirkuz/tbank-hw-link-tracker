@@ -20,11 +20,7 @@ public class SubscriptionEntityMapper {
         this.linkEntityMapper = linkEntityMapper;
     }
 
-    public SubscriptionEntity toEntity(
-        Subscription subscription,
-        ChatEntity chatEntity,
-        LinkEntity linkEntity
-    ) {
+    public SubscriptionEntity toEntity(Subscription subscription, ChatEntity chatEntity, LinkEntity linkEntity) {
         SubscriptionEntity entity = new SubscriptionEntity();
         entity.setChat(chatEntity);
         entity.setLink(linkEntity);
@@ -35,11 +31,10 @@ public class SubscriptionEntityMapper {
 
     public Subscription toDomain(SubscriptionEntity entity) {
         return new Subscription(
-            chatEntityMapper.toDomain(entity.getChat()),
-            linkEntityMapper.toDomain(entity.getLink()),
-            List.copyOf(entity.getTags()),
-            List.copyOf(entity.getFilters())
-        );
+                chatEntityMapper.toDomain(entity.getChat()),
+                linkEntityMapper.toDomain(entity.getLink()),
+                List.copyOf(entity.getTags()),
+                List.copyOf(entity.getFilters()));
     }
 
     private Set<String> normalizeToSet(List<String> values) {
@@ -48,7 +43,7 @@ public class SubscriptionEntityMapper {
         }
 
         return values.stream()
-            .map(String::valueOf)
-            .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+                .map(String::valueOf)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
     }
 }

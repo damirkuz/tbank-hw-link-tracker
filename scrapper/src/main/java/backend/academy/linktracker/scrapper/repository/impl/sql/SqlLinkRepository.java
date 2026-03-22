@@ -41,11 +41,7 @@ public class SqlLinkRepository implements LinkRepository {
     @Override
     public void addLink(Link link) {
         jdbcTemplate.update(
-            INSERT_LINK,
-            link.getUri().toString(),
-            link.getTrackedResource().name(),
-            toTimestamp(link)
-        );
+                INSERT_LINK, link.getUri().toString(), link.getTrackedResource().name(), toTimestamp(link));
     }
 
     private Timestamp toTimestamp(Link link) {

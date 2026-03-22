@@ -1,6 +1,5 @@
 package backend.academy.linktracker.scrapper.repository.impl.sql;
 
-
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.repository.ChatRepository;
 import backend.academy.linktracker.scrapper.repository.sql.mapper.ChatSqlMapper;
@@ -50,8 +49,7 @@ public class SqlChatRepository implements ChatRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Chat> findById(long chatId) {
-        return jdbcTemplate.query(FIND_CHAT_BY_ID, chatSqlMapper, chatId)
-            .stream()
-            .findFirst();
+        return jdbcTemplate.query(FIND_CHAT_BY_ID, chatSqlMapper, chatId).stream()
+                .findFirst();
     }
 }

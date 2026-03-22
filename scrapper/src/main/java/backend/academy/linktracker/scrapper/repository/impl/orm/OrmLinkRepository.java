@@ -12,7 +12,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Repository
 @RequiredArgsConstructor
 @Transactional
@@ -25,10 +24,9 @@ public class OrmLinkRepository implements LinkRepository {
     @Override
     @Transactional(readOnly = true)
     public List<Link> getLinks() {
-        return linkJpaRepository.findAll()
-            .stream()
-            .map(linkEntityMapper::toDomain)
-            .toList();
+        return linkJpaRepository.findAll().stream()
+                .map(linkEntityMapper::toDomain)
+                .toList();
     }
 
     @Override

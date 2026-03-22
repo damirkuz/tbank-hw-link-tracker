@@ -29,23 +29,5 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
 
-  flyway:
-    image: flyway/flyway
-    depends_on:
-      - postgres
-    command:
-      - "migrate"
-      - "-baselineOnMigrate=true"
-    volumes:
-      - ./db/migrations:/flyway/sql
-    environment:
-      FLYWAY_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
-      FLYWAY_USER: ${DB_USER}
-      FLYWAY_PASSWORD: ${DB_PASSWORD}
-      FLYWAY_BASELINE_VERSION: 1
-      FLYWAY_BASELINE_DESCRIPTION: "Initial baseline"
-      FLYWAY_SCHEMAS: public
-
 volumes:
   pg_data:
-  grafana_data:

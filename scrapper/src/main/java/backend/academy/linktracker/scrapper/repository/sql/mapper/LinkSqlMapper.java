@@ -14,10 +14,8 @@ public class LinkSqlMapper implements RowMapper<Link> {
 
     @Override
     public Link mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Link link = new Link(
-            URI.create(rs.getString("uri")),
-            TrackedResource.valueOf(rs.getString("tracked_resource"))
-        );
+        Link link =
+                new Link(URI.create(rs.getString("uri")), TrackedResource.valueOf(rs.getString("tracked_resource")));
 
         link.setId(rs.getLong("id"));
 

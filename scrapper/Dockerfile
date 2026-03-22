@@ -14,8 +14,6 @@ RUN --mount=type=cache,target=/root/.m2 \
 
 COPY contracts/src contracts/src
 COPY scrapper/src scrapper/src
-# Если scrapper зависит от ai-agent по исходникам, раскомментируй строку ниже:
-# COPY ai-agent/src ai-agent/src
 
 RUN --mount=type=cache,target=/root/.m2 \
     mvn clean package -pl scrapper -am -DskipTests
@@ -36,5 +34,6 @@ COPY --from=extractor /app/dependencies/ ./
 COPY --from=extractor /app/spring-boot-loader/ ./
 COPY --from=extractor /app/snapshot-dependencies/ ./
 COPY --from=extractor /app/application/ ./
+COPY migrations/sql migrations/sql
 
 ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

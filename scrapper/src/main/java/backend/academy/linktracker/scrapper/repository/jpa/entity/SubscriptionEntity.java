@@ -22,11 +22,12 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(
-    name = "subscriptions",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uq_subscriptions_chat_link", columnNames = {"chat_id", "link_id"})
-    }
-)
+        name = "subscriptions",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uq_subscriptions_chat_link",
+                    columnNames = {"chat_id", "link_id"})
+        })
 @NoArgsConstructor
 public class SubscriptionEntity {
 
@@ -43,18 +44,12 @@ public class SubscriptionEntity {
     private LinkEntity link;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(
-        name = "subscription_tags",
-        joinColumns = @JoinColumn(name = "subscription_id")
-    )
+    @CollectionTable(name = "subscription_tags", joinColumns = @JoinColumn(name = "subscription_id"))
     @Column(name = "tag", nullable = false)
     private Set<String> tags = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(
-        name = "subscription_filters",
-        joinColumns = @JoinColumn(name = "subscription_id")
-    )
+    @CollectionTable(name = "subscription_filters", joinColumns = @JoinColumn(name = "subscription_id"))
     @Column(name = "filter_value", nullable = false)
     private Set<String> filters = new HashSet<>();
 

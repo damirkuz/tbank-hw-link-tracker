@@ -1,6 +1,5 @@
 package backend.academy.linktracker.scrapper.repository.impl.sql;
 
-
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.model.Link;
 import backend.academy.linktracker.scrapper.model.Subscription;
@@ -123,16 +122,15 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
     @Override
     public boolean addSubscription(Subscription subscription) {
         List<Long> insertedIds = jdbcTemplate.query(
-            INSERT_SUBSCRIPTION,
-            (rs, rowNum) -> rs.getLong("id"),
-            subscription.getChat().getChatId(),
-            subscription.getLink().getUri().toString(),
-            subscription.getLink().getTrackedResource().name(),
-            toTimestamp(subscription.getLink()),
-            subscription.getLink().getUri().toString(),
-            subscription.getLink().getTrackedResource().name(),
-            subscription.getChat().getChatId()
-        );
+                INSERT_SUBSCRIPTION,
+                (rs, rowNum) -> rs.getLong("id"),
+                subscription.getChat().getChatId(),
+                subscription.getLink().getUri().toString(),
+                subscription.getLink().getTrackedResource().name(),
+                toTimestamp(subscription.getLink()),
+                subscription.getLink().getUri().toString(),
+                subscription.getLink().getTrackedResource().name(),
+                subscription.getChat().getChatId());
 
         if (insertedIds.isEmpty()) {
             return false;
@@ -146,40 +144,28 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
 
     @Override
     public void deleteSubscription(Subscription subscription) {
-        resolveLinkId(subscription.getLink()).ifPresent(linkId ->
-            jdbcTemplate.update(
-                DELETE_SUBSCRIPTION,
-                subscription.getChat().getChatId(),
-                linkId
-            )
-        );
+        resolveLinkId(subscription.getLink())
+                .ifPresent(linkId -> jdbcTemplate.update(
+                        DELETE_SUBSCRIPTION, subscription.getChat().getChatId(), linkId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Subscription> getAllSubscriptionsByChat(Chat chat) {
-        return jdbcTemplate.query(
-            FIND_SUBSCRIPTIONS_BY_CHAT,
-            subscriptionSqlMapper,
-            chat.getChatId()
-        );
+        return jdbcTemplate.query(FIND_SUBSCRIPTIONS_BY_CHAT, subscriptionSqlMapper, chat.getChatId());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Chat> getAllChatsByLink(Link link) {
         return resolveLinkId(link)
-            .map(linkId -> jdbcTemplate.query(FIND_CHATS_BY_LINK_ID, chatSqlMapper, linkId))
-            .orElseGet(List::of);
+                .map(linkId -> jdbcTemplate.query(FIND_CHATS_BY_LINK_ID, chatSqlMapper, linkId))
+                .orElseGet(List::of);
     }
 
     private Optional<Long> resolveLinkId(Link link) {
         if (link.getId() != null) {
-            List<Long> byId = jdbcTemplate.query(
-                FIND_LINK_ID_BY_ID,
-                (rs, rowNum) -> rs.getLong("id"),
-                link.getId()
-            );
+            List<Long> byId = jdbcTemplate.query(FIND_LINK_ID_BY_ID, (rs, rowNum) -> rs.getLong("id"), link.getId());
 
             if (!byId.isEmpty()) {
                 return Optional.of(byId.getFirst());
@@ -187,11 +173,10 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
         }
 
         List<Long> byNaturalKey = jdbcTemplate.query(
-            FIND_LINK_ID_BY_URI_AND_RESOURCE,
-            (rs, rowNum) -> rs.getLong("id"),
-            link.getUri().toString(),
-            link.getTrackedResource().name()
-        );
+                FIND_LINK_ID_BY_URI_AND_RESOURCE,
+                (rs, rowNum) -> rs.getLong("id"),
+                link.getUri().toString(),
+                link.getTrackedResource().name());
 
         return byNaturalKey.stream().findFirst();
     }
@@ -201,15 +186,10 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
             return;
         }
 
-        jdbcTemplate.batchUpdate(
-            INSERT_TAG,
-            tags,
-            tags.size(),
-            (PreparedStatement ps, String tag) -> {
-                ps.setLong(1, subscriptionId);
-                ps.setString(2, tag);
-            }
-        );
+        jdbcTemplate.batchUpdate(INSERT_TAG, tags, tags.size(), (PreparedStatement ps, String tag) -> {
+            ps.setLong(1, subscriptionId);
+            ps.setString(2, tag);
+        });
     }
 
     private void insertFilters(Long subscriptionId, List<String> filters) {
@@ -217,15 +197,10 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
             return;
         }
 
-        jdbcTemplate.batchUpdate(
-            INSERT_FILTER,
-            filters,
-            filters.size(),
-            (PreparedStatement ps, String filter) -> {
-                ps.setLong(1, subscriptionId);
-                ps.setString(2, filter);
-            }
-        );
+        jdbcTemplate.batchUpdate(INSERT_FILTER, filters, filters.size(), (PreparedStatement ps, String filter) -> {
+            ps.setLong(1, subscriptionId);
+            ps.setString(2, filter);
+        });
     }
 
     private List<String> normalize(List<String> values) {
