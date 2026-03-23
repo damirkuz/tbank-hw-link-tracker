@@ -2,12 +2,12 @@ package backend.academy.linktracker.scrapper.repository.impl.orm;
 
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.repository.ChatRepository;
+import backend.academy.linktracker.scrapper.repository.jpa.entity.ChatEntity;
 import backend.academy.linktracker.scrapper.repository.jpa.mapper.ChatEntityMapper;
 import backend.academy.linktracker.scrapper.repository.jpa.repository.ChatJpaRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +22,11 @@ public class OrmChatRepository implements ChatRepository {
 
     @Override
     public boolean registerChat(Chat chat) {
-        try {
-            chatJpaRepository.saveAndFlush(chatEntityMapper.toEntity(chat));
-            return true;
-        } catch (DataIntegrityViolationException e) {
+        if (chatJpaRepository.existsById(chat.getChatId())) {
             return false;
         }
+        chatJpaRepository.saveAndFlush(new ChatEntity(chat.getChatId()));
+        return true;
     }
 
     @Override

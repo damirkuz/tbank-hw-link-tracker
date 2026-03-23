@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+provider:
+  stackoverflow:
+    base-url: https://api.stackexchange.com/2.3
+    key: dummy
+    access-token: dummy
+  github:
+    base-url: https://api.github.com
+    token: dummy
+
+bot:
+  transport: http
+
+scheduler:
+  interval: 99999999
+  batch-size: 100
+
+BOT_HTTP_URL: http://localhost:9090
+BOT_GRPC_HOST: bot
+BOT_GRPC_PORT: 9091

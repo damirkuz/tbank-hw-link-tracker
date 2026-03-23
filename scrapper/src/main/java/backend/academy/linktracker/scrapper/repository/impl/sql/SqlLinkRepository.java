@@ -6,17 +6,19 @@ import backend.academy.linktracker.scrapper.repository.LinkRepository;
 import java.net.URI;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 @Transactional
@@ -46,35 +48,40 @@ public class SqlLinkRepository implements LinkRepository {
 
     @Override
     public void addLink(Link link) {
-        try {
-            Long id = jdbcClient
-                    .sql("""
-                        insert into links(uri, tracked_resource, last_update, next_check_at)
-                        values (:uri, :trackedResource, :lastUpdate, :nextCheckAt)
-                        returning id
-                        """)
-                    .param("uri", link.getUri().toString())
-                    .param("trackedResource", link.getTrackedResource().name())
-                    .param("lastUpdate", link.getLastUpdate())
-                    .param("nextCheckAt", link.getNextCheckAt())
-                    .query(Long.class)
-                    .single();
+        findByUriAndTrackedResource(link.getUri(), link.getTrackedResource())
+                .map(Link::getId)
+                .ifPresent(link::setId);
 
-            link.setId(id);
-        } catch (DataIntegrityViolationException ignored) {
+        if (link.getId() != null) {
+            return;
         }
+
+        Long id = jdbcClient
+                .sql("""
+                insert into links(uri, tracked_resource, last_update, next_check_at)
+                values (:uri, :trackedResource, :lastUpdate, :nextCheckAt)
+                returning id
+                """)
+                .param("uri", link.getUri().toString())
+                .param("trackedResource", link.getTrackedResource().name())
+                .param("lastUpdate", link.getLastUpdate())
+                .param("nextCheckAt", link.getNextCheckAt())
+                .query(Long.class)
+                .single();
+
+        link.setId(id);
     }
 
     @Override
     public void updateCheckState(long linkId, Instant lastUpdate, OffsetDateTime nextCheckAt) {
         jdbcClient
                 .sql("""
-                    update links
-                    set last_update = :lastUpdate,
-                        next_check_at = :nextCheckAt
-                    where id = :linkId
-                    """)
-                .param("lastUpdate", lastUpdate)
+                update links
+                set last_update = :lastUpdate,
+                    next_check_at = :nextCheckAt
+                where id = :linkId
+                """)
+                .param("lastUpdate", lastUpdate == null ? null : Timestamp.from(lastUpdate)) // ← фикс
                 .param("nextCheckAt", nextCheckAt)
                 .param("linkId", linkId)
                 .update();
@@ -115,6 +122,7 @@ public class SqlLinkRepository implements LinkRepository {
         return updated > 0;
     }
 
+    @SuppressWarnings("PMD.UnusedFormalParameter")
     private Link mapRow(ResultSet rs, int rowNum) throws SQLException {
         Link link =
                 new Link(URI.create(rs.getString("uri")), TrackedResource.valueOf(rs.getString("tracked_resource")));

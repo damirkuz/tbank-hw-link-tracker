@@ -14,4 +14,6 @@ public interface SubscriptionJpaRepository extends JpaRepository<SubscriptionEnt
     Optional<SubscriptionEntity> findByChat_ChatIdAndLink_Id(long chatId, long linkId);
 
     long deleteByChat_ChatIdAndLink_Id(long chatId, long linkId);
+
+    boolean existsByChat_ChatIdAndLink_Id(long chatId, long linkId);
 }

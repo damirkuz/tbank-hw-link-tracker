@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,16 +33,15 @@ public class OrmFilterRepository implements FilterRepository {
         return chatJpaRepository
                 .findById(filter.getChat().getChatId())
                 .map(chat -> {
-                    try {
-                        FilterEntity entity = new FilterEntity();
-                        entity.setChat(chat);
-                        entity.setValue(filter.getValue());
-                        FilterEntity saved = filterJpaRepository.saveAndFlush(entity);
-                        filter.setId(saved.getId());
-                        return true;
-                    } catch (DataIntegrityViolationException e) {
+                    if (filterJpaRepository.existsByChat_ChatIdAndValue(chat.getChatId(), filter.getValue())) {
                         return false;
                     }
+                    FilterEntity entity = new FilterEntity();
+                    entity.setChat(chat);
+                    entity.setValue(filter.getValue());
+                    FilterEntity saved = filterJpaRepository.save(entity);
+                    filter.setId(saved.getId());
+                    return true;
                 })
                 .orElse(false);
     }

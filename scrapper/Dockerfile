@@ -8,6 +8,7 @@ COPY scrapper/pom.xml scrapper/
 COPY ai-agent/pom.xml ai-agent/
 COPY contracts/pom.xml contracts/
 COPY build-report-aggregate/pom.xml build-report-aggregate/
+COPY migrations migrations
 
 RUN --mount=type=cache,target=/root/.m2 \
     mvn dependency:go-offline -pl scrapper -am
@@ -34,6 +35,5 @@ COPY --from=extractor /app/dependencies/ ./
 COPY --from=extractor /app/spring-boot-loader/ ./
 COPY --from=extractor /app/snapshot-dependencies/ ./
 COPY --from=extractor /app/application/ ./
-COPY migrations/sql migrations/sql
 
 ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

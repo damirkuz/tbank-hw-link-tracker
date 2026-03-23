@@ -38,15 +38,16 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
                 .findById(subscription.getChat().getChatId())
                 .map(chatEntity -> {
                     LinkEntity linkEntity = resolveOrCreateLink(subscription.getLink());
-
-                    try {
-                        SubscriptionEntity saved = subscriptionJpaRepository.saveAndFlush(
-                                subscriptionEntityMapper.toEntity(subscription, chatEntity, linkEntity));
-                        subscription.setId(saved.getId());
-                        return true;
-                    } catch (DataIntegrityViolationException e) {
+                    boolean exists = subscriptionJpaRepository.existsByChat_ChatIdAndLink_Id(
+                            chatEntity.getChatId(), linkEntity.getId());
+                    if (exists) {
                         return false;
                     }
+
+                    SubscriptionEntity saved = subscriptionJpaRepository.save(
+                            subscriptionEntityMapper.toEntity(subscription, chatEntity, linkEntity));
+                    subscription.setId(saved.getId());
+                    return true;
                 })
                 .orElse(false);
     }
@@ -54,8 +55,12 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
     @Override
     public void deleteSubscription(Subscription subscription) {
         resolveExistingLink(subscription.getLink())
-                .ifPresent(linkEntity -> subscriptionJpaRepository.deleteByChat_ChatIdAndLink_Id(
-                        subscription.getChat().getChatId(), linkEntity.getId()));
+                .flatMap(linkEntity -> subscriptionJpaRepository.findByChat_ChatIdAndLink_Id(
+                        subscription.getChat().getChatId(), linkEntity.getId()))
+                .ifPresent(entity -> {
+                    subscriptionJpaRepository.delete(entity);
+                    subscriptionJpaRepository.flush();
+                });
     }
 
     @Override

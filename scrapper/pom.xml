@@ -217,12 +217,40 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+
+            <resource>
+                <targetPath>db/migration</targetPath>
+                <directory>${maven.multiModuleProjectDirectory}/migrations/sql</directory>
+            </resource>
+        </resources>
+
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <targetPath>db/migration</targetPath>
+                <directory>${maven.multiModuleProjectDirectory}/migrations/sql</directory>
+            </testResource>
+        </testResources>
 
         <plugins>
             <!-- To build OCI image: https://docs.spring.io/spring-boot/maven-plugin/build-image.html -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                </configuration>
             </plugin>
         </plugins>
     </build>

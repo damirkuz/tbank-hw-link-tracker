@@ -20,4 +20,6 @@ public interface FilterJpaRepository extends JpaRepository<FilterEntity, Long> {
         order by l.filter.id
         """)
     List<FilterEntity> findAllBySubscriptionId(@Param("subscriptionId") long subscriptionId);
+
+    boolean existsByChat_ChatIdAndValue(long chatId, String value);
 }

@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
@@ -40,11 +39,12 @@ public class OrmLinkRepository implements LinkRepository {
 
     @Override
     public void addLink(Link link) {
-        try {
-            LinkEntity saved = linkJpaRepository.saveAndFlush(newLinkEntity(link));
-            link.setId(saved.getId());
-        } catch (DataIntegrityViolationException ignored) {
-        }
+        linkJpaRepository
+                .findByUriAndTrackedResource(link.getUri(), link.getTrackedResource())
+                .ifPresentOrElse(existing -> link.setId(existing.getId()), () -> {
+                    LinkEntity saved = linkJpaRepository.save(newLinkEntity(link));
+                    link.setId(saved.getId());
+                });
     }
 
     @Override

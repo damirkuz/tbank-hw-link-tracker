@@ -20,4 +20,6 @@ public interface TagJpaRepository extends JpaRepository<TagEntity, Long> {
         order by l.tag.id
         """)
     List<TagEntity> findAllBySubscriptionId(@Param("subscriptionId") long subscriptionId);
+
+    boolean existsByChat_ChatIdAndName(long chatId, String name);
 }
