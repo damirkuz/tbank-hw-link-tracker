@@ -67,10 +67,6 @@ class OrmChatRepositoryIT extends AbstractIntegrationTest {
     }
 
     private int countChats() {
-        return jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM chats WHERE id = ?",
-            Integer.class,
-            CHAT_ID
-        );
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM chats WHERE id = ?", Integer.class, CHAT_ID);
     }
 }

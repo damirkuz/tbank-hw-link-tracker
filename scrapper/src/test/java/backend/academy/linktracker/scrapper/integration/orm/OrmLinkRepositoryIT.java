@@ -90,9 +90,9 @@ class OrmLinkRepositoryIT extends AbstractIntegrationTest {
 
     private int countLinks() {
         return jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM links WHERE uri = ? AND tracked_resource = ?",
-            Integer.class,
-            TEST_URI.toString(),
-            RESOURCE.name());
+                "SELECT COUNT(*) FROM links WHERE uri = ? AND tracked_resource = ?",
+                Integer.class,
+                TEST_URI.toString(),
+                RESOURCE.name());
     }
 }

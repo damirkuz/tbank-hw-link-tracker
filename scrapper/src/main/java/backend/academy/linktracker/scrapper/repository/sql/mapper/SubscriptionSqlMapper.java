@@ -19,12 +19,12 @@ public class SubscriptionSqlMapper implements RowMapper<Subscription> {
         Chat chat = new Chat(rs.getLong("chat_id"));
 
         Link link =
-            new Link(URI.create(rs.getString("uri")), TrackedResource.valueOf(rs.getString("tracked_resource")));
+                new Link(URI.create(rs.getString("uri")), TrackedResource.valueOf(rs.getString("tracked_resource")));
         link.setId(rs.getLong("link_id"));
         link.setLastUpdate(
-            rs.getTimestamp("last_update") == null
-                ? null
-                : rs.getTimestamp("last_update").toInstant());
+                rs.getTimestamp("last_update") == null
+                        ? null
+                        : rs.getTimestamp("last_update").toInstant());
         link.setNextCheckAt(rs.getObject("next_check_at", OffsetDateTime.class));
 
         Subscription subscription = new Subscription(chat, link);

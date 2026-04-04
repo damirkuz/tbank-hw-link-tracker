@@ -99,10 +99,10 @@ class OrmFilterRepositoryIT extends AbstractIntegrationTest {
 
         assertThat(updated).isTrue();
         assertThat(filterRepository.findById(filter.getId()))
-            .isPresent()
-            .get()
-            .extracting(Filter::getValue)
-            .isEqualTo("orm-new-val");
+                .isPresent()
+                .get()
+                .extracting(Filter::getValue)
+                .isEqualTo("orm-new-val");
     }
 
     @Test

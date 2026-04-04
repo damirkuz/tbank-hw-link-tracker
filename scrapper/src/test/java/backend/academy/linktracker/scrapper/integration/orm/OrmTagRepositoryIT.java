@@ -99,10 +99,10 @@ class OrmTagRepositoryIT extends AbstractIntegrationTest {
 
         assertThat(updated).isTrue();
         assertThat(tagRepository.findById(tag.getId()))
-            .isPresent()
-            .get()
-            .extracting(Tag::getName)
-            .isEqualTo("orm-new");
+                .isPresent()
+                .get()
+                .extracting(Tag::getName)
+                .isEqualTo("orm-new");
     }
 
     @Test

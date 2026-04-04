@@ -123,14 +123,14 @@ class SqlSubscriptionRepositoryIT extends AbstractIntegrationTest {
     @DisplayName("findByChatIdAndLinkId — empty если подписки нет")
     void findByChatIdAndLinkIdReturnsEmptyIfAbsent() {
         assertThat(subscriptionRepository.findByChatIdAndLinkId(CHAT_ID, link.getId()))
-            .isEmpty();
+                .isEmpty();
     }
 
     private int countSubscriptions() {
         return jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM subscriptions WHERE chat_id = ? AND link_id = ?",
-            Integer.class,
-            CHAT_ID,
-            link.getId());
+                "SELECT COUNT(*) FROM subscriptions WHERE chat_id = ? AND link_id = ?",
+                Integer.class,
+                CHAT_ID,
+                link.getId());
     }
 }

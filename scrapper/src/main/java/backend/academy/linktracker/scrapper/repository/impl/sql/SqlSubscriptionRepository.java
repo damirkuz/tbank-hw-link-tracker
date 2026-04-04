@@ -117,15 +117,15 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
     @Override
     public boolean addSubscription(Subscription subscription) {
         List<Long> insertedIds = jdbcTemplate.query(
-            INSERT_SUBSCRIPTION,
-            (rs, rowNum) -> rs.getLong("id"),
-            subscription.getChat().getId(),
-            subscription.getLink().getUri().toString(),
-            subscription.getLink().getTrackedResource().name(),
-            toTimestamp(subscription.getLink()),
-            subscription.getLink().getNextCheckAt(),
-            subscription.getLink().getUri().toString(),
-            subscription.getChat().getId());
+                INSERT_SUBSCRIPTION,
+                (rs, rowNum) -> rs.getLong("id"),
+                subscription.getChat().getId(),
+                subscription.getLink().getUri().toString(),
+                subscription.getLink().getTrackedResource().name(),
+                toTimestamp(subscription.getLink()),
+                subscription.getLink().getNextCheckAt(),
+                subscription.getLink().getUri().toString(),
+                subscription.getChat().getId());
 
         if (insertedIds.isEmpty()) {
             return false;
@@ -138,8 +138,8 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
     @Override
     public void deleteSubscription(Subscription subscription) {
         resolveLinkId(subscription.getLink())
-            .ifPresent(linkId -> jdbcTemplate.update(
-                DELETE_SUBSCRIPTION, subscription.getChat().getId(), linkId));
+                .ifPresent(linkId -> jdbcTemplate.update(
+                        DELETE_SUBSCRIPTION, subscription.getChat().getId(), linkId));
     }
 
     @Override
@@ -152,15 +152,15 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
     @Transactional(readOnly = true)
     public List<Chat> getAllChatsByLink(Link link) {
         return resolveLinkId(link)
-            .map(linkId -> jdbcTemplate.query(FIND_CHATS_BY_LINK_ID, chatSqlMapper, linkId))
-            .orElseGet(List::of);
+                .map(linkId -> jdbcTemplate.query(FIND_CHATS_BY_LINK_ID, chatSqlMapper, linkId))
+                .orElseGet(List::of);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Subscription> findByChatIdAndLinkId(long chatId, long linkId) {
         return jdbcTemplate.query(FIND_SUBSCRIPTION_BY_CHAT_AND_LINK, subscriptionSqlMapper, chatId, linkId).stream()
-            .findFirst();
+                .findFirst();
     }
 
     private Optional<Long> resolveLinkId(Link link) {
@@ -172,9 +172,9 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
         }
 
         List<Long> byNaturalKey = jdbcTemplate.query(
-            FIND_LINK_ID_BY_URI,
-            (rs, rowNum) -> rs.getLong("id"),
-            link.getUri().toString());
+                FIND_LINK_ID_BY_URI,
+                (rs, rowNum) -> rs.getLong("id"),
+                link.getUri().toString());
 
         return byNaturalKey.stream().findFirst();
     }

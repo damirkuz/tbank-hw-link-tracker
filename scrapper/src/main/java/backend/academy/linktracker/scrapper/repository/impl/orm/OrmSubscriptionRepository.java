@@ -85,7 +85,9 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Subscription> findByChatIdAndLinkId(long chatId, long linkId) {
-        return subscriptionJpaRepository.findByChat_IdAndLink_Id(chatId, linkId).map(subscriptionEntityMapper::toDomain);
+        return subscriptionJpaRepository
+                .findByChat_IdAndLink_Id(chatId, linkId)
+                .map(subscriptionEntityMapper::toDomain);
     }
 
     private Optional<LinkEntity> resolveExistingLink(Link link) {

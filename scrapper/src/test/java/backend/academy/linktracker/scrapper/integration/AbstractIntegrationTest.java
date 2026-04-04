@@ -13,9 +13,9 @@ public abstract class AbstractIntegrationTest {
 
     @ServiceConnection
     protected static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
-        .withDatabaseName("link_tracker_test")
-        .withUsername("test")
-        .withPassword("test");
+            .withDatabaseName("link_tracker_test")
+            .withUsername("test")
+            .withPassword("test");
 
     static {
         POSTGRES.start();

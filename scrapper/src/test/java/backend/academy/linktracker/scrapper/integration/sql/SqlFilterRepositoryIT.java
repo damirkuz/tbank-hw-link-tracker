@@ -103,10 +103,10 @@ class SqlFilterRepositoryIT extends AbstractIntegrationTest {
 
         assertThat(updated).isTrue();
         assertThat(filterRepository.findById(filter.getId()))
-            .isPresent()
-            .get()
-            .extracting(Filter::getValue)
-            .isEqualTo("new-filter");
+                .isPresent()
+                .get()
+                .extracting(Filter::getValue)
+                .isEqualTo("new-filter");
     }
 
     @Test

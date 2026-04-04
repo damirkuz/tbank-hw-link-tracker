@@ -103,10 +103,10 @@ class SqlTagRepositoryIT extends AbstractIntegrationTest {
 
         assertThat(updated).isTrue();
         assertThat(tagRepository.findById(tag.getId()))
-            .isPresent()
-            .get()
-            .extracting(Tag::getName)
-            .isEqualTo("new-name");
+                .isPresent()
+                .get()
+                .extracting(Tag::getName)
+                .isEqualTo("new-name");
     }
 
     @Test
