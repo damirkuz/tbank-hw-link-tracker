@@ -82,7 +82,7 @@ public class SqlFilterRepository implements FilterRepository {
         List<Long> ids = jdbcTemplate.query(
                 INSERT_FILTER,
                 (rs, rowNum) -> rs.getLong("id"),
-                filter.getChat().getChatId(),
+                filter.getChat().getId(),
                 filter.getValue());
 
         if (ids.isEmpty()) {
@@ -109,7 +109,7 @@ public class SqlFilterRepository implements FilterRepository {
     @Override
     @Transactional(readOnly = true)
     public List<Filter> findAllByChat(Chat chat) {
-        return jdbcTemplate.query(FIND_ALL_BY_CHAT, filterSqlMapper, chat.getChatId());
+        return jdbcTemplate.query(FIND_ALL_BY_CHAT, filterSqlMapper, chat.getId());
     }
 
     @Override

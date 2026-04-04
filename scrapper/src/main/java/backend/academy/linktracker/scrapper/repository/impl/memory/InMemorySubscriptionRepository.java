@@ -46,7 +46,7 @@ public class InMemorySubscriptionRepository implements SubscriptionRepository {
     @Override
     public Optional<Subscription> findByChatIdAndLinkId(long chatId, long linkId) {
         return subscriptions.stream()
-                .filter(subscription -> subscription.getChat().getChatId() == chatId)
+                .filter(subscription -> subscription.getChat().getId() == chatId)
                 .filter(subscription -> subscription.getLink().getId() != null)
                 .filter(subscription -> subscription.getLink().getId() == linkId)
                 .findFirst();

@@ -20,6 +20,10 @@ app:
 
 scrapper:
   transport: http
+  http-url: http://scrapper:8081
+  grpc-host: scrapper
+  grpc-port: 9091
+
 
 bot:
   messages:

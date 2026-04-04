@@ -17,20 +17,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class SqlChatRepository implements ChatRepository {
 
     private static final String INSERT_CHAT = """
-        insert into chats (chat_id)
+        insert into chats (id)
         values (?)
-        on conflict (chat_id) do nothing
+        on conflict (id) do nothing
         """;
 
     private static final String DELETE_CHAT = """
         delete from chats
-        where chat_id = ?
+        where id = ?
         """;
 
     private static final String FIND_CHAT_BY_ID = """
-        select chat_id
+        select id
         from chats
-        where chat_id = ?
+        where id = ?
         """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -38,12 +38,12 @@ public class SqlChatRepository implements ChatRepository {
 
     @Override
     public boolean registerChat(Chat chat) {
-        return jdbcTemplate.update(INSERT_CHAT, chat.getChatId()) > 0;
+        return jdbcTemplate.update(INSERT_CHAT, chat.getId()) > 0;
     }
 
     @Override
     public boolean deleteChat(Chat chat) {
-        return jdbcTemplate.update(DELETE_CHAT, chat.getChatId()) > 0;
+        return jdbcTemplate.update(DELETE_CHAT, chat.getId()) > 0;
     }
 
     @Override

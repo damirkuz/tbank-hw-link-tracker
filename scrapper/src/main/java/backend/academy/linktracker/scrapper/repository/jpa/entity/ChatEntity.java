@@ -16,10 +16,10 @@ import lombok.Setter;
 public class ChatEntity {
 
     @Id
-    @Column(name = "chat_id", nullable = false)
-    private Long chatId;
+    @Column(name = "id", nullable = false)
+    private Long id;
 
     public ChatEntity(Long chatId) {
-        this.chatId = chatId;
+        this.id = chatId;
     }
 }

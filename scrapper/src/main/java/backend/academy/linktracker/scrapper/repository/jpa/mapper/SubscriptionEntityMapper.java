@@ -13,7 +13,7 @@ public class SubscriptionEntityMapper {
     public Subscription toDomain(SubscriptionEntity entity) {
         Subscription subscription = new Subscription(
                 new backend.academy.linktracker.scrapper.model.Chat(
-                        entity.getChat().getChatId()),
+                        entity.getChat().getId()),
                 toLink(entity.getLink()));
         subscription.setId(entity.getId());
         return subscription;

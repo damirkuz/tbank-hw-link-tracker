@@ -15,12 +15,10 @@ import backend.academy.linktracker.scrapper.repository.impl.orm.OrmTagRepository
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,9 +39,6 @@ class OrmTagRepositoryIT extends AbstractIntegrationTest {
     @Autowired
     private OrmSubscriptionRepository subscriptionRepository;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     private static final long CHAT_ID = 701L;
     private static final URI TEST_URI = URI.create("https://github.com/orm-tag/repo");
     private static final TrackedResource RESOURCE = TrackedResource.GITHUB;
@@ -53,12 +48,6 @@ class OrmTagRepositoryIT extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        jdbcTemplate.update("DELETE FROM tags WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update("DELETE FROM subscriptions WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update(
-                "DELETE FROM links WHERE uri = ? AND tracked_resource = ?", TEST_URI.toString(), RESOURCE.name());
-        jdbcTemplate.update("DELETE FROM chats WHERE chat_id = ?", CHAT_ID);
-
         chat = new Chat(CHAT_ID);
         chatRepository.registerChat(chat);
 
@@ -67,15 +56,6 @@ class OrmTagRepositoryIT extends AbstractIntegrationTest {
 
         subscription = new Subscription(chat, link);
         subscriptionRepository.addSubscription(subscription);
-    }
-
-    @AfterEach
-    void cleanUp() {
-        jdbcTemplate.update("DELETE FROM tags WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update("DELETE FROM subscriptions WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update(
-                "DELETE FROM links WHERE uri = ? AND tracked_resource = ?", TEST_URI.toString(), RESOURCE.name());
-        jdbcTemplate.update("DELETE FROM chats WHERE chat_id = ?", CHAT_ID);
     }
 
     @Test
@@ -89,7 +69,6 @@ class OrmTagRepositoryIT extends AbstractIntegrationTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("ORM: addTag — дублирующий тег возвращает false")
     void addTagDuplicateReturnsFalse() {
         tagRepository.addTag(new Tag(chat, "dup-tag"));
@@ -120,10 +99,10 @@ class OrmTagRepositoryIT extends AbstractIntegrationTest {
 
         assertThat(updated).isTrue();
         assertThat(tagRepository.findById(tag.getId()))
-                .isPresent()
-                .get()
-                .extracting(Tag::getName)
-                .isEqualTo("orm-new");
+            .isPresent()
+            .get()
+            .extracting(Tag::getName)
+            .isEqualTo("orm-new");
     }
 
     @Test

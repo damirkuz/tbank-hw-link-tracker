@@ -65,7 +65,7 @@ public class UpdateChecker {
 
         if (previousLastUpdate != null && actualLastUpdate.isAfter(previousLastUpdate)) {
             List<Chat> chats = subscriptionRepository.getAllChatsByLink(link);
-            List<Long> tgChatIds = chats.stream().map(Chat::getChatId).toList();
+            List<Long> tgChatIds = chats.stream().map(Chat::getId).toList();
 
             CommonLinkUpdate commonLinkUpdate =
                     new CommonLinkUpdate(link.getId(), link.getUri(), "Произошло обновление", tgChatIds);

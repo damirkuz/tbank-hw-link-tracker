@@ -23,7 +23,7 @@ public class InMemoryTagRepository implements TagRepository {
 
     @Override
     public boolean addTag(Tag tag) {
-        String key = key(tag.getChat().getChatId(), tag.getName());
+        String key = key(tag.getChat().getId(), tag.getName());
         if (idsByKey.containsKey(key)) {
             return false;
         }
@@ -52,7 +52,7 @@ public class InMemoryTagRepository implements TagRepository {
     @Override
     public List<Tag> findAllByChat(Chat chat) {
         return tagsById.values().stream()
-                .filter(tag -> tag.getChat().getChatId() == chat.getChatId())
+                .filter(tag -> tag.getChat().getId() == chat.getId())
                 .sorted(java.util.Comparator.comparing(Tag::getId))
                 .toList();
     }
@@ -73,12 +73,12 @@ public class InMemoryTagRepository implements TagRepository {
             return false;
         }
 
-        String newKey = key(tag.getChat().getChatId(), newName);
+        String newKey = key(tag.getChat().getId(), newName);
         if (idsByKey.containsKey(newKey)) {
             return false;
         }
 
-        idsByKey.remove(key(tag.getChat().getChatId(), tag.getName()));
+        idsByKey.remove(key(tag.getChat().getId(), tag.getName()));
         tag.setName(newName);
         idsByKey.put(newKey, tagId);
         return true;
@@ -91,7 +91,7 @@ public class InMemoryTagRepository implements TagRepository {
             return false;
         }
 
-        idsByKey.remove(key(removed.getChat().getChatId(), removed.getName()));
+        idsByKey.remove(key(removed.getChat().getId(), removed.getName()));
         subscriptionToTagIds.values().forEach(ids -> ids.remove(id));
         return true;
     }

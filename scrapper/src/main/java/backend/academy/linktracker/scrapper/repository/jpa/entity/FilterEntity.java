@@ -27,6 +27,6 @@ public class FilterEntity {
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatEntity chat;
 
-    @Column(nullable = false)
+    @Column(name = "value", nullable = false)
     private String value;
 }

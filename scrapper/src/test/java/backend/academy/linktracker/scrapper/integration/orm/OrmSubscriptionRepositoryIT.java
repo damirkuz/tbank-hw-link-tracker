@@ -13,7 +13,6 @@ import backend.academy.linktracker.scrapper.repository.impl.orm.OrmSubscriptionR
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,24 +47,11 @@ class OrmSubscriptionRepositoryIT extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        jdbcTemplate.update("DELETE FROM subscriptions WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update(
-                "DELETE FROM links WHERE uri = ? AND tracked_resource = ?", TEST_URI.toString(), RESOURCE.name());
-        jdbcTemplate.update("DELETE FROM chats WHERE chat_id = ?", CHAT_ID);
-
         chat = new Chat(CHAT_ID);
         chatRepository.registerChat(chat);
 
         link = new Link(TEST_URI, RESOURCE);
         linkRepository.addLink(link);
-    }
-
-    @AfterEach
-    void cleanUp() {
-        jdbcTemplate.update("DELETE FROM subscriptions WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update(
-                "DELETE FROM links WHERE uri = ? AND tracked_resource = ?", TEST_URI.toString(), RESOURCE.name());
-        jdbcTemplate.update("DELETE FROM chats WHERE chat_id = ?", CHAT_ID);
     }
 
     @Test
@@ -108,7 +94,7 @@ class OrmSubscriptionRepositoryIT extends AbstractIntegrationTest {
         List<Subscription> result = subscriptionRepository.getAllSubscriptionsByChat(chat);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getLink().getUri()).isEqualTo(TEST_URI);
+        assertThat(result.getFirst().getLink().getUri()).isEqualTo(TEST_URI);
     }
 
     @Test
@@ -118,7 +104,7 @@ class OrmSubscriptionRepositoryIT extends AbstractIntegrationTest {
 
         List<Chat> chats = subscriptionRepository.getAllChatsByLink(link);
 
-        assertThat(chats).extracting(Chat::getChatId).contains(CHAT_ID);
+        assertThat(chats).extracting(Chat::getId).contains(CHAT_ID);
     }
 
     @Test
@@ -136,14 +122,14 @@ class OrmSubscriptionRepositoryIT extends AbstractIntegrationTest {
     @DisplayName("ORM: findByChatIdAndLinkId — empty если подписки нет")
     void findByChatIdAndLinkIdReturnsEmptyIfAbsent() {
         assertThat(subscriptionRepository.findByChatIdAndLinkId(CHAT_ID, link.getId()))
-                .isEmpty();
+            .isEmpty();
     }
 
     private int countSubscriptions() {
         return jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM subscriptions WHERE chat_id = ? AND link_id = ?",
-                Integer.class,
-                CHAT_ID,
-                link.getId());
+            "SELECT COUNT(*) FROM subscriptions WHERE chat_id = ? AND link_id = ?",
+            Integer.class,
+            CHAT_ID,
+            link.getId());
     }
 }

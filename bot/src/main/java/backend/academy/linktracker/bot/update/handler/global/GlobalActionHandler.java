@@ -1,10 +1,8 @@
 package backend.academy.linktracker.bot.update.handler.global;
 
 import backend.academy.linktracker.bot.update.context.UpdateContext;
-import com.pengrad.telegrambot.model.Update;
+import backend.academy.linktracker.bot.update.handler.Handler;
 
-public interface GlobalActionHandler {
+public interface GlobalActionHandler extends Handler {
     boolean supports(UpdateContext context);
-
-    void handle(Update update, UpdateContext context);
 }

@@ -162,16 +162,15 @@ class BotLinkServiceTest {
     }
 
     @Test
-    void deleteLink_shouldReturnDeletedLink_unbindMetadata_deleteSubscription_andDeleteOrphanLink()
-            throws ChatNotFoundException {
+    void deleteLink_shouldReturnDeletedLink_deleteSubscription_andDeleteOrphanLink() throws ChatNotFoundException {
         Link link = new Link(TEST_URI, RESOURCE);
         link.setId(LINK_ID);
 
         Subscription subscription = new Subscription(chat, link);
         subscription.setId(SUBSCRIPTION_ID);
 
-        Tag javaTag = mockTagWithId(11L, "java");
-        Filter statusOpen = mockFilterWithId(21L, "status:open");
+        Tag javaTag = mockTagNameOnly("java");
+        Filter statusOpen = mockFilterValueOnly("status:open");
 
         when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
         when(trackedResourceResolver.resolve(TEST_URI)).thenReturn(RESOURCE);
@@ -188,10 +187,14 @@ class BotLinkServiceTest {
         assertIterableEquals(List.of("java"), response.tags());
         assertIterableEquals(List.of("status:open"), response.filters());
 
-        verify(tagRepository).unbindFromSubscription(SUBSCRIPTION_ID, 11L);
-        verify(filterRepository).unbindFromSubscription(SUBSCRIPTION_ID, 21L);
+        verify(tagRepository).findAllBySubscription(SUBSCRIPTION_ID);
+        verify(filterRepository).findAllBySubscription(SUBSCRIPTION_ID);
         verify(subscriptionRepository).deleteSubscription(subscription);
+        verify(subscriptionRepository).getAllChatsByLink(link);
         verify(linkRepository).deleteById(LINK_ID);
+
+        verify(tagRepository, never()).unbindFromSubscription(anyLong(), anyLong());
+        verify(filterRepository, never()).unbindFromSubscription(anyLong(), anyLong());
     }
 
     @Test
@@ -253,7 +256,7 @@ class BotLinkServiceTest {
         assertEquals(2, response.size());
         assertEquals(2, response.links().size());
 
-        CommonLinkResponse first = response.links().get(0);
+        CommonLinkResponse first = response.links().getFirst();
         assertEquals(1L, first.id());
         assertEquals(firstUri, first.url());
         assertIterableEquals(List.of("java"), first.tags());

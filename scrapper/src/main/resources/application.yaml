@@ -31,6 +31,9 @@ spring:
 
 bot:
   transport: http
+  http-url: http://bot:8080
+  grpc-host: bot
+  grpc-port: 9091
 
 scheduler:
   interval: 60000

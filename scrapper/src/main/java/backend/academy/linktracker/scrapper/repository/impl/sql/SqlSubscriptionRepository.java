@@ -23,15 +23,15 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
 
     private static final String INSERT_SUBSCRIPTION = """
         with existing_chat as (
-            select chat_id
+            select id
             from chats
-            where chat_id = ?
+            where id = ?
         ),
         inserted_link as (
             insert into links (uri, tracked_resource, last_update, next_check_at)
             select ?, ?, ?, ?
             where exists (select 1 from existing_chat)
-            on conflict (uri, tracked_resource) do nothing
+            on conflict (uri) do nothing
             returning id
         ),
         resolved_link as (
@@ -41,7 +41,6 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
             from links l
             where exists (select 1 from existing_chat)
               and l.uri = ?
-              and l.tracked_resource = ?
             limit 1
         ),
         inserted_subscription as (
@@ -63,25 +62,25 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
     private static final String FIND_SUBSCRIPTIONS_BY_CHAT = """
         select
             s.id as subscription_id,
-            c.chat_id as chat_id,
+            c.id as chat_id,
             l.id as link_id,
             l.uri as uri,
             l.tracked_resource as tracked_resource,
             l.last_update as last_update,
             l.next_check_at as next_check_at
         from subscriptions s
-        join chats c on c.chat_id = s.chat_id
+        join chats c on c.id = s.chat_id
         join links l on l.id = s.link_id
         where s.chat_id = ?
         order by s.id
         """;
 
     private static final String FIND_CHATS_BY_LINK_ID = """
-        select distinct c.chat_id
+        select distinct c.id
         from subscriptions s
-        join chats c on c.chat_id = s.chat_id
+        join chats c on c.id = s.chat_id
         where s.link_id = ?
-        order by c.chat_id
+        order by c.id
         """;
 
     private static final String FIND_LINK_ID_BY_ID = """
@@ -90,23 +89,23 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
         where id = ?
         """;
 
-    private static final String FIND_LINK_ID_BY_URI_AND_RESOURCE = """
+    private static final String FIND_LINK_ID_BY_URI = """
         select id
         from links
-        where uri = ? and tracked_resource = ?
+        where uri = ?
         """;
 
     private static final String FIND_SUBSCRIPTION_BY_CHAT_AND_LINK = """
         select
             s.id as subscription_id,
-            c.chat_id as chat_id,
+            c.id as chat_id,
             l.id as link_id,
             l.uri as uri,
             l.tracked_resource as tracked_resource,
             l.last_update as last_update,
             l.next_check_at as next_check_at
         from subscriptions s
-        join chats c on c.chat_id = s.chat_id
+        join chats c on c.id = s.chat_id
         join links l on l.id = s.link_id
         where s.chat_id = ? and s.link_id = ?
         """;
@@ -118,16 +117,15 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
     @Override
     public boolean addSubscription(Subscription subscription) {
         List<Long> insertedIds = jdbcTemplate.query(
-                INSERT_SUBSCRIPTION,
-                (rs, rowNum) -> rs.getLong("id"),
-                subscription.getChat().getChatId(),
-                subscription.getLink().getUri().toString(),
-                subscription.getLink().getTrackedResource().name(),
-                toTimestamp(subscription.getLink()),
-                subscription.getLink().getNextCheckAt(),
-                subscription.getLink().getUri().toString(),
-                subscription.getLink().getTrackedResource().name(),
-                subscription.getChat().getChatId());
+            INSERT_SUBSCRIPTION,
+            (rs, rowNum) -> rs.getLong("id"),
+            subscription.getChat().getId(),
+            subscription.getLink().getUri().toString(),
+            subscription.getLink().getTrackedResource().name(),
+            toTimestamp(subscription.getLink()),
+            subscription.getLink().getNextCheckAt(),
+            subscription.getLink().getUri().toString(),
+            subscription.getChat().getId());
 
         if (insertedIds.isEmpty()) {
             return false;
@@ -140,29 +138,29 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
     @Override
     public void deleteSubscription(Subscription subscription) {
         resolveLinkId(subscription.getLink())
-                .ifPresent(linkId -> jdbcTemplate.update(
-                        DELETE_SUBSCRIPTION, subscription.getChat().getChatId(), linkId));
+            .ifPresent(linkId -> jdbcTemplate.update(
+                DELETE_SUBSCRIPTION, subscription.getChat().getId(), linkId));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Subscription> getAllSubscriptionsByChat(Chat chat) {
-        return jdbcTemplate.query(FIND_SUBSCRIPTIONS_BY_CHAT, subscriptionSqlMapper, chat.getChatId());
+        return jdbcTemplate.query(FIND_SUBSCRIPTIONS_BY_CHAT, subscriptionSqlMapper, chat.getId());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Chat> getAllChatsByLink(Link link) {
         return resolveLinkId(link)
-                .map(linkId -> jdbcTemplate.query(FIND_CHATS_BY_LINK_ID, chatSqlMapper, linkId))
-                .orElseGet(List::of);
+            .map(linkId -> jdbcTemplate.query(FIND_CHATS_BY_LINK_ID, chatSqlMapper, linkId))
+            .orElseGet(List::of);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Subscription> findByChatIdAndLinkId(long chatId, long linkId) {
         return jdbcTemplate.query(FIND_SUBSCRIPTION_BY_CHAT_AND_LINK, subscriptionSqlMapper, chatId, linkId).stream()
-                .findFirst();
+            .findFirst();
     }
 
     private Optional<Long> resolveLinkId(Link link) {
@@ -174,10 +172,9 @@ public class SqlSubscriptionRepository implements SubscriptionRepository {
         }
 
         List<Long> byNaturalKey = jdbcTemplate.query(
-                FIND_LINK_ID_BY_URI_AND_RESOURCE,
-                (rs, rowNum) -> rs.getLong("id"),
-                link.getUri().toString(),
-                link.getTrackedResource().name());
+            FIND_LINK_ID_BY_URI,
+            (rs, rowNum) -> rs.getLong("id"),
+            link.getUri().toString());
 
         return byNaturalKey.stream().findFirst();
     }

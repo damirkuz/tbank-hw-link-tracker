@@ -31,9 +31,9 @@ public class OrmFilterRepository implements FilterRepository {
     @Override
     public boolean addFilter(Filter filter) {
         return chatJpaRepository
-                .findById(filter.getChat().getChatId())
+                .findById(filter.getChat().getId())
                 .map(chat -> {
-                    if (filterJpaRepository.existsByChat_ChatIdAndValue(chat.getChatId(), filter.getValue())) {
+                    if (filterJpaRepository.existsByChat_IdAndValue(chat.getId(), filter.getValue())) {
                         return false;
                     }
                     FilterEntity entity = new FilterEntity();
@@ -55,13 +55,13 @@ public class OrmFilterRepository implements FilterRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Filter> findByChatIdAndValue(long chatId, String value) {
-        return filterJpaRepository.findByChat_ChatIdAndValue(chatId, value).map(this::toDomain);
+        return filterJpaRepository.findByChat_IdAndValue(chatId, value).map(this::toDomain);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Filter> findAllByChat(Chat chat) {
-        return filterJpaRepository.findAllByChat_ChatIdOrderById(chat.getChatId()).stream()
+        return filterJpaRepository.findAllByChat_IdOrderById(chat.getId()).stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -125,7 +125,7 @@ public class OrmFilterRepository implements FilterRepository {
     }
 
     private Filter toDomain(FilterEntity entity) {
-        Filter filter = new Filter(new Chat(entity.getChat().getChatId()), entity.getValue());
+        Filter filter = new Filter(new Chat(entity.getChat().getId()), entity.getValue());
         filter.setId(entity.getId());
         return filter;
     }

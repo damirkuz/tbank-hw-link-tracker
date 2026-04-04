@@ -11,6 +11,6 @@ public class ChatSqlMapper implements RowMapper<Chat> {
 
     @Override
     public Chat mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return new Chat(rs.getLong("chat_id"));
+        return new Chat(rs.getLong("id"));
     }
 }

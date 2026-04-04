@@ -9,8 +9,6 @@ import backend.academy.linktracker.scrapper.repository.impl.orm.OrmLinkRepositor
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +29,6 @@ class OrmLinkRepositoryIT extends AbstractIntegrationTest {
 
     private static final URI TEST_URI = URI.create("https://github.com/orm-link/repo");
     private static final TrackedResource RESOURCE = TrackedResource.GITHUB;
-
-    @BeforeEach
-    @AfterEach
-    void cleanUp() {
-        jdbcTemplate.update(
-                "DELETE FROM links WHERE uri = ? AND tracked_resource = ?", TEST_URI.toString(), RESOURCE.name());
-    }
 
     @Test
     @DisplayName("ORM: addLink — добавление ссылки: ссылка сохранена в БД, id установлен")
@@ -99,9 +90,9 @@ class OrmLinkRepositoryIT extends AbstractIntegrationTest {
 
     private int countLinks() {
         return jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM links WHERE uri = ? AND tracked_resource = ?",
-                Integer.class,
-                TEST_URI.toString(),
-                RESOURCE.name());
+            "SELECT COUNT(*) FROM links WHERE uri = ? AND tracked_resource = ?",
+            Integer.class,
+            TEST_URI.toString(),
+            RESOURCE.name());
     }
 }

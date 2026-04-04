@@ -6,7 +6,7 @@ import org.springframework.validation.annotation.Validated;
 
 @ConfigurationProperties(prefix = "bot")
 @Validated
-public record BotProperties(@NotNull Transport transport) {
+public record BotProperties(@NotNull Transport transport, String httpUrl, String grpcHost, Integer grpcPort) {
     public enum Transport {
         HTTP,
         GRPC

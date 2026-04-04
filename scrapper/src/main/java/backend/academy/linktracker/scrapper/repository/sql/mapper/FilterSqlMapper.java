@@ -12,7 +12,7 @@ public class FilterSqlMapper implements RowMapper<Filter> {
 
     @Override
     public Filter mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Filter filter = new Filter(new Chat(rs.getLong("chat_id")), rs.getString("value"));
+        Filter filter = new Filter(new Chat(rs.getLong("id")), rs.getString("value"));
         filter.setId(rs.getLong("id"));
         return filter;
     }

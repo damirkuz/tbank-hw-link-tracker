@@ -27,7 +27,3 @@ bot:
 scheduler:
   interval: 99999999
   batch-size: 100
-
-BOT_HTTP_URL: http://localhost:9090
-BOT_GRPC_HOST: bot
-BOT_GRPC_PORT: 9091

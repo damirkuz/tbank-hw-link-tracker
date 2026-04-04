@@ -27,6 +27,6 @@ public class TagEntity {
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatEntity chat;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 }

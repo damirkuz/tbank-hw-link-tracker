@@ -9,17 +9,17 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 public class Chat {
-    private final long chatId;
+    private final long id;
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Chat chat = (Chat) o;
-        return chatId == chat.chatId;
+        return id == chat.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(chatId);
+        return Objects.hashCode(id);
     }
 }

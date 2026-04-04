@@ -31,9 +31,9 @@ public class OrmTagRepository implements TagRepository {
     @Override
     public boolean addTag(Tag tag) {
         return chatJpaRepository
-                .findById(tag.getChat().getChatId())
+                .findById(tag.getChat().getId())
                 .map(chat -> {
-                    if (tagJpaRepository.existsByChat_ChatIdAndName(chat.getChatId(), tag.getName())) {
+                    if (tagJpaRepository.existsByChat_IdAndName(chat.getId(), tag.getName())) {
                         return false;
                     }
                     TagEntity entity = new TagEntity();
@@ -55,13 +55,13 @@ public class OrmTagRepository implements TagRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Tag> findByChatIdAndName(long chatId, String name) {
-        return tagJpaRepository.findByChat_ChatIdAndName(chatId, name).map(this::toDomain);
+        return tagJpaRepository.findByChat_IdAndName(chatId, name).map(this::toDomain);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Tag> findAllByChat(Chat chat) {
-        return tagJpaRepository.findAllByChat_ChatIdOrderById(chat.getChatId()).stream()
+        return tagJpaRepository.findAllByChat_IdOrderById(chat.getId()).stream()
                 .map(this::toDomain)
                 .toList();
     }
@@ -125,7 +125,7 @@ public class OrmTagRepository implements TagRepository {
     }
 
     private Tag toDomain(TagEntity entity) {
-        Tag tag = new Tag(new Chat(entity.getChat().getChatId()), entity.getName());
+        Tag tag = new Tag(new Chat(entity.getChat().getId()), entity.getName());
         tag.setId(entity.getId());
         return tag;
     }

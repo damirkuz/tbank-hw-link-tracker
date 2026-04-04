@@ -72,8 +72,6 @@ public class BotLinkService {
         Subscription subscription = subscriptionOptional.orElseThrow();
         CommonLinkResponse response = toResponse(subscription);
 
-        unbindAllTags(subscription);
-        unbindAllFilters(subscription);
         subscriptionRepository.deleteSubscription(subscription);
         deleteLinkIfOrphan(subscription.getLink());
 
@@ -110,7 +108,7 @@ public class BotLinkService {
             if (link.getId() == null) {
                 return Optional.empty();
             }
-            return subscriptionRepository.findByChatIdAndLinkId(chat.getChatId(), link.getId());
+            return subscriptionRepository.findByChatIdAndLinkId(chat.getId(), link.getId());
         });
     }
 
@@ -159,9 +157,7 @@ public class BotLinkService {
     }
 
     private Tag getOrCreateTag(Chat chat, String tagName) {
-        return tagRepository
-                .findByChatIdAndName(chat.getChatId(), tagName)
-                .orElseGet(() -> createOrLoadTag(chat, tagName));
+        return tagRepository.findByChatIdAndName(chat.getId(), tagName).orElseGet(() -> createOrLoadTag(chat, tagName));
     }
 
     private Tag createOrLoadTag(Chat chat, String tagName) {
@@ -172,13 +168,13 @@ public class BotLinkService {
         }
 
         return tagRepository
-                .findByChatIdAndName(chat.getChatId(), tagName)
+                .findByChatIdAndName(chat.getId(), tagName)
                 .orElseThrow(() -> new IllegalStateException("Cannot resolve tag after insert attempt"));
     }
 
     private Filter getOrCreateFilter(Chat chat, String filterValue) {
         return filterRepository
-                .findByChatIdAndValue(chat.getChatId(), filterValue)
+                .findByChatIdAndValue(chat.getId(), filterValue)
                 .orElseGet(() -> createOrLoadFilter(chat, filterValue));
     }
 
@@ -190,34 +186,8 @@ public class BotLinkService {
         }
 
         return filterRepository
-                .findByChatIdAndValue(chat.getChatId(), filterValue)
+                .findByChatIdAndValue(chat.getId(), filterValue)
                 .orElseThrow(() -> new IllegalStateException("Cannot resolve filter after insert attempt"));
-    }
-
-    private void unbindAllTags(Subscription subscription) {
-        if (subscription.getId() == null) {
-            return;
-        }
-
-        List<Tag> tags = tagRepository.findAllBySubscription(subscription.getId());
-        for (Tag tag : tags) {
-            if (tag.getId() != null) {
-                tagRepository.unbindFromSubscription(subscription.getId(), tag.getId());
-            }
-        }
-    }
-
-    private void unbindAllFilters(Subscription subscription) {
-        if (subscription.getId() == null) {
-            return;
-        }
-
-        List<Filter> filters = filterRepository.findAllBySubscription(subscription.getId());
-        for (Filter filter : filters) {
-            if (filter.getId() != null) {
-                filterRepository.unbindFromSubscription(subscription.getId(), filter.getId());
-            }
-        }
     }
 
     private void deleteLinkIfOrphan(Link link) {

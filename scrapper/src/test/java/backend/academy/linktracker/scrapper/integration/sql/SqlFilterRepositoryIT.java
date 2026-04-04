@@ -15,7 +15,6 @@ import backend.academy.linktracker.scrapper.repository.impl.sql.SqlSubscriptionR
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,12 +52,6 @@ class SqlFilterRepositoryIT extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        jdbcTemplate.update("DELETE FROM filters WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update("DELETE FROM subscriptions WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update(
-                "DELETE FROM links WHERE uri = ? AND tracked_resource = ?", TEST_URI.toString(), RESOURCE.name());
-        jdbcTemplate.update("DELETE FROM chats WHERE chat_id = ?", CHAT_ID);
-
         chat = new Chat(CHAT_ID);
         chatRepository.registerChat(chat);
 
@@ -67,15 +60,6 @@ class SqlFilterRepositoryIT extends AbstractIntegrationTest {
 
         subscription = new Subscription(chat, link);
         subscriptionRepository.addSubscription(subscription);
-    }
-
-    @AfterEach
-    void cleanUp() {
-        jdbcTemplate.update("DELETE FROM filters WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update("DELETE FROM subscriptions WHERE chat_id = ?", CHAT_ID);
-        jdbcTemplate.update(
-                "DELETE FROM links WHERE uri = ? AND tracked_resource = ?", TEST_URI.toString(), RESOURCE.name());
-        jdbcTemplate.update("DELETE FROM chats WHERE chat_id = ?", CHAT_ID);
     }
 
     @Test
@@ -119,10 +103,10 @@ class SqlFilterRepositoryIT extends AbstractIntegrationTest {
 
         assertThat(updated).isTrue();
         assertThat(filterRepository.findById(filter.getId()))
-                .isPresent()
-                .get()
-                .extracting(Filter::getValue)
-                .isEqualTo("new-filter");
+            .isPresent()
+            .get()
+            .extracting(Filter::getValue)
+            .isEqualTo("new-filter");
     }
 
     @Test

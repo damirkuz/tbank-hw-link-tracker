@@ -7,13 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SubscriptionJpaRepository extends JpaRepository<SubscriptionEntity, Long> {
 
-    List<SubscriptionEntity> findAllByChat_ChatId(long chatId);
+    List<SubscriptionEntity> findAllByChat_Id(long chatId);
 
     List<SubscriptionEntity> findAllByLink_Id(long linkId);
 
-    Optional<SubscriptionEntity> findByChat_ChatIdAndLink_Id(long chatId, long linkId);
+    Optional<SubscriptionEntity> findByChat_IdAndLink_Id(Long chatId, Long linkId);
 
-    long deleteByChat_ChatIdAndLink_Id(long chatId, long linkId);
-
-    boolean existsByChat_ChatIdAndLink_Id(long chatId, long linkId);
+    boolean existsByChat_IdAndLink_Id(long chatId, long linkId);
 }

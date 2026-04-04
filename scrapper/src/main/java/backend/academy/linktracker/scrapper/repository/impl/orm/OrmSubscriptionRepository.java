@@ -35,11 +35,11 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
     @Override
     public boolean addSubscription(Subscription subscription) {
         return chatJpaRepository
-                .findById(subscription.getChat().getChatId())
+                .findById(subscription.getChat().getId())
                 .map(chatEntity -> {
                     LinkEntity linkEntity = resolveOrCreateLink(subscription.getLink());
-                    boolean exists = subscriptionJpaRepository.existsByChat_ChatIdAndLink_Id(
-                            chatEntity.getChatId(), linkEntity.getId());
+                    boolean exists =
+                            subscriptionJpaRepository.existsByChat_IdAndLink_Id(chatEntity.getId(), linkEntity.getId());
                     if (exists) {
                         return false;
                     }
@@ -55,8 +55,8 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
     @Override
     public void deleteSubscription(Subscription subscription) {
         resolveExistingLink(subscription.getLink())
-                .flatMap(linkEntity -> subscriptionJpaRepository.findByChat_ChatIdAndLink_Id(
-                        subscription.getChat().getChatId(), linkEntity.getId()))
+                .flatMap(linkEntity -> subscriptionJpaRepository.findByChat_IdAndLink_Id(
+                        subscription.getChat().getId(), linkEntity.getId()))
                 .ifPresent(entity -> {
                     subscriptionJpaRepository.delete(entity);
                     subscriptionJpaRepository.flush();
@@ -66,7 +66,7 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
     @Override
     @Transactional(readOnly = true)
     public List<Subscription> getAllSubscriptionsByChat(Chat chat) {
-        return subscriptionJpaRepository.findAllByChat_ChatId(chat.getChatId()).stream()
+        return subscriptionJpaRepository.findAllByChat_Id(chat.getId()).stream()
                 .map(subscriptionEntityMapper::toDomain)
                 .toList();
     }
@@ -85,9 +85,7 @@ public class OrmSubscriptionRepository implements SubscriptionRepository {
     @Override
     @Transactional(readOnly = true)
     public Optional<Subscription> findByChatIdAndLinkId(long chatId, long linkId) {
-        return subscriptionJpaRepository
-                .findByChat_ChatIdAndLink_Id(chatId, linkId)
-                .map(subscriptionEntityMapper::toDomain);
+        return subscriptionJpaRepository.findByChat_IdAndLink_Id(chatId, linkId).map(subscriptionEntityMapper::toDomain);
     }
 
     private Optional<LinkEntity> resolveExistingLink(Link link) {

@@ -60,7 +60,7 @@ class StartGlobalActionHandlerTest {
     void shouldClearStateAndRegisterChat() {
         long chatId = 1L;
         long userId = 2L;
-        Update update = mockUpdate(chatId);
+        Update update = mockUpdate();
         UpdateContext ctx = mockCtx(chatId, userId);
         when(botTextService.get("bot.common.start")).thenReturn("Привет!");
 
@@ -76,7 +76,7 @@ class StartGlobalActionHandlerTest {
     void shouldIgnoreChatAlreadyExists() {
         long chatId = 1L;
         long userId = 2L;
-        Update update = mockUpdate(chatId);
+        Update update = mockUpdate();
         UpdateContext ctx = mockCtx(chatId, userId);
         when(botTextService.get("bot.common.start")).thenReturn("Привет!");
         doThrow(mock(ChatAlreadyExistsException.class)).when(scrapperClient).registerChat(chatId);
@@ -100,9 +100,8 @@ class StartGlobalActionHandlerTest {
                 .sendMessage(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyString());
     }
 
-    private Update mockUpdate(long chatId) {
-        Update update = mock(Update.class);
-        return update;
+    private Update mockUpdate() {
+        return mock(Update.class);
     }
 
     private UpdateContext mockCtx(long chatId, long userId) {

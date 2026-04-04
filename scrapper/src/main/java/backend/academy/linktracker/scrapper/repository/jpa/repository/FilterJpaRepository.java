@@ -9,9 +9,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface FilterJpaRepository extends JpaRepository<FilterEntity, Long> {
 
-    Optional<FilterEntity> findByChat_ChatIdAndValue(long chatId, String value);
+    Optional<FilterEntity> findByChat_IdAndValue(long chatId, String value);
 
-    List<FilterEntity> findAllByChat_ChatIdOrderById(long chatId);
+    List<FilterEntity> findAllByChat_IdOrderById(long chatId);
 
     @Query("""
         select l.filter
@@ -21,5 +21,5 @@ public interface FilterJpaRepository extends JpaRepository<FilterEntity, Long> {
         """)
     List<FilterEntity> findAllBySubscriptionId(@Param("subscriptionId") long subscriptionId);
 
-    boolean existsByChat_ChatIdAndValue(long chatId, String value);
+    boolean existsByChat_IdAndValue(long chatId, String value);
 }

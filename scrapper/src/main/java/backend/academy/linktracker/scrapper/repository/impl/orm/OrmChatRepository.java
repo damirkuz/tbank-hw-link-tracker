@@ -22,16 +22,16 @@ public class OrmChatRepository implements ChatRepository {
 
     @Override
     public boolean registerChat(Chat chat) {
-        if (chatJpaRepository.existsById(chat.getChatId())) {
+        if (chatJpaRepository.existsById(chat.getId())) {
             return false;
         }
-        chatJpaRepository.saveAndFlush(new ChatEntity(chat.getChatId()));
+        chatJpaRepository.saveAndFlush(new ChatEntity(chat.getId()));
         return true;
     }
 
     @Override
     public boolean deleteChat(Chat chat) {
-        return chatJpaRepository.deleteByChatId(chat.getChatId()) > 0;
+        return chatJpaRepository.deleteRowById(chat.getId()) > 0;
     }
 
     @Override

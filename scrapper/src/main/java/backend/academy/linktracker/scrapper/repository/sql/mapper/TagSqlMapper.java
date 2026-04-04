@@ -12,7 +12,7 @@ public class TagSqlMapper implements RowMapper<Tag> {
 
     @Override
     public Tag mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Tag tag = new Tag(new Chat(rs.getLong("chat_id")), rs.getString("name"));
+        Tag tag = new Tag(new Chat(rs.getLong("id")), rs.getString("name"));
         tag.setId(rs.getLong("id"));
         return tag;
     }

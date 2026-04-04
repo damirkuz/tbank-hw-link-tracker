@@ -80,7 +80,7 @@ public class SqlTagRepository implements TagRepository {
     @Override
     public boolean addTag(Tag tag) {
         List<Long> ids = jdbcTemplate.query(
-                INSERT_TAG, (rs, rowNum) -> rs.getLong("id"), tag.getChat().getChatId(), tag.getName());
+                INSERT_TAG, (rs, rowNum) -> rs.getLong("id"), tag.getChat().getId(), tag.getName());
 
         if (ids.isEmpty()) {
             return false;
@@ -106,7 +106,7 @@ public class SqlTagRepository implements TagRepository {
     @Override
     @Transactional(readOnly = true)
     public List<Tag> findAllByChat(Chat chat) {
-        return jdbcTemplate.query(FIND_ALL_BY_CHAT, tagSqlMapper, chat.getChatId());
+        return jdbcTemplate.query(FIND_ALL_BY_CHAT, tagSqlMapper, chat.getId());
     }
 
     @Override

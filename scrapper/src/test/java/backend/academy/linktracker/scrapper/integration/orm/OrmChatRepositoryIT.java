@@ -6,8 +6,6 @@ import backend.academy.linktracker.scrapper.integration.AbstractIntegrationTest;
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.repository.impl.orm.OrmChatRepository;
 import java.util.Optional;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +25,6 @@ class OrmChatRepositoryIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     private static final long CHAT_ID = 501L;
-
-    @BeforeEach
-    @AfterEach
-    void cleanUp() {
-        jdbcTemplate.update("DELETE FROM chats WHERE chat_id = ?", CHAT_ID);
-    }
 
     @Test
     @DisplayName("ORM: registerChat — добавление чата: запись сохранена в БД")
@@ -61,7 +53,7 @@ class OrmChatRepositoryIT extends AbstractIntegrationTest {
         Optional<Chat> found = chatRepository.findById(CHAT_ID);
 
         assertThat(found).isPresent();
-        assertThat(found.get().getChatId()).isEqualTo(CHAT_ID);
+        assertThat(found.get().getId()).isEqualTo(CHAT_ID);
     }
 
     @Test
@@ -75,6 +67,10 @@ class OrmChatRepositoryIT extends AbstractIntegrationTest {
     }
 
     private int countChats() {
-        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM chats WHERE chat_id = ?", Integer.class, CHAT_ID);
+        return jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM chats WHERE id = ?",
+            Integer.class,
+            CHAT_ID
+        );
     }
 }

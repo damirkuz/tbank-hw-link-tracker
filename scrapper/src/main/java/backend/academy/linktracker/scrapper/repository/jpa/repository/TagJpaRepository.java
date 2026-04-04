@@ -9,9 +9,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface TagJpaRepository extends JpaRepository<TagEntity, Long> {
 
-    Optional<TagEntity> findByChat_ChatIdAndName(long chatId, String name);
+    Optional<TagEntity> findByChat_IdAndName(long chatId, String name);
 
-    List<TagEntity> findAllByChat_ChatIdOrderById(long chatId);
+    List<TagEntity> findAllByChat_IdOrderById(long chatId);
 
     @Query("""
         select l.tag
@@ -21,5 +21,5 @@ public interface TagJpaRepository extends JpaRepository<TagEntity, Long> {
         """)
     List<TagEntity> findAllBySubscriptionId(@Param("subscriptionId") long subscriptionId);
 
-    boolean existsByChat_ChatIdAndName(long chatId, String name);
+    boolean existsByChat_IdAndName(long chatId, String name);
 }

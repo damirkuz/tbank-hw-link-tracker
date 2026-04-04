@@ -23,7 +23,7 @@ public class InMemoryFilterRepository implements FilterRepository {
 
     @Override
     public boolean addFilter(Filter filter) {
-        String key = key(filter.getChat().getChatId(), filter.getValue());
+        String key = key(filter.getChat().getId(), filter.getValue());
         if (idsByKey.containsKey(key)) {
             return false;
         }
@@ -52,7 +52,7 @@ public class InMemoryFilterRepository implements FilterRepository {
     @Override
     public List<Filter> findAllByChat(Chat chat) {
         return filtersById.values().stream()
-                .filter(filter -> filter.getChat().getChatId() == chat.getChatId())
+                .filter(filter -> filter.getChat().getId() == chat.getId())
                 .sorted(java.util.Comparator.comparing(Filter::getId))
                 .toList();
     }
@@ -73,12 +73,12 @@ public class InMemoryFilterRepository implements FilterRepository {
             return false;
         }
 
-        String newKey = key(filter.getChat().getChatId(), newValue);
+        String newKey = key(filter.getChat().getId(), newValue);
         if (idsByKey.containsKey(newKey)) {
             return false;
         }
 
-        idsByKey.remove(key(filter.getChat().getChatId(), filter.getValue()));
+        idsByKey.remove(key(filter.getChat().getId(), filter.getValue()));
         filter.setValue(newValue);
         idsByKey.put(newKey, filterId);
         return true;
@@ -91,7 +91,7 @@ public class InMemoryFilterRepository implements FilterRepository {
             return false;
         }
 
-        idsByKey.remove(key(removed.getChat().getChatId(), removed.getValue()));
+        idsByKey.remove(key(removed.getChat().getId(), removed.getValue()));
         subscriptionToFilterIds.values().forEach(ids -> ids.remove(id));
         return true;
     }

@@ -31,7 +31,7 @@ class SqlChatRepositoryIT extends AbstractIntegrationTest {
     @BeforeEach
     @AfterEach
     void cleanUp() {
-        jdbcTemplate.update("DELETE FROM chats WHERE chat_id = ?", CHAT_ID);
+        jdbcTemplate.update("DELETE FROM chats WHERE id = ?", CHAT_ID);
     }
 
     @Test
@@ -61,7 +61,7 @@ class SqlChatRepositoryIT extends AbstractIntegrationTest {
         Optional<Chat> found = chatRepository.findById(CHAT_ID);
 
         assertThat(found).isPresent();
-        assertThat(found.get().getChatId()).isEqualTo(CHAT_ID);
+        assertThat(found.get().getId()).isEqualTo(CHAT_ID);
     }
 
     @Test
@@ -87,6 +87,6 @@ class SqlChatRepositoryIT extends AbstractIntegrationTest {
     }
 
     private int countChats(long chatId) {
-        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM chats WHERE chat_id = ?", Integer.class, chatId);
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM chats WHERE id = ?", Integer.class, chatId);
     }
 }

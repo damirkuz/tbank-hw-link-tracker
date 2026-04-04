@@ -7,22 +7,28 @@ import backend.academy.linktracker.bot.update.handler.UnknownUpdateHandler;
 import backend.academy.linktracker.bot.update.handler.state.StateHandlerRegistry;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StateRouter implements Router {
 
     private final StateStorage stateStorage;
-
     private final StateHandlerRegistry handlerRegistry;
-
     private final UnknownUpdateHandler unknownUpdateHandler;
 
     @Override
     public void route(Update update, UpdateContext updateContext) {
-        UserState userState =
-                stateStorage.getUserSession(updateContext.userId()).getState();
+        Long userId = updateContext.userId();
+        if (userId == null) {
+            log.warn("Пропускаем роутинг, тк userId равен null");
+            unknownUpdateHandler.handle(update, updateContext);
+            return;
+        }
+
+        UserState userState = stateStorage.getUserSession(userId).getState();
 
         handlerRegistry
                 .getHandler(userState)

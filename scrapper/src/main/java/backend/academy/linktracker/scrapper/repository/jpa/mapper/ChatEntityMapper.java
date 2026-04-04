@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 public class ChatEntityMapper {
 
     public ChatEntity toEntity(Chat chat) {
-        return new ChatEntity(chat.getChatId());
+        return new ChatEntity(chat.getId());
     }
 
     public Chat toDomain(ChatEntity entity) {
-        return new Chat(entity.getChatId());
+        return new Chat(entity.getId());
     }
 }
