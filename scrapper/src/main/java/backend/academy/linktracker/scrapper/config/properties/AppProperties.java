@@ -10,7 +10,6 @@ public record AppProperties(@NotNull AccessType accessType) {
 
     public enum AccessType {
         SQL,
-        ORM,
-        MEMORY
+        ORM
     }
 }

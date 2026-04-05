@@ -1,11 +1,7 @@
 package backend.academy.linktracker.bot.update.handler.command;
 
-import backend.academy.linktracker.bot.model.UserState;
-import backend.academy.linktracker.bot.service.BotOperations;
-import backend.academy.linktracker.bot.service.BotTextService;
-import backend.academy.linktracker.bot.service.StateStorage;
-import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
+import backend.academy.linktracker.bot.usecase.DialogFlowService;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,15 +10,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UntrackCommandHandler implements CommandHandler {
 
-    private final BotTextService botTextService;
-    private final BotOperations botOperations;
-    private final StateStorage stateStorage;
-    private final ReplyKeyboardFactory replyKeyboardFactory;
+    private final DialogFlowService dialogFlowService;
 
     @Override
     public void handle(Update update, UpdateContext updateContext) {
-        stateStorage.updateState(updateContext.requireUserChatKey(), UserState.UNTRACK_WAIT_LINK);
-        botOperations.sendMessage(
-                updateContext.chatId(), botTextService.get("bot.untrack.ask-link"), replyKeyboardFactory.cancelOnly());
+        dialogFlowService.startUntrackFlow(updateContext);
     }
 }

@@ -16,6 +16,8 @@ public interface LinkRepository {
 
     void updateCheckState(long linkId, Instant lastUpdate, OffsetDateTime nextCheckAt);
 
+    void updateNextCheckAt(long linkId, OffsetDateTime nextCheckAt);
+
     Optional<Link> findById(long id);
 
     Optional<Link> findByUriAndTrackedResource(URI uri, TrackedResource trackedResource);

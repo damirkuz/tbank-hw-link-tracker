@@ -38,4 +38,12 @@ public interface LinkJpaRepository extends JpaRepository<LinkEntity, Long> {
             @Param("linkId") long linkId,
             @Param("lastUpdate") Instant lastUpdate,
             @Param("nextCheckAt") OffsetDateTime nextCheckAt);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update LinkEntity l
+        set l.nextCheckAt = :nextCheckAt
+        where l.id = :linkId
+        """)
+    int updateNextCheckAt(@Param("linkId") long linkId, @Param("nextCheckAt") OffsetDateTime nextCheckAt);
 }

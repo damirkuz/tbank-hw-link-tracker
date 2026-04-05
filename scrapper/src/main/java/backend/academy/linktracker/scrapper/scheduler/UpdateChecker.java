@@ -56,32 +56,52 @@ public class UpdateChecker {
     private void processLink(Link link) {
         Instant actualLastUpdate = getLastUpdate(link.getUri(), link.getTrackedResource());
         Instant previousLastUpdate = link.getLastUpdate();
+        OffsetDateTime nextCheckAt = OffsetDateTime.now(clock).plus(Duration.ofMillis(schedulerProperties.interval()));
+
+        if (previousLastUpdate != null && actualLastUpdate.isAfter(previousLastUpdate)) {
+            if (sendLinkUpdate(link, previousLastUpdate, actualLastUpdate)) {
+                linkRepository.updateCheckState(link.getId(), actualLastUpdate, nextCheckAt);
+            } else {
+                linkRepository.updateNextCheckAt(link.getId(), nextCheckAt);
+            }
+            return;
+        }
 
         Instant persistedLastUpdate = previousLastUpdate == null || actualLastUpdate.isAfter(previousLastUpdate)
                 ? actualLastUpdate
                 : previousLastUpdate;
-
-        OffsetDateTime nextCheckAt = OffsetDateTime.now(clock).plus(Duration.ofMillis(schedulerProperties.interval()));
-
         linkRepository.updateCheckState(link.getId(), persistedLastUpdate, nextCheckAt);
+    }
 
-        if (previousLastUpdate != null && actualLastUpdate.isAfter(previousLastUpdate)) {
-            List<Chat> chats = subscriptionRepository.getAllChatsByLink(link);
-            List<Long> tgChatIds = chats.stream().map(Chat::getId).toList();
+    private boolean sendLinkUpdate(Link link, Instant previousLastUpdate, Instant actualLastUpdate) {
+        List<Chat> chats = subscriptionRepository.getAllChatsByLink(link);
+        List<Long> tgChatIds = chats.stream().map(Chat::getId).toList();
 
-            CommonLinkUpdate commonLinkUpdate =
-                    new CommonLinkUpdate(link.getId(), link.getUri(), "Произошло обновление", tgChatIds);
+        CommonLinkUpdate commonLinkUpdate =
+                new CommonLinkUpdate(link.getId(), link.getUri(), "Произошло обновление", tgChatIds);
 
+        try {
             botClient.sendUpdate(commonLinkUpdate);
-
-            log.atInfo()
+        } catch (Exception e) {
+            log.atError()
+                    .setCause(e)
                     .addKeyValue("resource", link.getTrackedResource())
                     .addKeyValue("uri", link.getUri())
                     .addKeyValue("previous_update", previousLastUpdate)
                     .addKeyValue("current_update", actualLastUpdate)
                     .addKeyValue("notified_chats", tgChatIds.size())
-                    .log("Обнаружено обновление ссылки");
+                    .log("Не удалось отправить уведомление, lastUpdate не будет продвинут");
+            return false;
         }
+
+        log.atInfo()
+                .addKeyValue("resource", link.getTrackedResource())
+                .addKeyValue("uri", link.getUri())
+                .addKeyValue("previous_update", previousLastUpdate)
+                .addKeyValue("current_update", actualLastUpdate)
+                .addKeyValue("notified_chats", tgChatIds.size())
+                .log("Обнаружено обновление ссылки");
+        return true;
     }
 
     public Instant getLastUpdate(URI uri, TrackedResource trackedResource) {

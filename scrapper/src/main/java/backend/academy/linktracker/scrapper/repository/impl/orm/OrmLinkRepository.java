@@ -53,6 +53,11 @@ public class OrmLinkRepository implements LinkRepository {
     }
 
     @Override
+    public void updateNextCheckAt(long linkId, OffsetDateTime nextCheckAt) {
+        linkJpaRepository.updateNextCheckAt(linkId, nextCheckAt);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Optional<Link> findById(long id) {
         return linkJpaRepository.findById(id).map(linkEntityMapper::toDomain);

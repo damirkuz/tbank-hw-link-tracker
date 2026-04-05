@@ -1,16 +1,9 @@
 package backend.academy.linktracker.bot.update.handler.state;
 
-import backend.academy.linktracker.bot.model.UserChatKey;
-import backend.academy.linktracker.bot.model.UserSession;
 import backend.academy.linktracker.bot.model.UserState;
-import backend.academy.linktracker.bot.service.BotOperations;
-import backend.academy.linktracker.bot.service.BotTextService;
-import backend.academy.linktracker.bot.service.StateStorage;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
-import backend.academy.linktracker.bot.validator.link.LinkValidationResult;
-import backend.academy.linktracker.bot.validator.link.LinkValidationService;
+import backend.academy.linktracker.bot.usecase.TrackFlowService;
 import com.pengrad.telegrambot.model.Update;
-import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,10 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TrackWaitLinkHandler implements StateHandler {
 
-    private final LinkValidationService linkValidationService;
-    private final BotTextService botTextService;
-    private final BotOperations botOperations;
-    private final StateStorage stateStorage;
+    private final TrackFlowService trackFlowService;
 
     @Override
     public UserState getHandledState() {
@@ -30,26 +20,6 @@ public class TrackWaitLinkHandler implements StateHandler {
 
     @Override
     public void handle(Update update, UpdateContext updateContext) {
-
-        long chatId = updateContext.chatId();
-        UserChatKey userChatKey = updateContext.requireUserChatKey();
-
-        String rawLink = update.message().text().trim();
-
-        LinkValidationResult linkValidationResult = linkValidationService.validate(rawLink);
-        String answer;
-        if (linkValidationResult.valid()) {
-            UserSession userSession = stateStorage.getUserSession(userChatKey);
-            userSession.setState(UserState.TRACK_WAIT_TAGS);
-            userSession.setTrackLink(URI.create(rawLink));
-            stateStorage.save(userChatKey, userSession);
-
-            answer = botTextService.get("bot.track.ask-tags");
-        } else {
-            // не меняем состояние, снова ждём ссылку
-            answer = botTextService.get("bot.track.invalid-link");
-        }
-
-        botOperations.sendMessage(chatId, answer);
+        trackFlowService.handleLinkInput(updateContext, update.message().text());
     }
 }

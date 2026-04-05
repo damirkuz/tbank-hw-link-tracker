@@ -35,6 +35,8 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,10 +75,20 @@ class BotLinkServiceTest {
     @BeforeEach
     void setUp() {
         chat = new Chat(CHAT_ID);
+        LinkSubscriptionService linkSubscriptionService = getLinkSubscriptionService();
+        ChatLookupService chatLookupService = new ChatLookupService(chatRepository);
+        botLinkService = new BotLinkService(
+                subscriptionRepository,
+            chatLookupService,
+            linkSubscriptionService,
+                new SubscriptionMetadataService(tagRepository, filterRepository));
+    }
+
+    private @NonNull LinkSubscriptionService getLinkSubscriptionService() {
         TrackedResourceResolver trackedResourceResolver = new TrackedResourceResolver(List.of(new LinkHandler() {
             @Override
-            public java.util.Set<String> supportedHosts() {
-                return java.util.Set.of("github.com");
+            public Set<String> supportedHosts() {
+                return Set.of("github.com");
             }
 
             @Override
@@ -84,13 +96,7 @@ class BotLinkServiceTest {
                 return RESOURCE;
             }
         }));
-        botLinkService = new BotLinkService(
-                chatRepository,
-                linkRepository,
-                subscriptionRepository,
-                tagRepository,
-                filterRepository,
-                trackedResourceResolver);
+        return new LinkSubscriptionService(linkRepository, subscriptionRepository, trackedResourceResolver);
     }
 
     @Test

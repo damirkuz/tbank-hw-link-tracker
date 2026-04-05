@@ -36,7 +36,7 @@ public class SqlLinkRepository implements LinkRepository {
                     from links
                     where (next_check_at is null or next_check_at <= :before)
                       and id > :lastSeenId
-                    order by id asc
+                    order by id
                     limit :limit
                     """)
                 .param("before", before)
@@ -82,6 +82,19 @@ public class SqlLinkRepository implements LinkRepository {
                 where id = :linkId
                 """)
                 .param("lastUpdate", lastUpdate == null ? null : Timestamp.from(lastUpdate)) // ← фикс
+                .param("nextCheckAt", nextCheckAt)
+                .param("linkId", linkId)
+                .update();
+    }
+
+    @Override
+    public void updateNextCheckAt(long linkId, OffsetDateTime nextCheckAt) {
+        jdbcClient
+                .sql("""
+                update links
+                set next_check_at = :nextCheckAt
+                where id = :linkId
+                """)
                 .param("nextCheckAt", nextCheckAt)
                 .param("linkId", linkId)
                 .update();

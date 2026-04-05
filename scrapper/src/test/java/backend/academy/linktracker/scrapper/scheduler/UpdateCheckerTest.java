@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -162,6 +163,29 @@ class UpdateCheckerTest {
         assertThat(sentUpdate.url()).isEqualTo(GITHUB_URI);
         assertThat(sentUpdate.description()).isEqualTo("Произошло обновление");
         assertThat(sentUpdate.tgChatIds()).containsExactly(100L, 200L);
+    }
+
+    @Test
+    @DisplayName("getUpdates — при ошибке отправки не продвигает lastUpdate и ставит retry")
+    void getUpdatesWhenSendFailsOnlyRescheduleRetry() {
+        Instant previousLastUpdate = Instant.parse("2024-01-01T00:00:00Z");
+        Instant actualLastUpdate = Instant.parse("2024-06-01T00:00:00Z");
+
+        Link link = new Link(GITHUB_URI, TrackedResource.GITHUB);
+        link.setId(42L);
+        link.setLastUpdate(previousLastUpdate);
+
+        when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE)))
+                .thenReturn(List.of(link))
+                .thenReturn(List.of());
+        when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(actualLastUpdate);
+        when(subscriptionRepository.getAllChatsByLink(link)).thenReturn(List.of(new Chat(100L)));
+        doThrow(new RuntimeException("bot unavailable")).when(botClient).sendUpdate(any(CommonLinkUpdate.class));
+
+        checker.getUpdates();
+
+        verify(linkRepository, never()).updateCheckState(eq(42L), eq(actualLastUpdate), any(OffsetDateTime.class));
+        verify(linkRepository).updateNextCheckAt(eq(42L), any(OffsetDateTime.class));
     }
 
     @Test

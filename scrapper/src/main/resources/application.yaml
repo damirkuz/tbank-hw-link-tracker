@@ -40,7 +40,7 @@ scheduler:
   batch-size: 100
 
 app:
-  # SQL/ORM/MEMORY
+  # SQL/ORM
   access-type: ORM
 
 provider:

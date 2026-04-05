@@ -1,11 +1,8 @@
 package backend.academy.linktracker.bot.update.handler.global;
 
 import backend.academy.linktracker.bot.client.protocol.ScrapperGateway;
-import backend.academy.linktracker.bot.service.BotOperations;
-import backend.academy.linktracker.bot.service.BotTextService;
-import backend.academy.linktracker.bot.service.StateStorage;
-import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
+import backend.academy.linktracker.bot.usecase.DialogFlowService;
 import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +14,8 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class StartGlobalActionHandler implements GlobalActionHandler {
 
-    private final BotOperations botOperations;
-    private final BotTextService botTextService;
-    private final ReplyKeyboardFactory replyKeyboardFactory;
-
+    private final DialogFlowService dialogFlowService;
     private final ScrapperGateway scrapperClient;
-
-    private final StateStorage stateStorage;
 
     @Override
     public boolean supports(UpdateContext context) {
@@ -38,9 +30,7 @@ public class StartGlobalActionHandler implements GlobalActionHandler {
 
         long chatId = context.chatId();
 
-        stateStorage.clearState(context.requireUserChatKey());
-        botOperations.sendMessage(
-                context.chatId(), botTextService.get("bot.common.start"), replyKeyboardFactory.mainMenu());
+        dialogFlowService.startConversation(context);
 
         try {
             scrapperClient.registerChat(chatId);
