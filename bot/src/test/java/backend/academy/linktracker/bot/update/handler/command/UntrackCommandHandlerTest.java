@@ -1,22 +1,17 @@
 package backend.academy.linktracker.bot.update.handler.command;
 
-import static org.mockito.Mockito.doThrow;
+
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import backend.academy.linktracker.bot.client.protocol.ScrapperGateway;
+import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
+import backend.academy.linktracker.bot.service.StateStorage;
+import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
-import backend.academy.linktracker.bot.validator.link.LinkValidationResult;
-import backend.academy.linktracker.bot.validator.link.LinkValidationService;
-import backend.academy.linktracker.contracts.dto.request.CommonRemoveLinkRequest;
-import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
-import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
-import java.net.URI;
+import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,84 +23,30 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @DisplayName("UntrackCommandHandler")
 class UntrackCommandHandlerTest {
 
-    @Mock
-    private ScrapperGateway scrapperClient;
-
-    @Mock
-    private BotTextService botTextService;
-
-    @Mock
-    private BotOperations botOperations;
-
-    @Mock
-    private LinkValidationService linkValidationService;
+    @Mock private BotTextService botTextService;
+    @Mock private BotOperations botOperations;
+    @Mock private StateStorage stateStorage;
+    @Mock private ReplyKeyboardFactory replyKeyboardFactory;
 
     @InjectMocks
     private UntrackCommandHandler handler;
 
-    private static final String VALID_LINK = "https://github.com/user/repo";
-
     @Test
-    @DisplayName("Успешно удаляет ссылку")
-    void shouldDeleteLinkSuccessfully() {
+    @DisplayName("Переводит в состояние UNTRACK_WAIT_LINK и спрашивает ссылку")
+    void shouldSetStateAndAskForLink() {
         long chatId = 1L;
-        Update update = mockUpdate("/untrack " + VALID_LINK);
-        UpdateContext ctx = mockCtx(chatId);
-
-        when(linkValidationService.validate(VALID_LINK)).thenReturn(new LinkValidationResult(true, null, null));
-        when(botTextService.get("bot.untrack.success")).thenReturn("Ссылка удалена.");
-
-        handler.handle(update, ctx);
-
-        verify(scrapperClient).deleteLink(chatId, new CommonRemoveLinkRequest(URI.create(VALID_LINK)));
-        verify(botOperations).sendMessage(chatId, "Ссылка удалена.");
-    }
-
-    @Test
-    @DisplayName("Отправляет ошибку если ссылка невалидна")
-    void shouldSendErrorForInvalidLink() {
-        long chatId = 1L;
-        Update update = mockUpdate("/untrack not-a-link");
-        UpdateContext ctx = mockCtx(chatId);
-
-        when(linkValidationService.validate("not-a-link")).thenReturn(new LinkValidationResult(false, "invalid", null));
-        when(botTextService.get("bot.track.invalid-link")).thenReturn("Некорректная ссылка.");
-
-        handler.handle(update, ctx);
-
-        verify(botOperations).sendMessage(chatId, "Некорректная ссылка.");
-        verify(scrapperClient, never()).deleteLink(chatId, new CommonRemoveLinkRequest(URI.create("not-a-link")));
-    }
-
-    @Test
-    @DisplayName("Отправляет ошибку если чат или ссылка не найдены")
-    void shouldSendErrorOnChatNotFound() {
-        long chatId = 1L;
-        Update update = mockUpdate("/untrack " + VALID_LINK);
-        UpdateContext ctx = mockCtx(chatId);
-
-        when(linkValidationService.validate(VALID_LINK)).thenReturn(new LinkValidationResult(true, null, null));
-        doThrow(new ChatNotFoundException("not found"))
-                .when(scrapperClient)
-                .deleteLink(chatId, new CommonRemoveLinkRequest(URI.create(VALID_LINK)));
-        when(botTextService.get("bot.untrack.chat-or-link-not-found")).thenReturn("Не найдено.");
-
-        handler.handle(update, ctx);
-
-        verify(botOperations).sendMessage(chatId, "Не найдено.");
-    }
-
-    private Update mockUpdate(String text) {
-        Update update = mock(Update.class);
-        Message message = mock(Message.class);
-        when(update.message()).thenReturn(message);
-        when(message.text()).thenReturn(text);
-        return update;
-    }
-
-    private UpdateContext mockCtx(long chatId) {
+        long userId = 2L;
         UpdateContext ctx = mock(UpdateContext.class);
         when(ctx.chatId()).thenReturn(chatId);
-        return ctx;
+        when(ctx.userId()).thenReturn(userId);
+        ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
+        when(replyKeyboardFactory.cancelOnly()).thenReturn(keyboard);
+        when(botTextService.get("bot.untrack.ask-link")).thenReturn("Введи ссылку для удаления:");
+
+        handler.handle(mock(Update.class), ctx);
+
+        verify(stateStorage).updateState(userId, UserState.UNTRACK_WAIT_LINK);
+        verify(botOperations).sendMessage(chatId, "Введи ссылку для удаления:", keyboard);
     }
 }
+
