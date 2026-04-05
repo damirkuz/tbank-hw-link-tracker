@@ -19,6 +19,7 @@ import backend.academy.linktracker.contracts.dto.response.CommonListLinksRespons
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
 import backend.academy.linktracker.scrapper.link.TrackedResourceResolver;
+import backend.academy.linktracker.scrapper.link.handlers.LinkHandler;
 import backend.academy.linktracker.scrapper.model.Chat;
 import backend.academy.linktracker.scrapper.model.Filter;
 import backend.academy.linktracker.scrapper.model.Link;
@@ -38,7 +39,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -66,10 +66,6 @@ class BotLinkServiceTest {
     @Mock
     private FilterRepository filterRepository;
 
-    @Mock
-    private TrackedResourceResolver trackedResourceResolver;
-
-    @InjectMocks
     private BotLinkService botLinkService;
 
     private Chat chat;
@@ -77,6 +73,24 @@ class BotLinkServiceTest {
     @BeforeEach
     void setUp() {
         chat = new Chat(CHAT_ID);
+        TrackedResourceResolver trackedResourceResolver = new TrackedResourceResolver(List.of(new LinkHandler() {
+            @Override
+            public java.util.Set<String> supportedHosts() {
+                return java.util.Set.of("github.com");
+            }
+
+            @Override
+            public TrackedResource resource() {
+                return RESOURCE;
+            }
+        }));
+        botLinkService = new BotLinkService(
+                chatRepository,
+                linkRepository,
+                subscriptionRepository,
+                tagRepository,
+                filterRepository,
+                trackedResourceResolver);
     }
 
     @Test
@@ -88,7 +102,6 @@ class BotLinkServiceTest {
                 Arrays.asList(" status:open ", "status:open", "author:me", null, " "));
 
         when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
-        when(trackedResourceResolver.resolve(TEST_URI)).thenReturn(RESOURCE);
         when(linkRepository.findByUriAndTrackedResource(TEST_URI, RESOURCE)).thenReturn(Optional.empty());
 
         doAnswer(invocation -> {
@@ -147,7 +160,6 @@ class BotLinkServiceTest {
         existingLink.setId(LINK_ID);
 
         when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
-        when(trackedResourceResolver.resolve(TEST_URI)).thenReturn(RESOURCE);
         when(linkRepository.findByUriAndTrackedResource(TEST_URI, RESOURCE)).thenReturn(Optional.of(existingLink));
         when(subscriptionRepository.addSubscription(any(Subscription.class))).thenReturn(false);
 
@@ -173,7 +185,6 @@ class BotLinkServiceTest {
         Filter statusOpen = mockFilterValueOnly("status:open");
 
         when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
-        when(trackedResourceResolver.resolve(TEST_URI)).thenReturn(RESOURCE);
         when(linkRepository.findByUriAndTrackedResource(TEST_URI, RESOURCE)).thenReturn(Optional.of(link));
         when(subscriptionRepository.findByChatIdAndLinkId(CHAT_ID, LINK_ID)).thenReturn(Optional.of(subscription));
         when(tagRepository.findAllBySubscription(SUBSCRIPTION_ID)).thenReturn(List.of(javaTag));
@@ -203,7 +214,6 @@ class BotLinkServiceTest {
         link.setId(LINK_ID);
 
         when(chatRepository.findById(CHAT_ID)).thenReturn(Optional.of(chat));
-        when(trackedResourceResolver.resolve(TEST_URI)).thenReturn(RESOURCE);
         when(linkRepository.findByUriAndTrackedResource(TEST_URI, RESOURCE)).thenReturn(Optional.of(link));
         when(subscriptionRepository.findByChatIdAndLinkId(CHAT_ID, LINK_ID)).thenReturn(Optional.empty());
 

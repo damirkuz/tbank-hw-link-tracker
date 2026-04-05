@@ -10,6 +10,7 @@ import backend.academy.linktracker.scrapper.model.TrackedResource;
 import backend.academy.linktracker.scrapper.repository.LinkRepository;
 import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
 import java.net.URI;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -30,10 +31,11 @@ public class UpdateChecker {
     private final SubscriptionRepository subscriptionRepository;
     private final BotGateway botClient;
     private final SchedulerProperties schedulerProperties;
+    private final Clock clock;
 
     @Scheduled(fixedRateString = "${scheduler.interval}")
     public void getUpdates() {
-        OffsetDateTime before = OffsetDateTime.now();
+        OffsetDateTime before = OffsetDateTime.now(clock);
         long lastSeenId = 0L;
         int batchSize = schedulerProperties.batchSize();
 
@@ -59,7 +61,7 @@ public class UpdateChecker {
                 ? actualLastUpdate
                 : previousLastUpdate;
 
-        OffsetDateTime nextCheckAt = OffsetDateTime.now().plus(Duration.ofMillis(schedulerProperties.interval()));
+        OffsetDateTime nextCheckAt = OffsetDateTime.now(clock).plus(Duration.ofMillis(schedulerProperties.interval()));
 
         linkRepository.updateCheckState(link.getId(), persistedLastUpdate, nextCheckAt);
 

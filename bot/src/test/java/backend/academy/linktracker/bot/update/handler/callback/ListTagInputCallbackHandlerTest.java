@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.bot.config.properties.BotProperties;
+import backend.academy.linktracker.bot.model.UserChatKey;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
@@ -14,10 +15,10 @@ import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -37,26 +38,30 @@ class ListTagInputCallbackHandlerTest {
     @Mock
     private ReplyKeyboardFactory replyKeyboardFactory;
 
-    @Mock
-    private BotProperties botProperties;
-
-    @InjectMocks
     private ListTagInputCallbackHandler handler;
 
     private static final BotProperties.TagKeyboard TAG_KB =
             new BotProperties.TagKeyboard(20, 8, 3, "list_tag:", "list_tags_all", "list_tag_input");
 
+    @BeforeEach
+    void setUp() {
+        handler = new ListTagInputCallbackHandler(
+                stateStorage,
+                botOperations,
+                botTextService,
+                replyKeyboardFactory,
+                new BotProperties(java.util.Map.of(), TAG_KB));
+    }
+
     @Test
     @DisplayName("supports — true для list_tag_input")
     void supportsListTagInput() {
-        when(botProperties.tagKeyboard()).thenReturn(TAG_KB);
         assertThat(handler.supports("list_tag_input")).isTrue();
     }
 
     @Test
     @DisplayName("supports — false для других")
     void supportsOther() {
-        when(botProperties.tagKeyboard()).thenReturn(TAG_KB);
         assertThat(handler.supports("list_tag:java")).isFalse();
     }
 
@@ -65,16 +70,14 @@ class ListTagInputCallbackHandlerTest {
     void shouldSetStateAndAskForTag() {
         long chatId = 1L;
         long userId = 2L;
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(chatId);
-        when(ctx.userId()).thenReturn(userId);
+        UpdateContext ctx = new UpdateContext(1, chatId, userId, null, "list_tag_input");
         ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
         when(replyKeyboardFactory.cancelOnly()).thenReturn(keyboard);
         when(botTextService.get("bot.list.ask-tag")).thenReturn("Введи тег:");
 
         handler.handle(mock(Update.class), ctx);
 
-        verify(stateStorage).updateState(userId, UserState.LIST_WAIT_TAG);
+        verify(stateStorage).updateState(new UserChatKey(userId, chatId), UserState.LIST_WAIT_TAG);
         verify(botOperations).sendMessage(chatId, "Введи тег:", keyboard);
     }
 }

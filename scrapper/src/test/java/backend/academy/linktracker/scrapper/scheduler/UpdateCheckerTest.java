@@ -19,9 +19,11 @@ import backend.academy.linktracker.scrapper.model.TrackedResource;
 import backend.academy.linktracker.scrapper.repository.LinkRepository;
 import backend.academy.linktracker.scrapper.repository.SubscriptionRepository;
 import java.net.URI;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,29 +50,31 @@ class UpdateCheckerTest {
     @Mock
     private BotGateway botClient;
 
-    @Mock
-    private SchedulerProperties schedulerProperties;
-
     private UpdateChecker checker;
+    private Clock clock;
+    private SchedulerProperties schedulerProperties;
 
     private static final URI GITHUB_URI = URI.create("https://github.com/user/repo");
     private static final int BATCH_SIZE = 100;
     private static final int INTERVAL_MS = 60_000;
+    private static final Instant NOW = Instant.parse("2024-06-10T12:00:00Z");
 
     @BeforeEach
     void setUp() {
+        clock = Clock.fixed(NOW, ZoneOffset.UTC);
+        schedulerProperties = new SchedulerProperties(INTERVAL_MS, BATCH_SIZE);
         checker = new UpdateChecker(
                 Map.of(TrackedResource.GITHUB, githubClient),
                 linkRepository,
                 subscriptionRepository,
                 botClient,
-                schedulerProperties);
+                schedulerProperties,
+                clock);
     }
 
     @Test
     @DisplayName("getUpdates — если ссылок нет, ничего не делает")
     void getUpdatesWhenNoLinksDoNothing() {
-        when(schedulerProperties.batchSize()).thenReturn(BATCH_SIZE);
         when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE)))
                 .thenReturn(List.of());
 
@@ -90,16 +94,12 @@ class UpdateCheckerTest {
         Link link = new Link(GITHUB_URI, TrackedResource.GITHUB);
         link.setId(1L);
 
-        when(schedulerProperties.batchSize()).thenReturn(BATCH_SIZE);
-        when(schedulerProperties.interval()).thenReturn(INTERVAL_MS);
         when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE)))
                 .thenReturn(List.of(link))
                 .thenReturn(List.of());
         when(githubClient.getLastUpdate(GITHUB_URI)).thenReturn(actualLastUpdate);
 
-        OffsetDateTime beforeCall = OffsetDateTime.now();
         checker.getUpdates();
-        OffsetDateTime afterCall = OffsetDateTime.now();
 
         ArgumentCaptor<OffsetDateTime> nextCheckCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
         verify(linkRepository).updateCheckState(eq(1L), eq(actualLastUpdate), nextCheckCaptor.capture());
@@ -107,10 +107,7 @@ class UpdateCheckerTest {
         verify(botClient, never()).sendUpdate(any());
 
         OffsetDateTime nextCheckAt = nextCheckCaptor.getValue();
-        assertThat(nextCheckAt)
-                .isAfterOrEqualTo(beforeCall.plus(Duration.ofMillis(INTERVAL_MS)))
-                .isBeforeOrEqualTo(
-                        afterCall.plus(Duration.ofMillis(INTERVAL_MS)).plusSeconds(1));
+        assertThat(nextCheckAt).isEqualTo(OffsetDateTime.now(clock).plus(Duration.ofMillis(INTERVAL_MS)));
     }
 
     @Test
@@ -122,8 +119,6 @@ class UpdateCheckerTest {
         link.setId(2L);
         link.setLastUpdate(previousLastUpdate);
 
-        when(schedulerProperties.batchSize()).thenReturn(BATCH_SIZE);
-        when(schedulerProperties.interval()).thenReturn(INTERVAL_MS);
         when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE)))
                 .thenReturn(List.of(link))
                 .thenReturn(List.of());
@@ -149,8 +144,6 @@ class UpdateCheckerTest {
         Chat chat1 = new Chat(100L);
         Chat chat2 = new Chat(200L);
 
-        when(schedulerProperties.batchSize()).thenReturn(BATCH_SIZE);
-        when(schedulerProperties.interval()).thenReturn(INTERVAL_MS);
         when(linkRepository.findLinksForUpdate(any(OffsetDateTime.class), eq(0L), eq(BATCH_SIZE)))
                 .thenReturn(List.of(link))
                 .thenReturn(List.of());
@@ -174,15 +167,15 @@ class UpdateCheckerTest {
     @Test
     @DisplayName("getUpdates — обрабатывает ссылки батчами, пока репозиторий не вернёт пустой список")
     void getUpdatesProcessAllBatches() {
-        when(schedulerProperties.batchSize()).thenReturn(1);
-        when(schedulerProperties.interval()).thenReturn(INTERVAL_MS);
+        schedulerProperties = new SchedulerProperties(INTERVAL_MS, 1);
 
         checker = new UpdateChecker(
                 Map.of(TrackedResource.GITHUB, githubClient),
                 linkRepository,
                 subscriptionRepository,
                 botClient,
-                schedulerProperties);
+                schedulerProperties,
+                clock);
 
         Link first = new Link(URI.create("https://github.com/user/repo1"), TrackedResource.GITHUB);
         first.setId(1L);

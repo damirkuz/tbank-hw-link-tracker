@@ -122,12 +122,8 @@ class UpdateDispatcherTest {
     }
 
     private UpdateContext mockContext(boolean hasText, boolean hasCallback, String messageText) {
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.hasMessageText()).thenReturn(hasText);
-        when(ctx.hasCallbackData()).thenReturn(hasCallback);
-        if (hasText && messageText != null) {
-            when(ctx.messageText()).thenReturn(messageText);
-        }
-        return ctx;
+        String text = hasText ? messageText : null;
+        String callback = hasCallback ? "callback" : null;
+        return new UpdateContext(1, 1L, 1L, text, callback);
     }
 }

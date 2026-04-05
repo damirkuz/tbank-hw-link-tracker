@@ -1,5 +1,6 @@
 package backend.academy.linktracker.bot.service;
 
+import backend.academy.linktracker.bot.model.UserChatKey;
 import backend.academy.linktracker.bot.model.UserSession;
 import backend.academy.linktracker.bot.model.UserState;
 import java.util.Map;
@@ -11,32 +12,52 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class StateStorage {
 
-    private final Map<Long, UserSession> sessionStore = new ConcurrentHashMap<>();
+    private final Map<UserChatKey, UserSession> sessionStore = new ConcurrentHashMap<>();
 
-    private void addUserSessionIfAbsent(long userId) {
-        sessionStore.computeIfAbsent(userId, id -> new UserSession(UserState.IDLE));
+    private void addUserSessionIfAbsent(UserChatKey key) {
+        sessionStore.computeIfAbsent(key, id -> new UserSession(UserState.IDLE));
     }
 
-    public UserSession getUserSession(long userId) {
-        addUserSessionIfAbsent(userId);
-        return sessionStore.get(userId).copy();
+    public UserSession getUserSession(long userId, long chatId) {
+        return getUserSession(keyOf(userId, chatId));
     }
 
-    public void save(long userId, UserSession session) {
-        sessionStore.put(userId, session.copy());
+    public UserSession getUserSession(UserChatKey key) {
+        addUserSessionIfAbsent(key);
+        return sessionStore.get(key).copy();
     }
 
-    public void updateState(long userId, UserState userState) {
-        UserSession userSession = getUserSession(userId);
+    public void save(long userId, long chatId, UserSession session) {
+        save(keyOf(userId, chatId), session);
+    }
+
+    public void save(UserChatKey key, UserSession session) {
+        sessionStore.put(key, session.copy());
+    }
+
+    public void updateState(long userId, long chatId, UserState userState) {
+        updateState(keyOf(userId, chatId), userState);
+    }
+
+    public void updateState(UserChatKey key, UserState userState) {
+        UserSession userSession = getUserSession(key);
         userSession.setState(userState);
-        save(userId, userSession);
+        save(key, userSession);
     }
 
-    public void clearState(long userId) {
-        UserSession userSession = getUserSession(userId);
+    public void clearState(long userId, long chatId) {
+        clearState(keyOf(userId, chatId));
+    }
+
+    public void clearState(UserChatKey key) {
+        UserSession userSession = getUserSession(key);
         userSession.setState(UserState.IDLE);
         userSession.setTrackLink(null);
 
-        save(userId, userSession);
+        save(key, userSession);
+    }
+
+    public UserChatKey keyOf(long userId, long chatId) {
+        return new UserChatKey(userId, chatId);
     }
 }

@@ -1,9 +1,23 @@
 package backend.academy.linktracker.bot.update.context;
 
+import backend.academy.linktracker.bot.model.UserChatKey;
 import java.util.Objects;
 import java.util.Optional;
 
 public record UpdateContext(Integer updateId, Long chatId, Long userId, String messageText, String callbackData) {
+
+    public Optional<UserChatKey> userChatKey() {
+        if (userId == null || chatId == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new UserChatKey(userId, chatId));
+    }
+
+    public UserChatKey requireUserChatKey() {
+        return userChatKey()
+                .orElseThrow(() -> new IllegalStateException("UpdateContext does not contain userId/chatId"));
+    }
 
     public boolean hasMessageText() {
         return messageText != null && !messageText.isBlank();

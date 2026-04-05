@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.bot.client.protocol.ScrapperGateway;
+import backend.academy.linktracker.bot.model.UserChatKey;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.service.StateStorage;
@@ -51,16 +52,14 @@ class StartGlobalActionHandlerTest {
     @Test
     @DisplayName("supports — true для команды /start")
     void supportsStartCommand() {
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.isCallbackOrCommandAction("start")).thenReturn(true);
+        UpdateContext ctx = new UpdateContext(1, 1L, 1L, "/start", null);
         assertThat(handler.supports(ctx)).isTrue();
     }
 
     @Test
     @DisplayName("supports — false для другой команды")
     void supportsOther() {
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.isCallbackOrCommandAction("start")).thenReturn(false);
+        UpdateContext ctx = new UpdateContext(1, 1L, 1L, "/help", null);
         assertThat(handler.supports(ctx)).isFalse();
     }
 
@@ -76,7 +75,7 @@ class StartGlobalActionHandlerTest {
 
         handler.handle(mockUpdate(), ctx);
 
-        verify(stateStorage).clearState(userId);
+        verify(stateStorage).clearState(new UserChatKey(userId, chatId));
         verify(botOperations).sendMessage(chatId, "Привет!", keyboard);
         verify(scrapperClient).registerChat(chatId);
     }
@@ -100,8 +99,7 @@ class StartGlobalActionHandlerTest {
     @Test
     @DisplayName("Ничего не делает если chatId == null")
     void shouldDoNothingWhenChatIdNull() {
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(null);
+        UpdateContext ctx = new UpdateContext(1, null, 2L, "/start", null);
 
         handler.handle(mock(Update.class), ctx);
 
@@ -113,9 +111,6 @@ class StartGlobalActionHandlerTest {
     }
 
     private UpdateContext mockCtx(long chatId, long userId) {
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(chatId);
-        when(ctx.userId()).thenReturn(userId);
-        return ctx;
+        return new UpdateContext(1, chatId, userId, "/start", null);
     }
 }

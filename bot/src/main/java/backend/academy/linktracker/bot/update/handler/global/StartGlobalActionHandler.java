@@ -6,7 +6,6 @@ import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.service.StateStorage;
 import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
-import backend.academy.linktracker.bot.update.handler.command.CommandHandlerRegistry;
 import backend.academy.linktracker.contracts.exception.ChatAlreadyExistsException;
 import com.pengrad.telegrambot.model.Update;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ public class StartGlobalActionHandler implements GlobalActionHandler {
 
     private final BotOperations botOperations;
     private final BotTextService botTextService;
-    private final CommandHandlerRegistry commandHandlerRegistry;
     private final ReplyKeyboardFactory replyKeyboardFactory;
 
     private final ScrapperGateway scrapperClient;
@@ -34,13 +32,13 @@ public class StartGlobalActionHandler implements GlobalActionHandler {
 
     @Override
     public void handle(Update update, UpdateContext context) {
-        if (context.chatId() == null) {
+        if (context.chatId() == null || context.userId() == null) {
             return;
         }
 
         long chatId = context.chatId();
 
-        stateStorage.clearState(context.userId());
+        stateStorage.clearState(context.requireUserChatKey());
         botOperations.sendMessage(
                 context.chatId(), botTextService.get("bot.common.start"), replyKeyboardFactory.mainMenu());
 

@@ -21,12 +21,8 @@ public class UntrackCommandHandler implements CommandHandler {
 
     @Override
     public void handle(Update update, UpdateContext updateContext) {
-        stateStorage.updateState(updateContext.userId(), UserState.UNTRACK_WAIT_LINK);
+        stateStorage.updateState(updateContext.requireUserChatKey(), UserState.UNTRACK_WAIT_LINK);
         botOperations.sendMessage(
-            updateContext.chatId(),
-            botTextService.get("bot.untrack.ask-link"),
-            replyKeyboardFactory.cancelOnly()
-        );
+                updateContext.chatId(), botTextService.get("bot.untrack.ask-link"), replyKeyboardFactory.cancelOnly());
     }
 }
-

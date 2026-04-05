@@ -16,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -33,10 +32,6 @@ class ListTagCallbackHandlerTest {
     @Mock
     private ReplyKeyboardFactory replyKeyboardFactory;
 
-    @Mock
-    private BotProperties botProperties;
-
-    @InjectMocks
     private ListTagCallbackHandler handler;
 
     private static final BotProperties.TagKeyboard TAG_KB =
@@ -44,7 +39,8 @@ class ListTagCallbackHandlerTest {
 
     @BeforeEach
     void setUp() {
-        when(botProperties.tagKeyboard()).thenReturn(TAG_KB);
+        handler = new ListTagCallbackHandler(
+                botOperations, linkListService, replyKeyboardFactory, new BotProperties(java.util.Map.of(), TAG_KB));
     }
 
     @Test
@@ -64,9 +60,7 @@ class ListTagCallbackHandlerTest {
     @DisplayName("Отправляет отфильтрованный список с главным меню")
     void shouldSendFilteredList() {
         long chatId = 1L;
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(chatId);
-        when(ctx.callbackData()).thenReturn("list_tag:java");
+        UpdateContext ctx = new UpdateContext(1, chatId, 2L, null, "list_tag:java");
         ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
         when(replyKeyboardFactory.mainMenu()).thenReturn(keyboard);
         when(linkListService.buildListMessage(chatId, "java")).thenReturn("Ссылки [java]:");

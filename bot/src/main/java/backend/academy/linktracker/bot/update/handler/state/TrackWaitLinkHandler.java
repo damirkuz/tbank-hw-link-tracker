@@ -1,5 +1,6 @@
 package backend.academy.linktracker.bot.update.handler.state;
 
+import backend.academy.linktracker.bot.model.UserChatKey;
 import backend.academy.linktracker.bot.model.UserSession;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
@@ -30,18 +31,18 @@ public class TrackWaitLinkHandler implements StateHandler {
     @Override
     public void handle(Update update, UpdateContext updateContext) {
 
-        long userId = updateContext.userId();
         long chatId = updateContext.chatId();
+        UserChatKey userChatKey = updateContext.requireUserChatKey();
 
         String rawLink = update.message().text().trim();
 
         LinkValidationResult linkValidationResult = linkValidationService.validate(rawLink);
         String answer;
         if (linkValidationResult.valid()) {
-            UserSession userSession = stateStorage.getUserSession(userId);
+            UserSession userSession = stateStorage.getUserSession(userChatKey);
             userSession.setState(UserState.TRACK_WAIT_TAGS);
             userSession.setTrackLink(URI.create(rawLink));
-            stateStorage.save(userId, userSession);
+            stateStorage.save(userChatKey, userSession);
 
             answer = botTextService.get("bot.track.ask-tags");
         } else {

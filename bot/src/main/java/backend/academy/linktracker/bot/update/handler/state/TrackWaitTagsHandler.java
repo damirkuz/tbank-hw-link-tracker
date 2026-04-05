@@ -1,6 +1,7 @@
 package backend.academy.linktracker.bot.update.handler.state;
 
 import backend.academy.linktracker.bot.client.protocol.ScrapperGateway;
+import backend.academy.linktracker.bot.model.UserChatKey;
 import backend.academy.linktracker.bot.model.UserSession;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
@@ -41,6 +42,7 @@ public class TrackWaitTagsHandler implements StateHandler {
     public void handle(Update update, UpdateContext updateContext) {
         long userId = updateContext.userId();
         long chatId = updateContext.chatId();
+        UserChatKey userChatKey = updateContext.requireUserChatKey();
 
         String text = update.message().text().trim().toLowerCase(Locale.ROOT);
         List<String> tags = new ArrayList<>();
@@ -50,7 +52,7 @@ public class TrackWaitTagsHandler implements StateHandler {
                     .toList();
         }
 
-        UserSession userSession = stateStorage.getUserSession(userId);
+        UserSession userSession = stateStorage.getUserSession(userChatKey);
         URI trackLink = userSession.getTrackLink();
 
         CommonAddLinkRequest request = new CommonAddLinkRequest(trackLink, tags, new ArrayList<>());
@@ -113,7 +115,7 @@ public class TrackWaitTagsHandler implements StateHandler {
 
         userSession.setTrackLink(null);
         userSession.setState(UserState.IDLE);
-        stateStorage.save(userId, userSession);
+        stateStorage.save(userChatKey, userSession);
         botOperations.sendMessage(chatId, answer, replyKeyboardFactory.mainMenu());
     }
 }

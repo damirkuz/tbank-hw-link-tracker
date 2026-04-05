@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.bot.config.properties.BotProperties;
+import backend.academy.linktracker.bot.config.properties.CommandMessage;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.LinkListService;
 import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -38,15 +38,20 @@ class ListCommandHandlerTest {
     @Mock
     private ReplyKeyboardFactory replyKeyboardFactory;
 
-    @Mock
-    private BotProperties botProperties;
-
-    @InjectMocks
     private ListCommandHandler handler;
 
     @BeforeEach
     void setUp() {
-        when(botProperties.commandOf("list-command")).thenReturn("/list");
+        handler = new ListCommandHandler(
+                botOperations,
+                linkListService,
+                tagKeyboardFactory,
+                replyKeyboardFactory,
+                new BotProperties(
+                        java.util.Map.of(
+                                "list-command",
+                                new CommandMessage("/list", "Список ссылок", java.util.List.of("📋 Мои ссылки"))),
+                        new BotProperties.TagKeyboard(20, 8, 3, "list_tag:", "list_tags_all", "list_tag_input")));
     }
 
     @Test
@@ -125,8 +130,6 @@ class ListCommandHandlerTest {
     }
 
     private UpdateContext mockCtx(long chatId) {
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(chatId);
-        return ctx;
+        return new UpdateContext(1, chatId, 2L, null, null);
     }
 }

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import backend.academy.linktracker.bot.model.UserChatKey;
 import backend.academy.linktracker.bot.model.UserSession;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
@@ -60,14 +61,14 @@ class TrackWaitLinkHandlerTest {
         UserSession session = mock(UserSession.class);
 
         when(linkValidationService.validate(link)).thenReturn(new LinkValidationResult(true, null, null));
-        when(stateStorage.getUserSession(userId)).thenReturn(session);
+        when(stateStorage.getUserSession(new UserChatKey(userId, chatId))).thenReturn(session);
         when(botTextService.get("bot.track.ask-tags")).thenReturn("Введите теги:");
 
         handler.handle(update, ctx);
 
         verify(session).setState(UserState.TRACK_WAIT_TAGS);
         verify(session).setTrackLink(URI.create(link));
-        verify(stateStorage).save(userId, session);
+        verify(stateStorage).save(new UserChatKey(userId, chatId), session);
         verify(botOperations).sendMessage(chatId, "Введите теги:");
     }
 
@@ -85,7 +86,11 @@ class TrackWaitLinkHandlerTest {
 
         handler.handle(update, ctx);
 
-        verify(stateStorage, never()).save(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.any());
+        verify(stateStorage, never())
+                .save(
+                        org.mockito.ArgumentMatchers.anyLong(),
+                        org.mockito.ArgumentMatchers.anyLong(),
+                        org.mockito.ArgumentMatchers.any());
         verify(botOperations).sendMessage(chatId, "Некорректная ссылка.");
     }
 
@@ -98,9 +103,6 @@ class TrackWaitLinkHandlerTest {
     }
 
     private UpdateContext mockCtx(long chatId, long userId) {
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(chatId);
-        when(ctx.userId()).thenReturn(userId);
-        return ctx;
+        return new UpdateContext(1, chatId, userId, null, null);
     }
 }

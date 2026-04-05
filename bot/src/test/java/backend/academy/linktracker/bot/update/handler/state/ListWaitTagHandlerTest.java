@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import backend.academy.linktracker.bot.model.UserChatKey;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.LinkListService;
@@ -51,9 +52,7 @@ class ListWaitTagHandlerTest {
     void shouldResetStateAndSendFilteredList() {
         long chatId = 1L;
         long userId = 2L;
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(chatId);
-        when(ctx.userId()).thenReturn(userId);
+        UpdateContext ctx = new UpdateContext(1, chatId, userId, "  Java  ", null);
 
         Update update = mock(Update.class);
         Message message = mock(Message.class);
@@ -66,7 +65,7 @@ class ListWaitTagHandlerTest {
 
         handler.handle(update, ctx);
 
-        verify(stateStorage).updateState(userId, UserState.IDLE);
+        verify(stateStorage).updateState(new UserChatKey(userId, chatId), UserState.IDLE);
         verify(botOperations).sendMessage(chatId, "Ссылки [java]:", keyboard);
     }
 
@@ -75,9 +74,7 @@ class ListWaitTagHandlerTest {
     void shouldNormalizeTagToLowercase() {
         long chatId = 1L;
         long userId = 2L;
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(chatId);
-        when(ctx.userId()).thenReturn(userId);
+        UpdateContext ctx = new UpdateContext(1, chatId, userId, "SPRING", null);
 
         Update update = mock(Update.class);
         Message message = mock(Message.class);

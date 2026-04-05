@@ -1,5 +1,6 @@
 package backend.academy.linktracker.bot.update.router;
 
+import backend.academy.linktracker.bot.model.UserChatKey;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.StateStorage;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
@@ -27,8 +28,15 @@ public class StateRouter implements Router {
             unknownUpdateHandler.handle(update, updateContext);
             return;
         }
+        Long chatId = updateContext.chatId();
+        if (chatId == null) {
+            log.warn("Пропускаем роутинг, тк chatId равен null");
+            unknownUpdateHandler.handle(update, updateContext);
+            return;
+        }
 
-        UserState userState = stateStorage.getUserSession(userId).getState();
+        UserChatKey userChatKey = updateContext.requireUserChatKey();
+        UserState userState = stateStorage.getUserSession(userChatKey).getState();
 
         handlerRegistry
                 .getHandler(userState)

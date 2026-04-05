@@ -1,9 +1,10 @@
 package backend.academy.linktracker.bot.update.handler.command;
 
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import backend.academy.linktracker.bot.model.UserChatKey;
 import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
@@ -23,10 +24,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @DisplayName("UntrackCommandHandler")
 class UntrackCommandHandlerTest {
 
-    @Mock private BotTextService botTextService;
-    @Mock private BotOperations botOperations;
-    @Mock private StateStorage stateStorage;
-    @Mock private ReplyKeyboardFactory replyKeyboardFactory;
+    @Mock
+    private BotTextService botTextService;
+
+    @Mock
+    private BotOperations botOperations;
+
+    @Mock
+    private StateStorage stateStorage;
+
+    @Mock
+    private ReplyKeyboardFactory replyKeyboardFactory;
 
     @InjectMocks
     private UntrackCommandHandler handler;
@@ -36,17 +44,14 @@ class UntrackCommandHandlerTest {
     void shouldSetStateAndAskForLink() {
         long chatId = 1L;
         long userId = 2L;
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(chatId);
-        when(ctx.userId()).thenReturn(userId);
+        UpdateContext ctx = new UpdateContext(1, chatId, userId, "/untrack", null);
         ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
         when(replyKeyboardFactory.cancelOnly()).thenReturn(keyboard);
         when(botTextService.get("bot.untrack.ask-link")).thenReturn("Введи ссылку для удаления:");
 
         handler.handle(mock(Update.class), ctx);
 
-        verify(stateStorage).updateState(userId, UserState.UNTRACK_WAIT_LINK);
+        verify(stateStorage).updateState(new UserChatKey(userId, chatId), UserState.UNTRACK_WAIT_LINK);
         verify(botOperations).sendMessage(chatId, "Введи ссылку для удаления:", keyboard);
     }
 }
-

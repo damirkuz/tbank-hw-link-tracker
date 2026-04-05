@@ -20,8 +20,7 @@ public class TrackCommandHandler implements CommandHandler {
 
     @Override
     public void handle(Update update, UpdateContext updateContext) {
-
-        stateStorage.updateState(updateContext.userId(), UserState.TRACK_WAIT_LINK);
+        stateStorage.updateState(updateContext.requireUserChatKey(), UserState.TRACK_WAIT_LINK);
 
         String answer = botTextService.get("bot.track.ask-link");
 

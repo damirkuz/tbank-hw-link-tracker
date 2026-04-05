@@ -44,8 +44,7 @@ class HelpGlobalActionHandlerTest {
         BotProperties props = new BotProperties(Map.of(), DEFAULT_TAG_KB);
         HelpGlobalActionHandler handler =
                 new HelpGlobalActionHandler(botOperations, botTextService, props, commandHandlerRegistry);
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.isCallbackOrCommandAction("help")).thenReturn(true);
+        UpdateContext ctx = new UpdateContext(1, 1L, 1L, "/help", null);
         assertThat(handler.supports(ctx)).isTrue();
     }
 
@@ -61,8 +60,7 @@ class HelpGlobalActionHandlerTest {
         HelpGlobalActionHandler handler =
                 new HelpGlobalActionHandler(botOperations, botTextService, props, commandHandlerRegistry);
 
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(chatId);
+        UpdateContext ctx = new UpdateContext(1, chatId, 7L, "/help", null);
         when(botTextService.get("bot.common.help")).thenReturn("Команды:");
 
         handler.handle(mock(Update.class), ctx);
@@ -76,8 +74,7 @@ class HelpGlobalActionHandlerTest {
         BotProperties props = new BotProperties(Map.of(), DEFAULT_TAG_KB);
         HelpGlobalActionHandler handler =
                 new HelpGlobalActionHandler(botOperations, botTextService, props, commandHandlerRegistry);
-        UpdateContext ctx = mock(UpdateContext.class);
-        when(ctx.chatId()).thenReturn(null);
+        UpdateContext ctx = new UpdateContext(1, null, 7L, "/help", null);
 
         handler.handle(mock(Update.class), ctx);
 

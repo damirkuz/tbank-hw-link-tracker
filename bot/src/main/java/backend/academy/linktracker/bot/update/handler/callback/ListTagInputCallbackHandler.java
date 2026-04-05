@@ -28,7 +28,7 @@ public class ListTagInputCallbackHandler implements CallbackHandler {
 
     @Override
     public void handle(Update update, UpdateContext context) {
-        stateStorage.updateState(context.userId(), UserState.LIST_WAIT_TAG);
+        stateStorage.updateState(context.requireUserChatKey(), UserState.LIST_WAIT_TAG);
         botOperations.sendMessage(
                 context.chatId(), botTextService.get("bot.list.ask-tag"), replyKeyboardFactory.cancelOnly());
     }
