@@ -1,6 +1,9 @@
 package backend.academy.linktracker.bot.update.handler.global;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -12,8 +15,10 @@ import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.service.StateStorage;
+import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +38,9 @@ class CancelGlobalActionHandlerTest {
 
     @Mock
     private StateStorage stateStorage;
+
+    @Mock
+    private ReplyKeyboardFactory replyKeyboardFactory;
 
     @InjectMocks
     private CancelGlobalActionHandler handler;
@@ -81,7 +89,7 @@ class CancelGlobalActionHandlerTest {
     }
 
     @Test
-    @DisplayName("Сбрасывает состояние и отправляет cancelled если можно отменить")
+    @DisplayName("Сбрасывает состояние и отправляет cancelled с главным меню")
     void shouldClearStateAndSendCancelled() {
         long chatId = 1L;
         long userId = 2L;
@@ -91,25 +99,25 @@ class CancelGlobalActionHandlerTest {
         when(session.getState()).thenReturn(UserState.TRACK_WAIT_LINK);
         when(session.getInterruptionPolicy()).thenReturn(InterruptionPolicy.ALLOW_ALL);
         when(botTextService.get("bot.common.cancelled")).thenReturn("Отменено.");
+        ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
+        when(replyKeyboardFactory.mainMenu()).thenReturn(keyboard);
 
         handler.handle(mock(Update.class), ctx);
 
         verify(stateStorage).clearState(userId);
-        verify(botOperations).sendMessage(chatId, "Отменено.");
+        verify(botOperations).sendMessage(chatId, "Отменено.", keyboard);
     }
 
     @Test
     @DisplayName("Ничего не делает если chatId == null")
     void shouldDoNothingWhenChatIdNull() {
-        Update update = mock(Update.class);
         UpdateContext ctx = mock(UpdateContext.class);
         when(ctx.chatId()).thenReturn(null);
-        // userId не стабируем — до него код не доходит
 
-        handler.handle(update, ctx);
+        handler.handle(mock(Update.class), ctx);
 
-        verify(botOperations, never())
-                .sendMessage(org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyString());
+        verify(botOperations, never()).sendMessage(anyLong(), anyString());
+        verify(botOperations, never()).sendMessage(anyLong(), anyString(), any());
     }
 
     private UpdateContext mockCtx(long chatId, long userId) {

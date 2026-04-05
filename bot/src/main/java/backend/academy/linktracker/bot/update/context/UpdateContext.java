@@ -21,10 +21,6 @@ public record UpdateContext(Integer updateId, Long chatId, Long userId, String m
         return hasCallbackData() && Objects.equals(callbackData, callback);
     }
 
-    public boolean hasCommand() {
-        return commandToken().isPresent();
-    }
-
     public Optional<String> commandToken() {
         if (!hasMessageText()) {
             return Optional.empty();
@@ -59,10 +55,6 @@ public record UpdateContext(Integer updateId, Long chatId, Long userId, String m
 
         String normalized = normalizeCommandName(commandName);
         return commandName().map(normalized::equals).orElse(false);
-    }
-
-    public boolean isCommandNameForBot(String commandName, String botUsername) {
-        return isCommandForBot(botUsername) && isCommandName(commandName);
     }
 
     public boolean isCommandForBot(String botUsername) {

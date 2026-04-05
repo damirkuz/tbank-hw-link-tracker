@@ -6,6 +6,7 @@ import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.service.StateStorage;
+import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
 import backend.academy.linktracker.contracts.dto.request.CommonAddLinkRequest;
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
@@ -29,6 +30,7 @@ public class TrackWaitTagsHandler implements StateHandler {
     private final StateStorage stateStorage;
     private final BotTextService botTextService;
     private final BotOperations botOperations;
+    private final ReplyKeyboardFactory replyKeyboardFactory;
 
     @Override
     public UserState getHandledState() {
@@ -112,6 +114,6 @@ public class TrackWaitTagsHandler implements StateHandler {
         userSession.setTrackLink(null);
         userSession.setState(UserState.IDLE);
         stateStorage.save(userId, userSession);
-        botOperations.sendMessage(chatId, answer);
+        botOperations.sendMessage(chatId, answer, replyKeyboardFactory.mainMenu());
     }
 }

@@ -26,6 +26,14 @@ scrapper:
 
 
 bot:
+  tag-keyboard:
+    max-buttons-before-input: 20
+    max-visible-tags: 8
+    tags-per-row: 3
+    callback-prefix: "list_tag:"
+    callback-show-all: "list_tags_all"
+    callback-input: "list_tag_input"
+
   messages:
     start-command:
       command: "/start"
@@ -33,15 +41,25 @@ bot:
     help-command:
       command: "/help"
       description: "Показать помощь"
+      aliases:
+        - "❓ Помощь"
     cancel-command:
       command: "/cancel"
       description: "Отменить"
+      aliases:
+        - "❌ Отмена"
     track-command:
       command: "/track"
       description: "Начать отслеживать ресурс"
+      aliases:
+        - "➕ Добавить"
     untrack-command:
       command: "/untrack"
       description: "Перестать отслеживать ресурс"
+      aliases:
+        - "➖️ Убрать"
     list-command:
       command: "/list"
       description: "Получить отслеживаемые ресурсы"
+      aliases:
+        - "📋 Мои ссылки"

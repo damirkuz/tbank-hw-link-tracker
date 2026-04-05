@@ -8,8 +8,10 @@ import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.service.StateStorage;
+import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +32,9 @@ class TrackCommandHandlerTest {
     @Mock
     private BotOperations botOperations;
 
+    @Mock
+    private ReplyKeyboardFactory replyKeyboardFactory;
+
     @InjectMocks
     private TrackCommandHandler handler;
 
@@ -43,10 +48,12 @@ class TrackCommandHandlerTest {
         when(ctx.chatId()).thenReturn(chatId);
         when(ctx.userId()).thenReturn(userId);
         when(botTextService.get("bot.track.ask-link")).thenReturn("Введите ссылку:");
+        ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
+        when(replyKeyboardFactory.cancelOnly()).thenReturn(keyboard);
 
         handler.handle(update, ctx);
 
         verify(stateStorage).updateState(userId, UserState.TRACK_WAIT_LINK);
-        verify(botOperations).sendMessage(chatId, "Введите ссылку:");
+        verify(botOperations).sendMessage(chatId, "Введите ссылку:", keyboard);
     }
 }

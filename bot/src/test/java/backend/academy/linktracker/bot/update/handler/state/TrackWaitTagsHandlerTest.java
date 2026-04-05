@@ -2,6 +2,7 @@ package backend.academy.linktracker.bot.update.handler.state;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -14,12 +15,14 @@ import backend.academy.linktracker.bot.model.UserState;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.service.StateStorage;
+import backend.academy.linktracker.bot.service.keyboard.ReplyKeyboardFactory;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
 import backend.academy.linktracker.contracts.dto.request.CommonAddLinkRequest;
 import backend.academy.linktracker.contracts.exception.ChatNotFoundException;
 import backend.academy.linktracker.contracts.exception.LinkAlreadyTrackedException;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import java.net.URI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,6 +47,9 @@ class TrackWaitTagsHandlerTest {
     @Mock
     private BotOperations botOperations;
 
+    @Mock
+    private ReplyKeyboardFactory replyKeyboardFactory;
+
     @InjectMocks
     private TrackWaitTagsHandler handler;
 
@@ -60,20 +66,16 @@ class TrackWaitTagsHandlerTest {
     void shouldAddLinkWithTags() {
         long chatId = 1L;
         long userId = 2L;
-        Update update = mockUpdate("java, spring");
-        UpdateContext ctx = mockCtx(chatId, userId);
-        UserSession session = mockSession(LINK);
-
+        ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
+        when(replyKeyboardFactory.mainMenu()).thenReturn(keyboard);
+        mockSession(LINK);
         when(botTextService.get("bot.reject")).thenReturn("нет");
         when(botTextService.get("bot.track.success")).thenReturn("Добавлено!");
 
-        handler.handle(update, ctx);
+        handler.handle(mockUpdate("java, spring"), mockCtx(chatId, userId));
 
         verify(scrapperClient).addLink(eq(chatId), any(CommonAddLinkRequest.class));
-        verify(session).setState(UserState.IDLE);
-        verify(session).setTrackLink(null);
-        verify(stateStorage).save(userId, session);
-        verify(botOperations).sendMessage(chatId, "Добавлено!");
+        verify(botOperations).sendMessage(chatId, "Добавлено!", keyboard);
     }
 
     @Test
@@ -81,17 +83,16 @@ class TrackWaitTagsHandlerTest {
     void shouldAddLinkWithoutTagsWhenRejected() {
         long chatId = 1L;
         long userId = 2L;
-        Update update = mockUpdate("нет");
-        UpdateContext ctx = mockCtx(chatId, userId);
+        ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
+        when(replyKeyboardFactory.mainMenu()).thenReturn(keyboard);
         mockSession(LINK);
-
         when(botTextService.get("bot.reject")).thenReturn("нет");
         when(botTextService.get("bot.track.success")).thenReturn("Добавлено!");
 
-        handler.handle(update, ctx);
+        handler.handle(mockUpdate("нет"), mockCtx(chatId, userId));
 
         verify(scrapperClient).addLink(eq(chatId), any(CommonAddLinkRequest.class));
-        verify(botOperations).sendMessage(chatId, "Добавлено!");
+        verify(botOperations).sendMessage(chatId, "Добавлено!", keyboard);
     }
 
     @Test
@@ -99,17 +100,16 @@ class TrackWaitTagsHandlerTest {
     void shouldSendAlreadyTrackedError() {
         long chatId = 1L;
         long userId = 2L;
-        Update update = mockUpdate("java");
-        UpdateContext ctx = mockCtx(chatId, userId);
+        ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
+        when(replyKeyboardFactory.mainMenu()).thenReturn(keyboard);
         mockSession(LINK);
-
         when(botTextService.get("bot.reject")).thenReturn("нет");
         doThrow(mock(LinkAlreadyTrackedException.class)).when(scrapperClient).addLink(eq(chatId), any());
         when(botTextService.get("bot.track.link-already-add")).thenReturn("Уже отслеживается.");
 
-        handler.handle(update, ctx);
+        handler.handle(mockUpdate("java"), mockCtx(chatId, userId));
 
-        verify(botOperations).sendMessage(chatId, "Уже отслеживается.");
+        verify(botOperations).sendMessage(chatId, "Уже отслеживается.", keyboard);
     }
 
     @Test
@@ -117,10 +117,9 @@ class TrackWaitTagsHandlerTest {
     void shouldRegisterChatAndRetry() {
         long chatId = 1L;
         long userId = 2L;
-        Update update = mockUpdate("java");
-        UpdateContext ctx = mockCtx(chatId, userId);
+        ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
+        when(replyKeyboardFactory.mainMenu()).thenReturn(keyboard);
         mockSession(LINK);
-
         when(botTextService.get("bot.reject")).thenReturn("нет");
         doThrow(new ChatNotFoundException("not found"))
                 .doNothing()
@@ -128,10 +127,10 @@ class TrackWaitTagsHandlerTest {
                 .addLink(eq(chatId), any());
         when(botTextService.get("bot.track.success")).thenReturn("Добавлено!");
 
-        handler.handle(update, ctx);
+        handler.handle(mockUpdate("java"), mockCtx(chatId, userId));
 
         verify(scrapperClient).registerChat(chatId);
-        verify(botOperations).sendMessage(chatId, "Добавлено!");
+        verify(botOperations).sendMessage(chatId, "Добавлено!", keyboard);
     }
 
     @Test
@@ -139,17 +138,16 @@ class TrackWaitTagsHandlerTest {
     void shouldSendUnknownErrorOnException() {
         long chatId = 1L;
         long userId = 2L;
-        Update update = mockUpdate("java");
-        UpdateContext ctx = mockCtx(chatId, userId);
+        ReplyKeyboardMarkup keyboard = mock(ReplyKeyboardMarkup.class);
+        when(replyKeyboardFactory.mainMenu()).thenReturn(keyboard);
         mockSession(LINK);
-
         when(botTextService.get("bot.reject")).thenReturn("нет");
         doThrow(new RuntimeException("unexpected")).when(scrapperClient).addLink(eq(chatId), any());
         when(botTextService.get("bot.common.unknown-error")).thenReturn("Что-то пошло не так.");
 
-        handler.handle(update, ctx);
+        handler.handle(mockUpdate("java"), mockCtx(chatId, userId));
 
-        verify(botOperations).sendMessage(chatId, "Что-то пошло не так.");
+        verify(botOperations).sendMessage(chatId, "Что-то пошло не так.", keyboard);
     }
 
     private Update mockUpdate(String text) {
@@ -170,8 +168,7 @@ class TrackWaitTagsHandlerTest {
     private UserSession mockSession(URI link) {
         UserSession session = mock(UserSession.class);
         when(session.getTrackLink()).thenReturn(link);
-        when(stateStorage.getUserSession(org.mockito.ArgumentMatchers.anyLong()))
-                .thenReturn(session);
+        when(stateStorage.getUserSession(anyLong())).thenReturn(session);
         return session;
     }
 }

@@ -1,6 +1,7 @@
 package backend.academy.linktracker.bot.service;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.request.Keyboard;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.SendResponse;
 import java.util.ArrayList;
@@ -42,6 +43,24 @@ public class BotOperations {
 
                 return; // не отправляем другие части после ошибки
             }
+        }
+    }
+
+    public void sendMessage(long chatId, String message, Keyboard keyboard) {
+        if (message == null || message.isBlank()) {
+            log.atWarn().addKeyValue("chat_id", chatId).log("Пустое сообщение, отправка пропущена");
+            return;
+        }
+
+        SendMessage request = new SendMessage(chatId, message).replyMarkup(keyboard);
+        SendResponse response = bot.execute(request);
+
+        if (!response.isOk()) {
+            log.atError()
+                    .addKeyValue("chat_id", chatId)
+                    .addKeyValue("error_code", response.errorCode())
+                    .addKeyValue("description", response.description())
+                    .log("Не удалось отправить сообщение с клавиатурой");
         }
     }
 

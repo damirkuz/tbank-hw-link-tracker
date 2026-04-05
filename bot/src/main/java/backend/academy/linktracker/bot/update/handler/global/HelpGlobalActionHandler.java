@@ -5,6 +5,7 @@ import backend.academy.linktracker.bot.config.properties.CommandMessage;
 import backend.academy.linktracker.bot.service.BotOperations;
 import backend.academy.linktracker.bot.service.BotTextService;
 import backend.academy.linktracker.bot.update.context.UpdateContext;
+import backend.academy.linktracker.bot.update.handler.command.CommandHandlerRegistry;
 import com.pengrad.telegrambot.model.Update;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -18,10 +19,12 @@ public class HelpGlobalActionHandler implements GlobalActionHandler {
     private final BotOperations botOperations;
     private final BotTextService botTextService;
     private final BotProperties botProperties;
+    private final CommandHandlerRegistry commandHandlerRegistry;
 
     @Override
     public boolean supports(UpdateContext context) {
-        return context.isCallbackOrCommandAction("help");
+        return context.isCallbackOrCommandAction("help")
+                || botProperties.isAliasForCommand("/help", context.messageText());
     }
 
     @Override
